@@ -1,33 +1,5 @@
 ## FSTrack-Tractor: Flow & Feature Specification
 
->
-> ### desc
-> project greenfield untuk fstrack-tractor. ini adalah pelacakan lokasi pembajakan dan pembagian rencana kerja. versi buldozer sudah ada, ini hanya reused untuk anak baru a.k.a aku. penjelasannya sederhana, aku diminta membuat : 
-> 1. login page untuk fstrack tractor
-> 2. onboarding / main page untuk user yang sudah masuk.
->
-> ### preps: 
-> 1. csv data sudah disiapkan, berisi list username dan password
->
-> ### tech stack 
-> frontend : flutter
-> backend : nestJS
-> db : postgresql
->
-> ### flow
-> 1. login
-> 2. auth - cek kredensial
-> 3. IF auth ditemukan, lanjut, berhasil masuk. 
-> 4. IF auth tidak ditemukan, retry ke 1. 
-> 5. auth setelah user berhasil masuk - cek role
-> 6. IF role isKasie = main page menampilkan : 
-> - buat rencana kerja
-> - lihat rencana kerja
-> 7. IF role isNotKasie = main page menampilkan : 
-> - lihat rencana kerja
-> 8. role isNotKasie memiliki kriteria dan CRUD yang akan dijelaskan di file inii.
->
-
 ### **1. WORKFLOW PROCESS**
 
 ```
