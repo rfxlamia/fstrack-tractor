@@ -1,0 +1,53 @@
+name: fstrack_tractor
+description: FSTrack Tractor - Field Management App
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_bloc: ^8.1.6
+  equatable: ^2.0.5
+
+  # Dependency Injection
+  get_it: ^7.7.0
+  injectable: ^2.4.4
+
+  # Local Storage (Hive)
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  path_provider: ^2.1.4
+
+  # Security
+  flutter_secure_storage: ^9.2.2
+
+  # Network
+  dio: ^5.7.0
+  connectivity_plus: ^6.0.5
+
+  # Navigation
+  go_router: ^14.3.0
+
+  # UI
+  shimmer: ^3.0.0
+  cached_network_image: ^3.4.1
+
+  # Functional Programming
+  dartz: ^0.10.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.12
+  injectable_generator: ^2.6.2
+  bloc_test: ^9.1.7
+  mocktail: ^1.0.4
+
+flutter:
+  uses-material-design: true
