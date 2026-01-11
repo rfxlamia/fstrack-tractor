@@ -21,6 +21,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.27.2'
           channel: stable
           cache: true
 
@@ -30,8 +31,15 @@ jobs:
       - name: Analyze code
         run: flutter analyze
 
-      - name: Run tests
-        run: flutter test
+      - name: Run tests with coverage
+        run: flutter test --coverage
+
+      - name: Upload Flutter coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-coverage
+          path: fstrack_tractor_app/coverage/lcov.info
+          retention-days: 7
 
   nestjs:
     name: NestJS Checks
@@ -60,5 +68,12 @@ jobs:
       - name: Lint code
         run: npm run lint
 
-      - name: Run tests
-        run: npm run test
+      - name: Run tests with coverage
+        run: npm run test -- --coverage
+
+      - name: Upload NestJS coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: nestjs-coverage
+          path: fstrack-tractor-api/coverage/
+          retention-days: 7
