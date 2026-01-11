@@ -90,7 +90,9 @@ describe('AuthService', () => {
         'DevPassword123',
         mockUser.passwordHash,
       );
-      expect(usersService.resetFailedAttempts).toHaveBeenCalledWith(mockUser.id);
+      expect(usersService.resetFailedAttempts).toHaveBeenCalledWith(
+        mockUser.id,
+      );
       expect(usersService.updateLastLogin).toHaveBeenCalledWith(mockUser.id);
     });
 
@@ -123,7 +125,9 @@ describe('AuthService', () => {
         'wrongpassword',
         mockUser.passwordHash,
       );
-      expect(usersService.incrementFailedAttempts).toHaveBeenCalledWith(mockUser.id);
+      expect(usersService.incrementFailedAttempts).toHaveBeenCalledWith(
+        mockUser.id,
+      );
       expect(usersService.updateLastLogin).not.toHaveBeenCalled();
       expect(usersService.resetFailedAttempts).not.toHaveBeenCalled();
     });
@@ -184,7 +188,9 @@ describe('AuthService', () => {
         authService.validateUser('dev_kasie', 'wrongpassword'),
       ).rejects.toThrow();
 
-      expect(usersService.incrementFailedAttempts).toHaveBeenCalledWith(mockUser.id);
+      expect(usersService.incrementFailedAttempts).toHaveBeenCalledWith(
+        mockUser.id,
+      );
     });
 
     it('should call resetFailedAttempts on successful login', async () => {
@@ -195,7 +201,9 @@ describe('AuthService', () => {
 
       await authService.validateUser('dev_kasie', 'DevPassword123');
 
-      expect(usersService.resetFailedAttempts).toHaveBeenCalledWith(mockUser.id);
+      expect(usersService.resetFailedAttempts).toHaveBeenCalledWith(
+        mockUser.id,
+      );
     });
 
     it('should lock account after 10 failed attempts', async () => {
@@ -208,7 +216,9 @@ describe('AuthService', () => {
         authService.validateUser('dev_kasie', 'wrongpassword'),
       ).rejects.toThrow(AccountLockedException);
 
-      expect(usersService.incrementFailedAttempts).toHaveBeenCalledWith(mockUser.id);
+      expect(usersService.incrementFailedAttempts).toHaveBeenCalledWith(
+        mockUser.id,
+      );
       expect(usersService.lockAccount).toHaveBeenCalledWith(mockUser.id);
     });
 
@@ -242,7 +252,9 @@ describe('AuthService', () => {
       );
 
       expect(result).toEqual(mockExpiredLockUser);
-      expect(usersService.clearExpiredLockout).toHaveBeenCalledWith(mockUser.id);
+      expect(usersService.clearExpiredLockout).toHaveBeenCalledWith(
+        mockUser.id,
+      );
     });
 
     it('should not check password when lock has just expired but not cleared yet', async () => {
@@ -257,9 +269,13 @@ describe('AuthService', () => {
       ).rejects.toThrow();
 
       // Clear expired lockout should be called
-      expect(usersService.clearExpiredLockout).toHaveBeenCalledWith(mockUser.id);
+      expect(usersService.clearExpiredLockout).toHaveBeenCalledWith(
+        mockUser.id,
+      );
       // Then increment should be called
-      expect(usersService.incrementFailedAttempts).toHaveBeenCalledWith(mockUser.id);
+      expect(usersService.incrementFailedAttempts).toHaveBeenCalledWith(
+        mockUser.id,
+      );
     });
   });
 

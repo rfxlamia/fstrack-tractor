@@ -192,7 +192,10 @@ describe('UsersService', () => {
   describe('incrementFailedAttempts', () => {
     it('should increment failed login attempts atomically', async () => {
       mockQueryBuilder.execute.mockResolvedValue({ affected: 1 });
-      mockRepository.findOne.mockResolvedValue({ ...mockUser, failedLoginAttempts: 1 });
+      mockRepository.findOne.mockResolvedValue({
+        ...mockUser,
+        failedLoginAttempts: 1,
+      });
 
       const result = await service.incrementFailedAttempts(mockUser.id);
 
@@ -201,7 +204,9 @@ describe('UsersService', () => {
       expect(mockQueryBuilder.set).toHaveBeenCalledWith({
         failedLoginAttempts: expect.any(Function),
       });
-      expect(mockQueryBuilder.where).toHaveBeenCalledWith('id = :id', { id: mockUser.id });
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith('id = :id', {
+        id: mockUser.id,
+      });
       expect(mockQueryBuilder.execute).toHaveBeenCalled();
       expect(result).toBe(1);
     });
@@ -263,12 +268,19 @@ describe('UsersService', () => {
         }),
       );
 
-      const updateCall = mockRepository.update.mock.calls[0] as [string, { lockedUntil: Date }];
+      const updateCall = mockRepository.update.mock.calls[0] as [
+        string,
+        { lockedUntil: Date },
+      ];
       const lockUntil = updateCall[1].lockedUntil;
       const expectedMinTime = new Date(beforeLock + 29 * 60 * 1000);
       const expectedMaxTime = new Date(beforeLock + 31 * 60 * 1000);
-      expect(lockUntil.getTime()).toBeGreaterThanOrEqual(expectedMinTime.getTime());
-      expect(lockUntil.getTime()).toBeLessThanOrEqual(expectedMaxTime.getTime());
+      expect(lockUntil.getTime()).toBeGreaterThanOrEqual(
+        expectedMinTime.getTime(),
+      );
+      expect(lockUntil.getTime()).toBeLessThanOrEqual(
+        expectedMaxTime.getTime(),
+      );
     });
 
     it('should not throw when locking non-existent user', async () => {

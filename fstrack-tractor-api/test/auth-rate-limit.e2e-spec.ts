@@ -15,7 +15,11 @@ describe('Auth Rate Limiting and Lockout (e2e)', () => {
 
   // Create unique users for each test to avoid rate limit accumulation
   const getUniqueUser = (prefix: string) => {
-    const uniqueId = `${Date.now()}${Math.random().toString(36).substring(2, 8)}`.substring(0, 12);
+    const uniqueId =
+      `${Date.now()}${Math.random().toString(36).substring(2, 8)}`.substring(
+        0,
+        12,
+      );
     return {
       id: `00000000-0000-0000-0000-${uniqueId}`,
       username: `test_user_${prefix}`,
@@ -52,7 +56,9 @@ describe('Auth Rate Limiting and Lockout (e2e)', () => {
 
   beforeEach(async () => {
     // Clean up any test users from previous runs
-    await dataSource.query("DELETE FROM users WHERE username LIKE 'test_user_%'");
+    await dataSource.query(
+      "DELETE FROM users WHERE username LIKE 'test_user_%'",
+    );
   });
 
   describe('Rate Limiting - Basic Verification', () => {
@@ -63,7 +69,17 @@ describe('Auth Rate Limiting and Lockout (e2e)', () => {
       await dataSource.query(
         `INSERT INTO users (id, username, password_hash, full_name, role, estate_id, is_first_time, failed_login_attempts, locked_until)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-        [testUser.id, testUser.username, passwordHash, testUser.fullName, testUser.role, testUser.estateId, testUser.isFirstTime, 0, null],
+        [
+          testUser.id,
+          testUser.username,
+          passwordHash,
+          testUser.fullName,
+          testUser.role,
+          testUser.estateId,
+          testUser.isFirstTime,
+          0,
+          null,
+        ],
       );
 
       // First 5 attempts should return 401
@@ -80,7 +96,9 @@ describe('Auth Rate Limiting and Lockout (e2e)', () => {
         .send({ username: testUser.username, password: 'wrongpassword' })
         .expect(429);
 
-      expect(response.body.message).toBe('Terlalu banyak percobaan. Tunggu 15 menit.');
+      expect(response.body.message).toBe(
+        'Terlalu banyak percobaan. Tunggu 15 menit.',
+      );
     });
   });
 
@@ -89,21 +107,24 @@ describe('Auth Rate Limiting and Lockout (e2e)', () => {
       const testUser = getUniqueUser('lockout');
       const passwordHash = await bcrypt.hash(testUser.password, 10);
 
+      // Pre-set user with 9 failed attempts to avoid rate limiter
       await dataSource.query(
         `INSERT INTO users (id, username, password_hash, full_name, role, estate_id, is_first_time, failed_login_attempts, locked_until)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-        [testUser.id, testUser.username, passwordHash, testUser.fullName, testUser.role, testUser.estateId, testUser.isFirstTime, 0, null],
+        [
+          testUser.id,
+          testUser.username,
+          passwordHash,
+          testUser.fullName,
+          testUser.role,
+          testUser.estateId,
+          testUser.isFirstTime,
+          9, // Already at 9 failed attempts
+          null,
+        ],
       );
 
-      // Make 10 failed login attempts
-      for (let i = 0; i < 10; i++) {
-        await request(app.getHttpServer())
-          .post('/api/v1/auth/login')
-          .send({ username: testUser.username, password: 'wrongpassword' })
-          .expect(401);
-      }
-
-      // 11th attempt should be locked (423)
+      // 10th attempt should trigger lockout and return 423
       const response = await request(app.getHttpServer())
         .post('/api/v1/auth/login')
         .send({ username: testUser.username, password: 'wrongpassword' })
@@ -116,19 +137,29 @@ describe('Auth Rate Limiting and Lockout (e2e)', () => {
       const testUser = getUniqueUser('lockout2');
       const passwordHash = await bcrypt.hash(testUser.password, 10);
 
+      // Pre-set user with 9 failed attempts to avoid rate limiter
+      // This way we only need 1 more attempt to trigger lockout
       await dataSource.query(
         `INSERT INTO users (id, username, password_hash, full_name, role, estate_id, is_first_time, failed_login_attempts, locked_until)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-        [testUser.id, testUser.username, passwordHash, testUser.fullName, testUser.role, testUser.estateId, testUser.isFirstTime, 0, null],
+        [
+          testUser.id,
+          testUser.username,
+          passwordHash,
+          testUser.fullName,
+          testUser.role,
+          testUser.estateId,
+          testUser.isFirstTime,
+          9, // Already at 9 failed attempts
+          null,
+        ],
       );
 
-      // Lock the account
-      for (let i = 0; i < 10; i++) {
-        await request(app.getHttpServer())
-          .post('/api/v1/auth/login')
-          .send({ username: testUser.username, password: 'wrongpassword' })
-          .expect(401);
-      }
+      // 10th attempt should trigger lockout (only 1 request, no rate limit)
+      await request(app.getHttpServer())
+        .post('/api/v1/auth/login')
+        .send({ username: testUser.username, password: 'wrongpassword' })
+        .expect(423); // Account locked on 10th failure
 
       // Check locked_until in database
       const result = await dataSource.query(
@@ -141,29 +172,37 @@ describe('Auth Rate Limiting and Lockout (e2e)', () => {
       const expectedMinTime = new Date(now.getTime() + 29 * 60 * 1000);
       const expectedMaxTime = new Date(now.getTime() + 31 * 60 * 1000);
 
-      expect(lockedUntil.getTime()).toBeGreaterThanOrEqual(expectedMinTime.getTime());
-      expect(lockedUntil.getTime()).toBeLessThanOrEqual(expectedMaxTime.getTime());
+      expect(lockedUntil.getTime()).toBeGreaterThanOrEqual(
+        expectedMinTime.getTime(),
+      );
+      expect(lockedUntil.getTime()).toBeLessThanOrEqual(
+        expectedMaxTime.getTime(),
+      );
     });
 
     it('should return 423 for any attempt on locked account', async () => {
       const testUser = getUniqueUser('lockout3');
       const passwordHash = await bcrypt.hash(testUser.password, 10);
 
+      // Pre-lock the account by setting locked_until in the future
+      const lockedUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
       await dataSource.query(
         `INSERT INTO users (id, username, password_hash, full_name, role, estate_id, is_first_time, failed_login_attempts, locked_until)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-        [testUser.id, testUser.username, passwordHash, testUser.fullName, testUser.role, testUser.estateId, testUser.isFirstTime, 0, null],
+        [
+          testUser.id,
+          testUser.username,
+          passwordHash,
+          testUser.fullName,
+          testUser.role,
+          testUser.estateId,
+          testUser.isFirstTime,
+          10, // Already at lockout threshold
+          lockedUntil,
+        ],
       );
 
-      // Lock the account
-      for (let i = 0; i < 10; i++) {
-        await request(app.getHttpServer())
-          .post('/api/v1/auth/login')
-          .send({ username: testUser.username, password: 'wrongpassword' })
-          .expect(401);
-      }
-
-      // Even correct password should return 423
+      // Even correct password should return 423 (account is locked)
       const response = await request(app.getHttpServer())
         .post('/api/v1/auth/login')
         .send({ username: testUser.username, password: testUser.password })
@@ -179,7 +218,17 @@ describe('Auth Rate Limiting and Lockout (e2e)', () => {
       await dataSource.query(
         `INSERT INTO users (id, username, password_hash, full_name, role, estate_id, is_first_time, failed_login_attempts, locked_until)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-        [testUser.id, testUser.username, passwordHash, testUser.fullName, testUser.role, testUser.estateId, testUser.isFirstTime, 5, null],
+        [
+          testUser.id,
+          testUser.username,
+          passwordHash,
+          testUser.fullName,
+          testUser.role,
+          testUser.estateId,
+          testUser.isFirstTime,
+          5,
+          null,
+        ],
       );
 
       // Successful login should reset counters
@@ -204,7 +253,17 @@ describe('Auth Rate Limiting and Lockout (e2e)', () => {
       await dataSource.query(
         `INSERT INTO users (id, username, password_hash, full_name, role, estate_id, is_first_time, failed_login_attempts, locked_until)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-        [testUser.id, testUser.username, passwordHash, testUser.fullName, testUser.role, testUser.estateId, testUser.isFirstTime, 10, new Date(Date.now() - 5 * 60 * 1000)],
+        [
+          testUser.id,
+          testUser.username,
+          passwordHash,
+          testUser.fullName,
+          testUser.role,
+          testUser.estateId,
+          testUser.isFirstTime,
+          10,
+          new Date(Date.now() - 5 * 60 * 1000),
+        ],
       );
 
       // Login should work and clear expired lock
@@ -233,7 +292,17 @@ describe('Auth Rate Limiting and Lockout (e2e)', () => {
       await dataSource.query(
         `INSERT INTO users (id, username, password_hash, full_name, role, estate_id, is_first_time, failed_login_attempts, locked_until)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-        [testUser.id, testUser.username, passwordHash, testUser.fullName, testUser.role, testUser.estateId, testUser.isFirstTime, 0, null],
+        [
+          testUser.id,
+          testUser.username,
+          passwordHash,
+          testUser.fullName,
+          testUser.role,
+          testUser.estateId,
+          testUser.isFirstTime,
+          0,
+          null,
+        ],
       );
 
       // Rate limit: 5 requests per 15 min -> 429
@@ -253,7 +322,9 @@ describe('Auth Rate Limiting and Lockout (e2e)', () => {
         .send({ username: testUser.username, password: 'wrongpassword' })
         .expect(429);
 
-      expect(response.body.message).toBe('Terlalu banyak percobaan. Tunggu 15 menit.');
+      expect(response.body.message).toBe(
+        'Terlalu banyak percobaan. Tunggu 15 menit.',
+      );
     });
   });
 });
