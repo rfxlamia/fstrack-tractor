@@ -12,6 +12,7 @@ abstract class AuthRepository {
   Future<Either<Failure, UserEntity>> loginUser({
     required String username,
     required String password,
+    required bool rememberMe,
   });
 
   /// Check if user is currently authenticated
@@ -28,4 +29,12 @@ abstract class AuthRepository {
   /// Refresh access token using refresh token
   /// Returns Either<Failure, UserEntity> with new tokens
   Future<Either<Failure, UserEntity>> refreshToken();
+
+  /// Check if stored token is not expired (basic check)
+  /// Note: For offline grace period logic, use ValidateTokenUseCase
+  Future<bool> isTokenValid();
+
+  /// Get token expiration DateTime
+  /// Returns null if no token exists
+  Future<DateTime?> getTokenExpiry();
 }

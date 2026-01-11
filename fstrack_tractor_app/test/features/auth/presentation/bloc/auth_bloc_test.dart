@@ -2,23 +2,36 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fstrack_tractor/core/error/failures.dart';
+import 'package:fstrack_tractor/features/auth/domain/entities/user_entity.dart';
 import 'package:fstrack_tractor/features/auth/domain/usecases/login_user_usecase.dart';
+import 'package:fstrack_tractor/features/auth/domain/usecases/validate_token_usecase.dart';
 import 'package:fstrack_tractor/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fstrack_tractor/features/auth/presentation/bloc/auth_event.dart';
 import 'package:fstrack_tractor/features/auth/presentation/bloc/auth_state.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../fixtures/user_fixtures.dart';
+import '../../../../mocks/mock_auth_repository.dart';
 
 class MockLoginUserUseCase extends Mock implements LoginUserUseCase {}
+
+class MockValidateTokenUseCase extends Mock implements ValidateTokenUseCase {}
 
 void main() {
   late AuthBloc authBloc;
   late MockLoginUserUseCase mockLoginUserUseCase;
+  late MockValidateTokenUseCase mockValidateTokenUseCase;
+  late MockAuthRepository mockAuthRepository;
 
   setUp(() {
     mockLoginUserUseCase = MockLoginUserUseCase();
-    authBloc = AuthBloc(loginUserUseCase: mockLoginUserUseCase);
+    mockValidateTokenUseCase = MockValidateTokenUseCase();
+    mockAuthRepository = MockAuthRepository();
+    authBloc = AuthBloc(
+      loginUserUseCase: mockLoginUserUseCase,
+      validateTokenUseCase: mockValidateTokenUseCase,
+      authRepository: mockAuthRepository,
+    );
   });
 
   tearDown(() {
@@ -37,13 +50,13 @@ void main() {
       blocTest<AuthBloc, AuthState>(
         'emits [AuthLoading, AuthSuccess] when login succeeds',
         build: () {
-          when(() => mockLoginUserUseCase(
+          when(() => mockLoginUserUseCase(rememberMe: any(named: 'rememberMe'), 
                 username: any(named: 'username'),
                 password: any(named: 'password'),
               )).thenAnswer((_) async => Right(UserFixtures.kasieUser()));
           return authBloc;
         },
-        act: (bloc) => bloc.add(const LoginRequested(
+        act: (bloc) => bloc.add(const LoginRequested(rememberMe: false, 
           username: testUsername,
           password: testPassword,
         )),
@@ -53,7 +66,7 @@ void main() {
               .having((s) => s.user.fullName, 'fullName', 'Pak Suswanto'),
         ],
         verify: (_) {
-          verify(() => mockLoginUserUseCase(
+          verify(() => mockLoginUserUseCase(rememberMe: any(named: 'rememberMe'), 
                 username: testUsername,
                 password: testPassword,
               )).called(1);
@@ -63,14 +76,14 @@ void main() {
       blocTest<AuthBloc, AuthState>(
         'emits [AuthLoading, AuthError] when login fails with wrong credentials',
         build: () {
-          when(() => mockLoginUserUseCase(
+          when(() => mockLoginUserUseCase(rememberMe: any(named: 'rememberMe'), 
                 username: any(named: 'username'),
                 password: any(named: 'password'),
               )).thenAnswer(
               (_) async => Left(AuthFailure('Username atau password salah')));
           return authBloc;
         },
-        act: (bloc) => bloc.add(const LoginRequested(
+        act: (bloc) => bloc.add(const LoginRequested(rememberMe: false, 
           username: 'wrong',
           password: 'wrong',
         )),
@@ -84,14 +97,14 @@ void main() {
       blocTest<AuthBloc, AuthState>(
         'emits [AuthLoading, AuthError] when account is locked',
         build: () {
-          when(() => mockLoginUserUseCase(
+          when(() => mockLoginUserUseCase(rememberMe: any(named: 'rememberMe'), 
                 username: any(named: 'username'),
                 password: any(named: 'password'),
               )).thenAnswer(
               (_) async => Left(AuthFailure('Akun terkunci selama 30 menit')));
           return authBloc;
         },
-        act: (bloc) => bloc.add(const LoginRequested(
+        act: (bloc) => bloc.add(const LoginRequested(rememberMe: false, 
           username: testUsername,
           password: 'wrong',
         )),
@@ -105,14 +118,14 @@ void main() {
       blocTest<AuthBloc, AuthState>(
         'emits [AuthLoading, AuthError] when rate limited',
         build: () {
-          when(() => mockLoginUserUseCase(
+          when(() => mockLoginUserUseCase(rememberMe: any(named: 'rememberMe'), 
                 username: any(named: 'username'),
                 password: any(named: 'password'),
               )).thenAnswer((_) async =>
               Left(AuthFailure('Terlalu banyak percobaan. Tunggu 15 menit.')));
           return authBloc;
         },
-        act: (bloc) => bloc.add(const LoginRequested(
+        act: (bloc) => bloc.add(const LoginRequested(rememberMe: false, 
           username: testUsername,
           password: 'wrong',
         )),
@@ -126,13 +139,13 @@ void main() {
       blocTest<AuthBloc, AuthState>(
         'emits [AuthLoading, AuthError] when network error occurs',
         build: () {
-          when(() => mockLoginUserUseCase(
+          when(() => mockLoginUserUseCase(rememberMe: any(named: 'rememberMe'), 
                 username: any(named: 'username'),
                 password: any(named: 'password'),
               )).thenAnswer((_) async => Left(NetworkFailure()));
           return authBloc;
         },
-        act: (bloc) => bloc.add(const LoginRequested(
+        act: (bloc) => bloc.add(const LoginRequested(rememberMe: false, 
           username: testUsername,
           password: testPassword,
         )),
@@ -156,9 +169,54 @@ void main() {
     group('CheckAuthStatus', () {
       blocTest<AuthBloc, AuthState>(
         'emits [AuthUnauthenticated] when no stored session',
-        build: () => authBloc,
+        build: () {
+          // Mock: token validation returns false (no valid token)
+          when(() => mockValidateTokenUseCase()).thenAnswer((_) async => false);
+          return authBloc;
+        },
         act: (bloc) => bloc.add(const CheckAuthStatus()),
         expect: () => [const AuthUnauthenticated()],
+      );
+
+      blocTest<AuthBloc, AuthState>(
+        'emits [AuthSuccess] when valid token exists',
+        setUp: () {
+          // Register fallback value for UserEntity
+          registerFallbackValue(const UserEntity(
+            id: '1',
+            fullName: 'Test',
+            estateId: '1',
+            isFirstTime: false,
+            role: UserRole.kasie,
+          ));
+        },
+        build: () {
+          // Mock: token validation returns true
+          when(() => mockValidateTokenUseCase()).thenAnswer((_) async => true);
+
+          // Use direct value return instead of async
+          mockAuthRepository.mockUser = const UserEntity(
+            id: '1',
+            fullName: 'Test User',
+            estateId: '1',
+            isFirstTime: false,
+            role: UserRole.kasie,
+          );
+
+          return authBloc;
+        },
+        act: (bloc) => bloc.add(const CheckAuthStatus()),
+        expect: () => [
+          const AuthSuccess(
+            user: UserEntity(
+              id: '1',
+              fullName: 'Test User',
+              estateId: '1',
+              isFirstTime: false,
+              role: UserRole.kasie,
+            ),
+          ),
+        ],
       );
     });
 
@@ -166,7 +224,7 @@ void main() {
       blocTest<AuthBloc, AuthState>(
         'emits [AuthUnauthenticated] when clearing error state',
         build: () {
-          when(() => mockLoginUserUseCase(
+          when(() => mockLoginUserUseCase(rememberMe: any(named: 'rememberMe'), 
                 username: any(named: 'username'),
                 password: any(named: 'password'),
               )).thenAnswer(

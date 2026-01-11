@@ -18,9 +18,11 @@ class LoginUserUseCase {
   ///
   /// [username] - User's username
   /// [password] - User's password
+  /// [rememberMe] - Whether to keep user logged in
   Future<Either<Failure, UserEntity>> call({
     required String username,
     required String password,
+    required bool rememberMe,
   }) async {
     // Validate inputs before making API call
     if (username.trim().isEmpty) {
@@ -34,6 +36,7 @@ class LoginUserUseCase {
     return authRepository.loginUser(
       username: username.trim(),
       password: password,
+      rememberMe: rememberMe,
     );
   }
 }

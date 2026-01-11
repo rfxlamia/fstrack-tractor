@@ -13,3 +13,5 @@ All notable changes to FSTrack-Tractor will be documented in this file.
 - Story 1.5: Design system foundation implemented with Poppins font bundled, complete Bulldozer-aligned color/text tokens, spacing constants, and theme configuration for consistent UI
 - Story 2.1: Backend authentication module implemented with JWT strategy, login endpoint with bcrypt validation, 14-day token expiry, account lockout checks, and Bahasa Indonesia error responses
 - Story 2.2: Backend security implemented with per-username rate limiting (5 attempts/15min) and account lockout (10 failures/30min lock), preventing brute force attacks with Indonesian error responses
+- Story 2.3: Flutter login page implemented with AuthBloc, Clean Architecture layers, shared widgets, Dio client with retry interceptor, and Bahasa Indonesia error handling
+- Story 2.4: Secure token storage with Hive, offline login with 24-hour grace period, ConnectivityService with debounce logic, and remember me functionality implemented

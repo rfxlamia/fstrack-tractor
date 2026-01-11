@@ -1,7 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/login_user_usecase.dart';
+import '../../domain/usecases/validate_token_usecase.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -10,9 +12,16 @@ import 'auth_state.dart';
 @singleton
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final LoginUserUseCase _loginUserUseCase;
+  final ValidateTokenUseCase _validateTokenUseCase;
+  final AuthRepository _authRepository;
 
-  AuthBloc({required LoginUserUseCase loginUserUseCase})
-      : _loginUserUseCase = loginUserUseCase,
+  AuthBloc({
+    required LoginUserUseCase loginUserUseCase,
+    required ValidateTokenUseCase validateTokenUseCase,
+    required AuthRepository authRepository,
+  })  : _loginUserUseCase = loginUserUseCase,
+        _validateTokenUseCase = validateTokenUseCase,
+        _authRepository = authRepository,
         super(const AuthInitial()) {
     _registerEventHandlers();
   }
@@ -33,6 +42,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final result = await _loginUserUseCase(
       username: event.username,
       password: event.password,
+      rememberMe: event.rememberMe,
     );
 
     result.fold(
@@ -58,8 +68,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     CheckAuthStatus event,
     Emitter<AuthState> emit,
   ) async {
-    // TODO: Implement check auth status (Story 2.4)
-    // For now, emit unauthenticated
+    final isValid = await _validateTokenUseCase();
+    if (isValid) {
+      final user = await _authRepository.getCurrentUser();
+      if (user != null) {
+        emit(AuthSuccess(user: user));
+        return;
+      }
+    }
     emit(const AuthUnauthenticated());
   }
 

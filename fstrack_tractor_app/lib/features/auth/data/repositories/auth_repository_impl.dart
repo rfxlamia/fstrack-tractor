@@ -25,6 +25,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, UserEntity>> loginUser({
     required String username,
     required String password,
+    required bool rememberMe,
   }) async {
     final result = await _remoteDataSource.login(
       username: username,
@@ -39,6 +40,7 @@ class AuthRepositoryImpl implements AuthRepository {
           accessToken: loginResult.accessToken,
           refreshToken: loginResult.refreshToken ?? '',
           user: UserModel.fromEntity(loginResult.user),
+          rememberMe: rememberMe,
         );
         return Right(loginResult.user.toEntity());
       },
@@ -81,15 +83,32 @@ class AuthRepositoryImpl implements AuthRepository {
           return Left(AuthFailure('Data pengguna tidak ditemukan'));
         }
 
+        // Get current rememberMe value to preserve it
+        final rememberMe = await _localDataSource.isRememberMeEnabled();
+
         // Update stored tokens
         await _localDataSource.saveAuthData(
           accessToken: accessToken,
           refreshToken: refreshToken,
           user: user,
+          rememberMe: rememberMe,
         );
 
         return Right(user.toEntity());
       },
     );
+  }
+
+  @override
+  Future<bool> isTokenValid() async {
+    // Simple expiry check - grace period logic is in ValidateTokenUseCase
+    final expiresAt = await _localDataSource.getExpiresAt();
+    if (expiresAt == null) return false;
+    return expiresAt.isAfter(DateTime.now());
+  }
+
+  @override
+  Future<DateTime?> getTokenExpiry() async {
+    return _localDataSource.getExpiresAt();
   }
 }

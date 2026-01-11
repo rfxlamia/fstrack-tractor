@@ -24,13 +24,13 @@ void main() {
 
     test('should return UserEntity when login succeeds', () async {
       // Arrange
-      when(() => mockAuthRepository.loginUser(
+      when(() => mockAuthRepository.loginUser(rememberMe: any(named: 'rememberMe'), 
             username: any(named: 'username'),
             password: any(named: 'password'),
           )).thenAnswer((_) async => Right(UserFixtures.kasieUser()));
 
       // Act
-      final result = await useCase(
+      final result = await useCase(rememberMe: false, 
         username: testUsername,
         password: testPassword,
       );
@@ -44,7 +44,7 @@ void main() {
           expect(user.role.name, 'kasie');
         },
       );
-      verify(() => mockAuthRepository.loginUser(
+      verify(() => mockAuthRepository.loginUser(rememberMe: any(named: 'rememberMe'), 
             username: testUsername,
             password: testPassword,
           )).called(1);
@@ -52,7 +52,7 @@ void main() {
 
     test('should return AuthFailure when username is empty', () async {
       // Act
-      final result = await useCase(
+      final result = await useCase(rememberMe: false, 
         username: '',
         password: testPassword,
       );
@@ -66,7 +66,7 @@ void main() {
         },
         (user) => fail('Expected Left, got Right with $user'),
       );
-      verifyNever(() => mockAuthRepository.loginUser(
+      verifyNever(() => mockAuthRepository.loginUser(rememberMe: any(named: 'rememberMe'), 
             username: any(named: 'username'),
             password: any(named: 'password'),
           ));
@@ -74,7 +74,7 @@ void main() {
 
     test('should return AuthFailure when username is only whitespace', () async {
       // Act
-      final result = await useCase(
+      final result = await useCase(rememberMe: false, 
         username: '   ',
         password: testPassword,
       );
@@ -92,7 +92,7 @@ void main() {
 
     test('should return AuthFailure when password is empty', () async {
       // Act
-      final result = await useCase(
+      final result = await useCase(rememberMe: false, 
         username: testUsername,
         password: '',
       );
@@ -106,7 +106,7 @@ void main() {
         },
         (user) => fail('Expected Left, got Right with $user'),
       );
-      verifyNever(() => mockAuthRepository.loginUser(
+      verifyNever(() => mockAuthRepository.loginUser(rememberMe: any(named: 'rememberMe'), 
             username: any(named: 'username'),
             password: any(named: 'password'),
           ));
@@ -114,19 +114,19 @@ void main() {
 
     test('should trim username before calling repository', () async {
       // Arrange
-      when(() => mockAuthRepository.loginUser(
+      when(() => mockAuthRepository.loginUser(rememberMe: any(named: 'rememberMe'), 
             username: any(named: 'username'),
             password: any(named: 'password'),
           )).thenAnswer((_) async => Right(UserFixtures.kasieUser()));
 
       // Act
-      await useCase(
+      await useCase(rememberMe: false, 
         username: '  $testUsername  ',
         password: testPassword,
       );
 
       // Assert
-      verify(() => mockAuthRepository.loginUser(
+      verify(() => mockAuthRepository.loginUser(rememberMe: any(named: 'rememberMe'), 
             username: testUsername,
             password: testPassword,
           )).called(1);
@@ -134,14 +134,14 @@ void main() {
 
     test('should return failure when repository returns failure', () async {
       // Arrange
-      when(() => mockAuthRepository.loginUser(
+      when(() => mockAuthRepository.loginUser(rememberMe: any(named: 'rememberMe'), 
             username: any(named: 'username'),
             password: any(named: 'password'),
           )).thenAnswer(
           (_) async => Left(AuthFailure('Username atau password salah')));
 
       // Act
-      final result = await useCase(
+      final result = await useCase(rememberMe: false, 
         username: testUsername,
         password: 'wrongpassword',
       );
@@ -158,13 +158,13 @@ void main() {
 
     test('should return NetworkFailure when network error occurs', () async {
       // Arrange
-      when(() => mockAuthRepository.loginUser(
+      when(() => mockAuthRepository.loginUser(rememberMe: any(named: 'rememberMe'), 
             username: any(named: 'username'),
             password: any(named: 'password'),
           )).thenAnswer((_) async => Left(NetworkFailure()));
 
       // Act
-      final result = await useCase(
+      final result = await useCase(rememberMe: false, 
         username: testUsername,
         password: testPassword,
       );

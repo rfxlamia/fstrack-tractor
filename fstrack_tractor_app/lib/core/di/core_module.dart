@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:injectable/injectable.dart';
 
 import '../storage/hive_service.dart';
@@ -7,4 +8,8 @@ import '../storage/hive_service.dart';
 abstract class CoreModule {
   @lazySingleton
   HiveService get hiveService => HiveService();
+
+  /// Register Connectivity from connectivity_plus package
+  @lazySingleton
+  Connectivity get connectivity => Connectivity();
 }
