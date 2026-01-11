@@ -8,7 +8,7 @@ class AuthFixtures {
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyLTEyMyIsImlhdCI6MTcwNDg0NDgwMH0.test';
   static const String validRefreshToken = 'refresh-token-123';
 
-  static LoginResult successfulLoginResult() => LoginResult(
+  static LoginResult successfulLoginResult() => const LoginResult(
         user: UserModel(
           id: 'user-123',
           fullName: 'Pak Suswanto',

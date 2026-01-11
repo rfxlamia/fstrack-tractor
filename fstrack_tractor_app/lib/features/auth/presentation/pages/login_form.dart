@@ -65,7 +65,7 @@ class _LoginFormState extends State<LoginForm> {
             children: [
               const Spacer(),
               // Header
-              Text(
+              const Text(
                 'Masuk',
                 style: AppTextStyles.headline1,
                 textAlign: TextAlign.center,
