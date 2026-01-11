@@ -1,0 +1,45 @@
+import '../../domain/entities/user_entity.dart';
+
+/// User model for data layer - converts between API JSON and domain entity
+class UserModel extends UserEntity {
+  const UserModel({
+    required super.id,
+    required super.fullName,
+    required super.role,
+    required super.estateId,
+    required super.isFirstTime,
+  });
+
+  /// Create UserModel from JSON (API response)
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    return UserModel(
+      id: json['id'] as String,
+      fullName: json['fullName'] as String,
+      role: UserRole.fromApiString(json['role'] as String),
+      estateId: json['estateId'] as String?,
+      isFirstTime: json['isFirstTime'] as bool,
+    );
+  }
+
+  /// Convert to UserEntity (domain model)
+  UserEntity toEntity() {
+    return UserEntity(
+      id: id,
+      fullName: fullName,
+      role: role,
+      estateId: estateId,
+      isFirstTime: isFirstTime,
+    );
+  }
+
+  /// Create UserModel from UserEntity (for local storage)
+  factory UserModel.fromEntity(UserEntity entity) {
+    return UserModel(
+      id: entity.id,
+      fullName: entity.fullName,
+      role: entity.role,
+      estateId: entity.estateId,
+      isFirstTime: entity.isFirstTime,
+    );
+  }
+}

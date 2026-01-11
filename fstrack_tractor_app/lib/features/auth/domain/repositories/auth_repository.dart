@@ -1,0 +1,31 @@
+import 'package:dartz/dartz.dart';
+
+import '../../../../core/error/failures.dart';
+import '../entities/user_entity.dart';
+
+/// Repository interface for authentication operations
+/// Follows Clean Architecture - domain layer defines interface,
+/// data layer provides implementation
+abstract class AuthRepository {
+  /// Login with username and password
+  /// Returns Either<Failure, UserEntity> for error handling
+  Future<Either<Failure, UserEntity>> loginUser({
+    required String username,
+    required String password,
+  });
+
+  /// Check if user is currently authenticated
+  /// Returns true if valid token exists
+  Future<bool> isAuthenticated();
+
+  /// Get current user from local storage
+  /// Returns null if not authenticated
+  Future<UserEntity?> getCurrentUser();
+
+  /// Logout and clear all auth data
+  Future<void> logout();
+
+  /// Refresh access token using refresh token
+  /// Returns Either<Failure, UserEntity> with new tokens
+  Future<Either<Failure, UserEntity>> refreshToken();
+}

@@ -11,8 +11,10 @@ class HiveService {
   static late Box _authBox;
   static late Box _weatherCacheBox;
 
-  static Box get authBox => _authBox;
-  static Box get weatherCacheBox => _weatherCacheBox;
+  /// Instance getter for DI compatibility
+  Box get authBox => _authBox;
+  /// Instance getter for DI compatibility
+  Box get weatherCacheBox => _weatherCacheBox;
 
   static Future<void> initialize() async {
     await Hive.initFlutter();

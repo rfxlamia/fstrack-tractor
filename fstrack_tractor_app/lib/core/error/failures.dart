@@ -17,6 +17,7 @@ class CacheFailure extends Failure {
 class NetworkFailure extends Failure {
   @override
   String get message => 'Tidak dapat terhubung ke server';
+  NetworkFailure();
 }
 
 class AuthFailure extends Failure {

@@ -3,7 +3,10 @@ export default () => ({
   nodeEnv: process.env.NODE_ENV || 'development',
   port: parseInt(process.env.PORT ?? '', 10) || 3000,
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    // In development, allow all origins. In production, restrict to specific domain.
+    origin:
+      process.env.CORS_ORIGIN ||
+      (process.env.NODE_ENV === 'production' ? false : true),
   },
   database: {
     host: process.env.DATABASE_HOST || 'localhost',

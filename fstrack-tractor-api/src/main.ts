@@ -25,10 +25,11 @@ async function bootstrap() {
     }),
   );
 
-  // CORS configuration
+  // CORS configuration - allow all origins in development
   const corsOrigin = configService.get<string>('cors.origin');
+  const isDev = configService.get<string>('nodeEnv') !== 'production';
   app.enableCors({
-    origin: corsOrigin,
+    origin: corsOrigin || (isDev ? true : false),
     credentials: true,
   });
 
