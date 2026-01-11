@@ -37,31 +37,31 @@ void main() {
                   const SizedBox(height: 16),
 
                   // w400 styles
-                  Text('w400s8 - Micro (8px)', style: AppTextStyles.w400s8),
+                  const Text('w400s8 - Micro (8px)', style: AppTextStyles.w400s8),
                   const SizedBox(height: 8),
-                  Text('w400s10 - Caption (10px)', style: AppTextStyles.w400s10),
+                  const Text('w400s10 - Caption (10px)', style: AppTextStyles.w400s10),
                   const SizedBox(height: 8),
-                  Text('w400s12 - Body Small (12px)',
+                  const Text('w400s12 - Body Small (12px)',
                       style: AppTextStyles.w400s12),
                   const SizedBox(height: 16),
 
                   // w500 styles
-                  Text('w500s10 - Caption Medium (10px)',
+                  const Text('w500s10 - Caption Medium (10px)',
                       style: AppTextStyles.w500s10),
                   const SizedBox(height: 8),
-                  Text('w500s12 - Body (12px)', style: AppTextStyles.w500s12),
+                  const Text('w500s12 - Body (12px)', style: AppTextStyles.w500s12),
                   const SizedBox(height: 16),
 
                   // w600 styles
-                  Text('w600s12 - Subtitle (12px)',
+                  const Text('w600s12 - Subtitle (12px)',
                       style: AppTextStyles.w600s12),
                   const SizedBox(height: 16),
 
                   // w700 styles
-                  Text('w700s13 - Title Small (13px)',
+                  const Text('w700s13 - Title Small (13px)',
                       style: AppTextStyles.w700s13),
                   const SizedBox(height: 8),
-                  Text('w700s20 - Title (20px)', style: AppTextStyles.w700s20),
+                  const Text('w700s20 - Title (20px)', style: AppTextStyles.w700s20),
                   const SizedBox(height: 24),
 
                   // Semantic aliases section
@@ -79,11 +79,11 @@ void main() {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text('headline1 → w700s20', style: AppTextStyles.headline1),
+                  const Text('headline1 → w700s20', style: AppTextStyles.headline1),
                   const SizedBox(height: 8),
-                  Text('bodyLarge → w500s12', style: AppTextStyles.bodyLarge),
+                  const Text('bodyLarge → w500s12', style: AppTextStyles.bodyLarge),
                   const SizedBox(height: 8),
-                  Text('caption → w400s8', style: AppTextStyles.caption),
+                  const Text('caption → w400s8', style: AppTextStyles.caption),
                 ],
               ),
             ),
