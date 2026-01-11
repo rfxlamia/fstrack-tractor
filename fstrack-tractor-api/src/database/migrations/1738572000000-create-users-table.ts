@@ -26,7 +26,9 @@ export class CreateUsersTable1738572000000 implements MigrationInterface {
     `);
 
     // Create index on username column for login performance
-    await queryRunner.query(`CREATE INDEX idx_users_username ON users(username)`);
+    await queryRunner.query(
+      `CREATE INDEX idx_users_username ON users(username)`,
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
