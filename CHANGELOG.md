@@ -12,3 +12,4 @@ All notable changes to FSTrack-Tractor will be documented in this file.
 - Story 1.4: GitHub Actions CI/CD pipeline implemented with parallel Flutter (analyze, test) and NestJS (build, lint, test) jobs, triggering on pushes/PRs to main branch for automated code quality checks
 - Story 1.5: Design system foundation implemented with Poppins font bundled, complete Bulldozer-aligned color/text tokens, spacing constants, and theme configuration for consistent UI
 - Story 2.1: Backend authentication module implemented with JWT strategy, login endpoint with bcrypt validation, 14-day token expiry, account lockout checks, and Bahasa Indonesia error responses
+- Story 2.2: Backend security implemented with per-username rate limiting (5 attempts/15min) and account lockout (10 failures/30min lock), preventing brute force attacks with Indonesian error responses
