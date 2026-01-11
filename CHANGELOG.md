@@ -9,3 +9,4 @@ All notable changes to FSTrack-Tractor will be documented in this file.
 - Story 1.2: NestJS project initialized with modular architecture, health endpoint (/api/health), Swagger UI (/api/docs), Helmet security headers, and API versioning ready
 - Story 1.3: PostgreSQL database configured with TypeORM, users table created via migration with all required columns (id, username, password_hash, role, etc.), and development seed data with dev_kasie user for backend authentication infrastructure
 - Minor database configuration fix (changed default database name to 'fstrack_tractor_dev'), imported UsersModule in AppModule, and added unit test for handling non-existent user updates in UsersService
+- Story 1.4: GitHub Actions CI/CD pipeline implemented with parallel Flutter (analyze, test) and NestJS (build, lint, test) jobs, triggering on pushes/PRs to main branch for automated code quality checks
