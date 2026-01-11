@@ -36,14 +36,28 @@ export class AuthService {
       throw new AccountLockedException(remainingMinutes);
     }
 
+    // Step 2a: Clear expired lockout if lock period just passed
+    if (user.lockedUntil && user.lockedUntil <= new Date()) {
+      await this.usersService.clearExpiredLockout(user.id);
+    }
+
     // Step 3: Validate password using bcrypt.compare (timing-safe)
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
-      // NOTE: Do NOT increment failed_login_attempts here - that's Story 2.2 scope
+      // Increment failed attempts
+      const newCount = await this.usersService.incrementFailedAttempts(user.id);
+
+      // Lock if threshold reached (10 failures)
+      if (newCount >= 10) {
+        await this.usersService.lockAccount(user.id);
+        throw new AccountLockedException(30);
+      }
+
       throw new UnauthorizedException('Username atau password salah');
     }
 
-    // Step 4: Update last_login timestamp
+    // Step 4: Success: reset attempts and update last login
+    await this.usersService.resetFailedAttempts(user.id);
     await this.usersService.updateLastLogin(user.id);
 
     return user;

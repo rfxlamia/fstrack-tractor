@@ -27,9 +27,17 @@ describe('UsersService', () => {
     updatedAt: new Date(),
   };
 
+  const mockQueryBuilder = {
+    update: jest.fn().mockReturnThis(),
+    set: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
+    execute: jest.fn(),
+  };
+
   const mockRepository = {
     findOne: jest.fn(),
     update: jest.fn(),
+    createQueryBuilder: jest.fn(() => mockQueryBuilder),
   };
 
   beforeEach(async () => {
@@ -177,6 +185,130 @@ describe('UsersService', () => {
 
       await expect(
         service.updateLastLogin('non-existent-id'),
+      ).resolves.not.toThrow();
+    });
+  });
+
+  describe('incrementFailedAttempts', () => {
+    it('should increment failed login attempts atomically', async () => {
+      mockQueryBuilder.execute.mockResolvedValue({ affected: 1 });
+      mockRepository.findOne.mockResolvedValue({ ...mockUser, failedLoginAttempts: 1 });
+
+      const result = await service.incrementFailedAttempts(mockUser.id);
+
+      expect(mockRepository.createQueryBuilder).toHaveBeenCalled();
+      expect(mockQueryBuilder.update).toHaveBeenCalledWith(User);
+      expect(mockQueryBuilder.set).toHaveBeenCalledWith({
+        failedLoginAttempts: expect.any(Function),
+      });
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith('id = :id', { id: mockUser.id });
+      expect(mockQueryBuilder.execute).toHaveBeenCalled();
+      expect(result).toBe(1);
+    });
+
+    it('should return 0 when user not found after increment', async () => {
+      mockQueryBuilder.execute.mockResolvedValue({ affected: 1 });
+      mockRepository.findOne.mockResolvedValue(null);
+
+      const result = await service.incrementFailedAttempts(mockUser.id);
+
+      expect(result).toBe(0);
+    });
+  });
+
+  describe('resetFailedAttempts', () => {
+    it('should reset failed attempts and clear lockedUntil', async () => {
+      mockRepository.update.mockResolvedValue({
+        affected: 1,
+        raw: {},
+        generatedMaps: [],
+      });
+
+      await service.resetFailedAttempts(mockUser.id);
+
+      expect(mockRepository.update).toHaveBeenCalledWith(mockUser.id, {
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+      });
+    });
+
+    it('should not throw when resetting non-existent user', async () => {
+      mockRepository.update.mockResolvedValue({
+        affected: 0,
+        raw: {},
+        generatedMaps: [],
+      });
+
+      await expect(
+        service.resetFailedAttempts('non-existent-id'),
+      ).resolves.not.toThrow();
+    });
+  });
+
+  describe('lockAccount', () => {
+    it('should set lockedUntil to 30 minutes from now', async () => {
+      mockRepository.update.mockResolvedValue({
+        affected: 1,
+        raw: {},
+        generatedMaps: [],
+      });
+
+      const beforeLock = Date.now();
+      await service.lockAccount(mockUser.id);
+
+      expect(mockRepository.update).toHaveBeenCalledWith(
+        mockUser.id,
+        expect.objectContaining({
+          lockedUntil: expect.any(Date),
+        }),
+      );
+
+      const updateCall = mockRepository.update.mock.calls[0] as [string, { lockedUntil: Date }];
+      const lockUntil = updateCall[1].lockedUntil;
+      const expectedMinTime = new Date(beforeLock + 29 * 60 * 1000);
+      const expectedMaxTime = new Date(beforeLock + 31 * 60 * 1000);
+      expect(lockUntil.getTime()).toBeGreaterThanOrEqual(expectedMinTime.getTime());
+      expect(lockUntil.getTime()).toBeLessThanOrEqual(expectedMaxTime.getTime());
+    });
+
+    it('should not throw when locking non-existent user', async () => {
+      mockRepository.update.mockResolvedValue({
+        affected: 0,
+        raw: {},
+        generatedMaps: [],
+      });
+
+      await expect(
+        service.lockAccount('non-existent-id'),
+      ).resolves.not.toThrow();
+    });
+  });
+
+  describe('clearExpiredLockout', () => {
+    it('should reset failed attempts and clear lockedUntil', async () => {
+      mockRepository.update.mockResolvedValue({
+        affected: 1,
+        raw: {},
+        generatedMaps: [],
+      });
+
+      await service.clearExpiredLockout(mockUser.id);
+
+      expect(mockRepository.update).toHaveBeenCalledWith(mockUser.id, {
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+      });
+    });
+
+    it('should not throw when clearing non-existent user', async () => {
+      mockRepository.update.mockResolvedValue({
+        affected: 0,
+        raw: {},
+        generatedMaps: [],
+      });
+
+      await expect(
+        service.clearExpiredLockout('non-existent-id'),
       ).resolves.not.toThrow();
     });
   });

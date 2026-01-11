@@ -1,7 +1,8 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto, AuthResponseDto } from './dto';
+import { LoginThrottlerGuard } from './guards/login-throttler.guard';
 
 @ApiTags('auth')
 @Controller('v1/auth')
@@ -10,6 +11,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(LoginThrottlerGuard)
   @ApiOperation({
     summary: 'User login',
     description: 'Autentikasi user dengan username dan password',
@@ -31,6 +33,10 @@ export class AuthController {
   @ApiResponse({
     status: 423,
     description: 'Akun terkunci. Silakan coba lagi dalam X menit',
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'Terlalu banyak percobaan. Tunggu 15 menit.',
   })
   async login(@Body() loginDto: LoginDto): Promise<AuthResponseDto> {
     const user = await this.authService.validateUser(

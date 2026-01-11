@@ -36,6 +36,11 @@ describe('AuthService', () => {
     lockedUntil: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes from now
   };
 
+  const mockExpiredLockUser: User = {
+    ...mockUser,
+    lockedUntil: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago (expired)
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -45,6 +50,10 @@ describe('AuthService', () => {
           useValue: {
             findByUsername: jest.fn(),
             updateLastLogin: jest.fn(),
+            incrementFailedAttempts: jest.fn(),
+            resetFailedAttempts: jest.fn(),
+            lockAccount: jest.fn(),
+            clearExpiredLockout: jest.fn(),
           },
         },
         {
@@ -68,6 +77,7 @@ describe('AuthService', () => {
       usersService.findByUsername.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
       usersService.updateLastLogin.mockResolvedValue();
+      usersService.resetFailedAttempts.mockResolvedValue();
 
       const result = await authService.validateUser(
         'dev_kasie',
@@ -80,6 +90,7 @@ describe('AuthService', () => {
         'DevPassword123',
         mockUser.passwordHash,
       );
+      expect(usersService.resetFailedAttempts).toHaveBeenCalledWith(mockUser.id);
       expect(usersService.updateLastLogin).toHaveBeenCalledWith(mockUser.id);
     });
 
@@ -99,6 +110,7 @@ describe('AuthService', () => {
     it('should throw UnauthorizedException when password is invalid', async () => {
       usersService.findByUsername.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+      usersService.incrementFailedAttempts.mockResolvedValue(1);
 
       await expect(
         authService.validateUser('dev_kasie', 'wrongpassword'),
@@ -111,7 +123,9 @@ describe('AuthService', () => {
         'wrongpassword',
         mockUser.passwordHash,
       );
+      expect(usersService.incrementFailedAttempts).toHaveBeenCalledWith(mockUser.id);
       expect(usersService.updateLastLogin).not.toHaveBeenCalled();
+      expect(usersService.resetFailedAttempts).not.toHaveBeenCalled();
     });
 
     it('should throw AccountLockedException when account is locked', async () => {
@@ -142,6 +156,7 @@ describe('AuthService', () => {
       usersService.findByUsername.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
       usersService.updateLastLogin.mockResolvedValue();
+      usersService.resetFailedAttempts.mockResolvedValue();
 
       await authService.validateUser('dev_kasie', 'DevPassword123');
 
@@ -151,12 +166,100 @@ describe('AuthService', () => {
     it('should not update last_login on failed validation', async () => {
       usersService.findByUsername.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+      usersService.incrementFailedAttempts.mockResolvedValue(1);
 
       await expect(
         authService.validateUser('dev_kasie', 'wrongpassword'),
       ).rejects.toThrow();
 
       expect(usersService.updateLastLogin).not.toHaveBeenCalled();
+    });
+
+    it('should call incrementFailedAttempts on invalid password', async () => {
+      usersService.findByUsername.mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+      usersService.incrementFailedAttempts.mockResolvedValue(2);
+
+      await expect(
+        authService.validateUser('dev_kasie', 'wrongpassword'),
+      ).rejects.toThrow();
+
+      expect(usersService.incrementFailedAttempts).toHaveBeenCalledWith(mockUser.id);
+    });
+
+    it('should call resetFailedAttempts on successful login', async () => {
+      usersService.findByUsername.mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      usersService.resetFailedAttempts.mockResolvedValue();
+      usersService.updateLastLogin.mockResolvedValue();
+
+      await authService.validateUser('dev_kasie', 'DevPassword123');
+
+      expect(usersService.resetFailedAttempts).toHaveBeenCalledWith(mockUser.id);
+    });
+
+    it('should lock account after 10 failed attempts', async () => {
+      usersService.findByUsername.mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+      usersService.incrementFailedAttempts.mockResolvedValue(10);
+      usersService.lockAccount.mockResolvedValue();
+
+      await expect(
+        authService.validateUser('dev_kasie', 'wrongpassword'),
+      ).rejects.toThrow(AccountLockedException);
+
+      expect(usersService.incrementFailedAttempts).toHaveBeenCalledWith(mockUser.id);
+      expect(usersService.lockAccount).toHaveBeenCalledWith(mockUser.id);
+    });
+
+    it('should throw AccountLockedException on 10th failed attempt', async () => {
+      usersService.findByUsername.mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+      usersService.incrementFailedAttempts.mockResolvedValue(10);
+      usersService.lockAccount.mockResolvedValue();
+
+      try {
+        await authService.validateUser('dev_kasie', 'wrongpassword');
+        fail('Should have thrown AccountLockedException');
+      } catch (error) {
+        expect(error).toBeInstanceOf(AccountLockedException);
+        expect((error as AccountLockedException).getStatus()).toBe(
+          HttpStatus.LOCKED,
+        );
+      }
+    });
+
+    it('should clear expired lockout on next login attempt', async () => {
+      usersService.findByUsername.mockResolvedValue(mockExpiredLockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      usersService.clearExpiredLockout.mockResolvedValue();
+      usersService.resetFailedAttempts.mockResolvedValue();
+      usersService.updateLastLogin.mockResolvedValue();
+
+      const result = await authService.validateUser(
+        'dev_kasie',
+        'DevPassword123',
+      );
+
+      expect(result).toEqual(mockExpiredLockUser);
+      expect(usersService.clearExpiredLockout).toHaveBeenCalledWith(mockUser.id);
+    });
+
+    it('should not check password when lock has just expired but not cleared yet', async () => {
+      // User with expired lock attempts login - lock should be cleared first
+      usersService.findByUsername.mockResolvedValue(mockExpiredLockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+      usersService.clearExpiredLockout.mockResolvedValue();
+      usersService.incrementFailedAttempts.mockResolvedValue(1);
+
+      await expect(
+        authService.validateUser('dev_kasie', 'wrongpassword'),
+      ).rejects.toThrow();
+
+      // Clear expired lockout should be called
+      expect(usersService.clearExpiredLockout).toHaveBeenCalledWith(mockUser.id);
+      // Then increment should be called
+      expect(usersService.incrementFailedAttempts).toHaveBeenCalledWith(mockUser.id);
     });
   });
 
