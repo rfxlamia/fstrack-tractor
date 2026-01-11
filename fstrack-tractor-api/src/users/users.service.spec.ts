@@ -115,5 +115,14 @@ describe('UsersService', () => {
         isFirstTime: true,
       });
     });
+
+    it('should not throw when updating non-existent user', async () => {
+      mockRepository.update.mockResolvedValue({ affected: 0, raw: {}, generatedMaps: [] });
+
+      await expect(service.updateFirstTime('non-existent-id', false)).resolves.not.toThrow();
+      expect(mockRepository.update).toHaveBeenCalledWith('non-existent-id', {
+        isFirstTime: false,
+      });
+    });
   });
 });

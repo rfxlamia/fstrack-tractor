@@ -9,7 +9,7 @@ export default new DataSource({
   port: parseInt(process.env.DATABASE_PORT || '5432', 10),
   username: process.env.DATABASE_USERNAME || 'postgres',
   password: process.env.DATABASE_PASSWORD || '',
-  database: process.env.DATABASE_NAME || 'fstrack_tractor',
+  database: process.env.DATABASE_NAME || 'fstrack_tractor_dev',
   entities: ['src/**/*.entity.ts'],
   migrations: ['src/database/migrations/*.ts'],
 });
