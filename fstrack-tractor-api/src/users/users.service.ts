@@ -21,4 +21,8 @@ export class UsersService {
   async updateFirstTime(id: string, isFirstTime: boolean): Promise<void> {
     await this.userRepository.update(id, { isFirstTime });
   }
+
+  async updateLastLogin(id: string): Promise<void> {
+    await this.userRepository.update(id, { lastLogin: new Date() });
+  }
 }

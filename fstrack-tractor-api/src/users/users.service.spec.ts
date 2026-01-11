@@ -1,8 +1,13 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { UserRole } from './enums/user-role.enum';
+
+interface MockUpdateCall {
+  lastLogin: Date;
+}
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -134,6 +139,45 @@ describe('UsersService', () => {
       expect(mockRepository.update).toHaveBeenCalledWith('non-existent-id', {
         isFirstTime: false,
       });
+    });
+  });
+
+  describe('updateLastLogin', () => {
+    it('should update lastLogin timestamp', async () => {
+      const beforeTest = new Date();
+      mockRepository.update.mockResolvedValue({
+        affected: 1,
+        raw: {},
+        generatedMaps: [],
+      });
+
+      await service.updateLastLogin(mockUser.id);
+
+      expect(mockRepository.update).toHaveBeenCalledWith(
+        mockUser.id,
+        expect.objectContaining({
+          lastLogin: expect.any(Date),
+        }),
+      );
+
+      const updateCall = mockRepository.update.mock.calls[0] as [
+        string,
+        MockUpdateCall,
+      ];
+      const passedDate = updateCall[1].lastLogin;
+      expect(passedDate.getTime()).toBeGreaterThanOrEqual(beforeTest.getTime());
+    });
+
+    it('should not throw when updating non-existent user', async () => {
+      mockRepository.update.mockResolvedValue({
+        affected: 0,
+        raw: {},
+        generatedMaps: [],
+      });
+
+      await expect(
+        service.updateLastLogin('non-existent-id'),
+      ).resolves.not.toThrow();
     });
   });
 });
