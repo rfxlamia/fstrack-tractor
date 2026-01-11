@@ -1,15 +1,12 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  UnauthorizedException,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { UnauthorizedException, HttpStatus } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
 import { UserRole } from '../users/enums/user-role.enum';
+import { AccountLockedException } from './exceptions';
 import * as bcrypt from 'bcrypt';
 
 jest.mock('bcrypt');
@@ -117,20 +114,24 @@ describe('AuthService', () => {
       expect(usersService.updateLastLogin).not.toHaveBeenCalled();
     });
 
-    it('should throw 423 LOCKED when account is locked', async () => {
+    it('should throw AccountLockedException when account is locked', async () => {
       usersService.findByUsername.mockResolvedValue(mockLockedUser);
 
       await expect(
         authService.validateUser('dev_kasie', 'DevPassword123'),
-      ).rejects.toThrow(HttpException);
+      ).rejects.toThrow(AccountLockedException);
 
       try {
         await authService.validateUser('dev_kasie', 'DevPassword123');
       } catch (error) {
-        expect(error).toBeInstanceOf(HttpException);
-        expect((error as HttpException).getStatus()).toBe(HttpStatus.LOCKED);
-        expect((error as HttpException).message).toMatch(/Akun terkunci/);
-        expect((error as HttpException).message).toMatch(/menit/);
+        expect(error).toBeInstanceOf(AccountLockedException);
+        expect((error as AccountLockedException).getStatus()).toBe(
+          HttpStatus.LOCKED,
+        );
+        expect((error as AccountLockedException).message).toMatch(
+          /Akun terkunci/,
+        );
+        expect((error as AccountLockedException).message).toMatch(/menit/);
       }
 
       // Password should NOT be checked when account is locked

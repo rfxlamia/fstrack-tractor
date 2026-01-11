@@ -1,12 +1,8 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
+import { AccountLockedException } from './exceptions';
 import * as bcrypt from 'bcrypt';
 import { AuthResponseDto } from './dto';
 
@@ -17,6 +13,15 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  /**
+   * Validates user credentials and returns the user if valid.
+   * Checks lockout status BEFORE password validation to prevent timing attacks.
+   * @param username - The username to validate
+   * @param password - The plain text password to validate
+   * @returns The validated User entity
+   * @throws UnauthorizedException if credentials are invalid
+   * @throws AccountLockedException if account is locked (HTTP 423)
+   */
   async validateUser(username: string, password: string): Promise<User> {
     // Step 1: Find user by username
     const user = await this.usersService.findByUsername(username);
@@ -28,10 +33,7 @@ export class AuthService {
     if (user.lockedUntil && user.lockedUntil > new Date()) {
       const remainingMs = user.lockedUntil.getTime() - Date.now();
       const remainingMinutes = Math.ceil(remainingMs / 60000);
-      throw new HttpException(
-        `Akun terkunci. Silakan coba lagi dalam ${remainingMinutes} menit`,
-        HttpStatus.LOCKED, // 423
-      );
+      throw new AccountLockedException(remainingMinutes);
     }
 
     // Step 3: Validate password using bcrypt.compare (timing-safe)
@@ -47,6 +49,13 @@ export class AuthService {
     return user;
   }
 
+  /**
+   * Generates JWT access token and returns auth response with user data.
+   * JWT payload contains: sub (userId), username, role, estateId.
+   * Token expires in 14 days as per NFR11.
+   * @param user - The validated User entity
+   * @returns AuthResponseDto containing accessToken and user info
+   */
   login(user: User): AuthResponseDto {
     const payload = {
       sub: user.id,

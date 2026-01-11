@@ -10,18 +10,37 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
   ) {}
 
+  /**
+   * Finds a user by their username.
+   * @param username - The username to search for
+   * @returns The User entity if found, null otherwise
+   */
   async findByUsername(username: string): Promise<User | null> {
     return this.userRepository.findOne({ where: { username } });
   }
 
+  /**
+   * Finds a user by their UUID.
+   * @param id - The user's UUID
+   * @returns The User entity if found, null otherwise
+   */
   async findById(id: string): Promise<User | null> {
     return this.userRepository.findOne({ where: { id } });
   }
 
+  /**
+   * Updates the user's first-time login flag.
+   * @param id - The user's UUID
+   * @param isFirstTime - Whether this is the user's first login
+   */
   async updateFirstTime(id: string, isFirstTime: boolean): Promise<void> {
     await this.userRepository.update(id, { isFirstTime });
   }
 
+  /**
+   * Updates the user's last login timestamp to current time.
+   * @param id - The user's UUID
+   */
   async updateLastLogin(id: string): Promise<void> {
     await this.userRepository.update(id, { lastLogin: new Date() });
   }
