@@ -1,13 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { UserRole } from './enums/user-role.enum';
 
 describe('UsersService', () => {
   let service: UsersService;
-  let repository: Repository<User>;
 
   const mockUser: User = {
     id: '123e4567-e89b-12d3-a456-426614174000',
@@ -41,7 +39,6 @@ describe('UsersService', () => {
     }).compile();
 
     service = module.get<UsersService>(UsersService);
-    repository = module.get<Repository<User>>(getRepositoryToken(User));
 
     // Reset mocks before each test
     jest.clearAllMocks();
@@ -97,7 +94,11 @@ describe('UsersService', () => {
 
   describe('updateFirstTime', () => {
     it('should update isFirstTime to false', async () => {
-      mockRepository.update.mockResolvedValue({ affected: 1, raw: {}, generatedMaps: [] });
+      mockRepository.update.mockResolvedValue({
+        affected: 1,
+        raw: {},
+        generatedMaps: [],
+      });
 
       await service.updateFirstTime(mockUser.id, false);
 
@@ -107,7 +108,11 @@ describe('UsersService', () => {
     });
 
     it('should update isFirstTime to true', async () => {
-      mockRepository.update.mockResolvedValue({ affected: 1, raw: {}, generatedMaps: [] });
+      mockRepository.update.mockResolvedValue({
+        affected: 1,
+        raw: {},
+        generatedMaps: [],
+      });
 
       await service.updateFirstTime(mockUser.id, true);
 
@@ -117,9 +122,15 @@ describe('UsersService', () => {
     });
 
     it('should not throw when updating non-existent user', async () => {
-      mockRepository.update.mockResolvedValue({ affected: 0, raw: {}, generatedMaps: [] });
+      mockRepository.update.mockResolvedValue({
+        affected: 0,
+        raw: {},
+        generatedMaps: [],
+      });
 
-      await expect(service.updateFirstTime('non-existent-id', false)).resolves.not.toThrow();
+      await expect(
+        service.updateFirstTime('non-existent-id', false),
+      ).resolves.not.toThrow();
       expect(mockRepository.update).toHaveBeenCalledWith('non-existent-id', {
         isFirstTime: false,
       });
