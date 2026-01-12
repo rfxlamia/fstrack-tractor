@@ -17,3 +17,4 @@ All notable changes to FSTrack-Tractor will be documented in this file.
 - Story 2.4: Secure token storage with Hive, offline login with 24-hour grace period, ConnectivityService with debounce logic, and remember me functionality implemented
 - Story 2.5: Logout use case implemented with Clean Architecture pattern, AuthBloc integration for session termination, and comprehensive unit testing (infrastructure only)
 - Story 2.6: go_router authentication integration implemented with state-based redirects, first-time user onboarding flow, and placeholder pages for home and onboarding
+- Infrastructure: Backend staging environment deployed to Railway with PostgreSQL, CI/CD adjusted for controlled deployments, and Epic 2 DoD verification enabled

@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { SeedService } from './seed.service';
+import { User } from '../users/entities/user.entity';
 
 @Module({
   imports: [
@@ -14,10 +16,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         password: configService.get('database.password'),
         database: configService.get('database.name'),
         autoLoadEntities: true,
-        synchronize: false, // CRITICAL: Never true in production
+        synchronize: configService.get('nodeEnv') === 'staging', // Auto-sync for staging, manual migrations for production
       }),
       inject: [ConfigService],
     }),
+    TypeOrmModule.forFeature([User]),
   ],
+  providers: [SeedService],
 })
 export class DatabaseModule {}

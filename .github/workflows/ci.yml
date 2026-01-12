@@ -7,10 +7,18 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
+      run_mode:
+        description: 'Run mode'
+        required: true
+        type: choice
+        options:
+          - full-ci
+          - release-candidate
+        default: 'full-ci'
       api_base_url:
         description: 'API Base URL for APK build'
         required: false
-        default: 'http://10.0.2.2:3000'
+        default: 'https://nestjs-api-production-9cad.up.railway.app'
 
 jobs:
   flutter:
@@ -48,9 +56,10 @@ jobs:
           retention-days: 7
 
   build-apk:
-    name: Build Android APK
+    name: Build Android APK (Release Candidate)
     runs-on: ubuntu-latest
     needs: flutter
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.run_mode == 'release-candidate'
     defaults:
       run:
         working-directory: fstrack_tractor_app
@@ -76,7 +85,7 @@ jobs:
         run: flutter pub get
 
       - name: Build APK (Debug)
-        run: flutter build apk --debug --dart-define=API_BASE_URL=${{ github.event.inputs.api_base_url || 'http://10.0.2.2:3000' }}
+        run: flutter build apk --debug --dart-define=API_BASE_URL=${{ github.event.inputs.api_base_url || 'https://nestjs-api-production-9cad.up.railway.app' }}
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
