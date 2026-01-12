@@ -18,6 +18,7 @@ import 'core/network/api_client.dart' as _i871;
 import 'core/network/connectivity_checker.dart' as _i887;
 import 'core/network/connectivity_service.dart' as _i76;
 import 'core/network/retry_interceptor.dart' as _i189;
+import 'core/router/app_router.dart' as _i110;
 import 'core/storage/hive_service.dart' as _i946;
 import 'features/auth/data/datasources/auth_local_datasource.dart' as _i1043;
 import 'features/auth/data/datasources/auth_remote_datasource.dart' as _i588;
@@ -71,6 +72,8 @@ extension GetItInjectableX on _i174.GetIt {
           validateTokenUseCase: gh<_i183.ValidateTokenUseCase>(),
           authRepository: gh<_i1015.AuthRepository>(),
         ));
+    gh.lazySingleton<_i110.AppRouter>(
+        () => _i110.AppRouter(authBloc: gh<_i363.AuthBloc>()));
     return this;
   }
 }

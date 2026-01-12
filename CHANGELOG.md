@@ -16,3 +16,4 @@ All notable changes to FSTrack-Tractor will be documented in this file.
 - Story 2.3: Flutter login page implemented with AuthBloc, Clean Architecture layers, shared widgets, Dio client with retry interceptor, and Bahasa Indonesia error handling
 - Story 2.4: Secure token storage with Hive, offline login with 24-hour grace period, ConnectivityService with debounce logic, and remember me functionality implemented
 - Story 2.5: Logout use case implemented with Clean Architecture pattern, AuthBloc integration for session termination, and comprehensive unit testing (infrastructure only)
+- Story 2.6: go_router authentication integration implemented with state-based redirects, first-time user onboarding flow, and placeholder pages for home and onboarding
