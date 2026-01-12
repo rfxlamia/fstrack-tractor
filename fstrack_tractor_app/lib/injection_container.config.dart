@@ -24,6 +24,7 @@ import 'features/auth/data/datasources/auth_remote_datasource.dart' as _i588;
 import 'features/auth/data/repositories/auth_repository_impl.dart' as _i111;
 import 'features/auth/domain/repositories/auth_repository.dart' as _i1015;
 import 'features/auth/domain/usecases/login_user_usecase.dart' as _i323;
+import 'features/auth/domain/usecases/logout_user_usecase.dart' as _i84;
 import 'features/auth/domain/usecases/validate_token_usecase.dart' as _i183;
 import 'features/auth/presentation/bloc/auth_bloc.dart' as _i363;
 
@@ -62,8 +63,11 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i323.LoginUserUseCase>(() =>
         _i323.LoginUserUseCase(authRepository: gh<_i1015.AuthRepository>()));
+    gh.factory<_i84.LogoutUserUseCase>(
+        () => _i84.LogoutUserUseCase(gh<_i1015.AuthRepository>()));
     gh.singleton<_i363.AuthBloc>(() => _i363.AuthBloc(
           loginUserUseCase: gh<_i323.LoginUserUseCase>(),
+          logoutUserUseCase: gh<_i84.LogoutUserUseCase>(),
           validateTokenUseCase: gh<_i183.ValidateTokenUseCase>(),
           authRepository: gh<_i1015.AuthRepository>(),
         ));

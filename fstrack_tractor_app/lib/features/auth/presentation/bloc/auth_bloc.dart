@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/login_user_usecase.dart';
+import '../../domain/usecases/logout_user_usecase.dart';
 import '../../domain/usecases/validate_token_usecase.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -12,14 +13,17 @@ import 'auth_state.dart';
 @singleton
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final LoginUserUseCase _loginUserUseCase;
+  final LogoutUserUseCase _logoutUserUseCase;
   final ValidateTokenUseCase _validateTokenUseCase;
   final AuthRepository _authRepository;
 
   AuthBloc({
     required LoginUserUseCase loginUserUseCase,
+    required LogoutUserUseCase logoutUserUseCase,
     required ValidateTokenUseCase validateTokenUseCase,
     required AuthRepository authRepository,
   })  : _loginUserUseCase = loginUserUseCase,
+        _logoutUserUseCase = logoutUserUseCase,
         _validateTokenUseCase = validateTokenUseCase,
         _authRepository = authRepository,
         super(const AuthInitial()) {
@@ -55,12 +59,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
   }
 
+  /// Handles logout request - clears all stored auth data via LogoutUserUseCase
   Future<void> _handleLogoutRequested(
     LogoutRequested event,
     Emitter<AuthState> emit,
   ) async {
-    // TODO: Implement logout use case (Story 2.5)
-    // For now, just emit unauthenticated state
+    await _logoutUserUseCase();
     emit(const AuthUnauthenticated());
   }
 

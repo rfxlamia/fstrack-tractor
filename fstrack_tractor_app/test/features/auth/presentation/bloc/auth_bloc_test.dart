@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fstrack_tractor/core/error/failures.dart';
 import 'package:fstrack_tractor/features/auth/domain/entities/user_entity.dart';
 import 'package:fstrack_tractor/features/auth/domain/usecases/login_user_usecase.dart';
+import 'package:fstrack_tractor/features/auth/domain/usecases/logout_user_usecase.dart';
 import 'package:fstrack_tractor/features/auth/domain/usecases/validate_token_usecase.dart';
 import 'package:fstrack_tractor/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fstrack_tractor/features/auth/presentation/bloc/auth_event.dart';
@@ -15,20 +16,25 @@ import '../../../../mocks/mock_auth_repository.dart';
 
 class MockLoginUserUseCase extends Mock implements LoginUserUseCase {}
 
+class MockLogoutUserUseCase extends Mock implements LogoutUserUseCase {}
+
 class MockValidateTokenUseCase extends Mock implements ValidateTokenUseCase {}
 
 void main() {
   late AuthBloc authBloc;
   late MockLoginUserUseCase mockLoginUserUseCase;
+  late MockLogoutUserUseCase mockLogoutUserUseCase;
   late MockValidateTokenUseCase mockValidateTokenUseCase;
   late MockAuthRepository mockAuthRepository;
 
   setUp(() {
     mockLoginUserUseCase = MockLoginUserUseCase();
+    mockLogoutUserUseCase = MockLogoutUserUseCase();
     mockValidateTokenUseCase = MockValidateTokenUseCase();
     mockAuthRepository = MockAuthRepository();
     authBloc = AuthBloc(
       loginUserUseCase: mockLoginUserUseCase,
+      logoutUserUseCase: mockLogoutUserUseCase,
       validateTokenUseCase: mockValidateTokenUseCase,
       authRepository: mockAuthRepository,
     );
@@ -160,9 +166,15 @@ void main() {
     group('LogoutRequested', () {
       blocTest<AuthBloc, AuthState>(
         'emits [AuthUnauthenticated] when logout is requested',
-        build: () => authBloc,
+        build: () {
+          when(() => mockLogoutUserUseCase()).thenAnswer((_) async {});
+          return authBloc;
+        },
         act: (bloc) => bloc.add(const LogoutRequested()),
         expect: () => [const AuthUnauthenticated()],
+        verify: (_) {
+          verify(() => mockLogoutUserUseCase()).called(1);
+        },
       );
     });
 

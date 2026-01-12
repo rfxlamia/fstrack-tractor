@@ -15,3 +15,4 @@ All notable changes to FSTrack-Tractor will be documented in this file.
 - Story 2.2: Backend security implemented with per-username rate limiting (5 attempts/15min) and account lockout (10 failures/30min lock), preventing brute force attacks with Indonesian error responses
 - Story 2.3: Flutter login page implemented with AuthBloc, Clean Architecture layers, shared widgets, Dio client with retry interceptor, and Bahasa Indonesia error handling
 - Story 2.4: Secure token storage with Hive, offline login with 24-hour grace period, ConnectivityService with debounce logic, and remember me functionality implemented
+- Story 2.5: Logout use case implemented with Clean Architecture pattern, AuthBloc integration for session termination, and comprehensive unit testing (infrastructure only)
