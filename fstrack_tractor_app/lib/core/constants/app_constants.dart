@@ -18,4 +18,10 @@ class AppConstants {
   /// **Migration Note:** If future requirement needs multi-timezone support,
   /// update this to use user preference or device timezone instead.
   static const Duration wibOffset = Duration(hours: 7);
+
+  /// Weather cache duration (30 minutes per NFR19)
+  ///
+  /// Cached weather data is considered valid for 30 minutes.
+  /// After this duration, fresh data must be fetched from API.
+  static const Duration weatherCacheDuration = Duration(minutes: 30);
 }

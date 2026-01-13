@@ -13,38 +13,71 @@ import 'package:fstrack_tractor/features/auth/presentation/bloc/auth_state.dart'
 import 'package:fstrack_tractor/features/home/presentation/widgets/greeting_header.dart';
 import 'package:fstrack_tractor/injection_container.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:fstrack_tractor/features/weather/presentation/bloc/weather_bloc.dart';
+import 'package:fstrack_tractor/features/weather/presentation/bloc/weather_event.dart';
+import 'package:fstrack_tractor/features/weather/presentation/bloc/weather_state.dart';
 
 class MockAuthBloc extends MockBloc<AuthEvent, AuthState> implements AuthBloc {}
 
+class MockWeatherBloc extends MockBloc<WeatherEvent, WeatherState>
+    implements WeatherBloc {}
+
+// WeatherWidget has Timer.periodic that prevents pumpAndSettle() from settling.
+// This delay allows initial build to complete before assertions.
+const Duration _weatherWidgetInitDelay = Duration(milliseconds: 100);
+
 void main() {
   late MockAuthBloc mockAuthBloc;
-  late StreamController<AuthState> streamController;
+  late MockWeatherBloc mockWeatherBloc;
+  late StreamController<AuthState> authStreamController;
+  late StreamController<WeatherState> weatherStreamController;
 
   setUpAll(() {
     registerFallbackValue(const LoginRequested(username: '', password: ''));
+    registerFallbackValue(const LoadWeather());
     // Allow reassignment for tests
     getIt.allowReassignment = true;
   });
 
   setUp(() {
     mockAuthBloc = MockAuthBloc();
-    streamController = StreamController<AuthState>.broadcast();
-    when(() => mockAuthBloc.stream).thenAnswer((_) => streamController.stream);
+    authStreamController = StreamController<AuthState>.broadcast();
+    when(() => mockAuthBloc.stream).thenAnswer((_) => authStreamController.stream);
 
     // Register mock AuthBloc in GetIt so LoginPage can find it
     if (getIt.isRegistered<AuthBloc>()) {
       getIt.unregister<AuthBloc>();
     }
     getIt.registerSingleton<AuthBloc>(mockAuthBloc);
+
+    mockWeatherBloc = MockWeatherBloc();
+    weatherStreamController = StreamController<WeatherState>.broadcast();
+    when(() => mockWeatherBloc.state).thenReturn(const WeatherLoading());
+    when(() => mockWeatherBloc.stream).thenAnswer((_) => weatherStreamController.stream);
+    // Stub add() to prevent actual event processing
+    when(() => mockWeatherBloc.add(any())).thenReturn(null);
+    // Stub close() for proper cleanup
+    when(() => mockWeatherBloc.close()).thenAnswer((_) async {});
+
+    if (getIt.isRegistered<WeatherBloc>()) {
+      getIt.unregister<WeatherBloc>();
+    }
+    getIt.registerSingleton<WeatherBloc>(mockWeatherBloc);
   });
 
-  tearDown(() {
-    streamController.close();
+  tearDown(() async {
+    await authStreamController.close();
+    await weatherStreamController.close();
+    await mockAuthBloc.close();
+    await mockWeatherBloc.close();
   });
 
   tearDownAll(() {
     if (getIt.isRegistered<AuthBloc>()) {
       getIt.unregister<AuthBloc>();
+    }
+    if (getIt.isRegistered<WeatherBloc>()) {
+      getIt.unregister<WeatherBloc>();
     }
     getIt.allowReassignment = false;
   });
@@ -84,7 +117,9 @@ void main() {
       final appRouter = AppRouter(authBloc: mockAuthBloc);
 
       await tester.pumpWidget(createApp(appRouter));
-      await tester.pumpAndSettle();
+      // Use pump() instead of pumpAndSettle() due to Timer in WeatherWidget
+      await tester.pump();
+      await tester.pump(_weatherWidgetInitDelay);
 
       // Should redirect from login to home
       expect(find.text('FSTrack Tractor'), findsOneWidget);
@@ -132,7 +167,9 @@ void main() {
 
       // Tap continue button
       await tester.tap(find.text('Lanjutkan ke Home'));
-      await tester.pumpAndSettle();
+      // Use pump() instead of pumpAndSettle() due to Timer in WeatherWidget
+      await tester.pump();
+      await tester.pump(_weatherWidgetInitDelay);
 
       // Should now be on home
       expect(find.text('FSTrack Tractor'), findsOneWidget);
@@ -152,14 +189,16 @@ void main() {
       final appRouter = AppRouter(authBloc: mockAuthBloc);
 
       await tester.pumpWidget(createApp(appRouter));
-      await tester.pumpAndSettle();
+      // Use pump() instead of pumpAndSettle() due to Timer in WeatherWidget
+      await tester.pump();
+      await tester.pump(_weatherWidgetInitDelay);
 
       // Should be on home
       expect(find.text('FSTrack Tractor'), findsOneWidget);
 
       // Simulate logout by changing state and notifying router
       when(() => mockAuthBloc.state).thenReturn(const AuthUnauthenticated());
-      streamController.add(const AuthUnauthenticated());
+      authStreamController.add(const AuthUnauthenticated());
       await tester.pumpAndSettle();
 
       // Should redirect to login
