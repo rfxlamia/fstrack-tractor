@@ -10,6 +10,7 @@ import 'package:fstrack_tractor/features/auth/domain/entities/user_entity.dart';
 import 'package:fstrack_tractor/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fstrack_tractor/features/auth/presentation/bloc/auth_event.dart';
 import 'package:fstrack_tractor/features/auth/presentation/bloc/auth_state.dart';
+import 'package:fstrack_tractor/features/home/presentation/widgets/greeting_header.dart';
 import 'package:fstrack_tractor/injection_container.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -87,7 +88,8 @@ void main() {
 
       // Should redirect from login to home
       expect(find.text('FSTrack Tractor'), findsOneWidget);
-      expect(find.text('Selamat datang, Test User!'), findsOneWidget);
+      // Check for GreetingHeader widget (time-based greeting)
+      expect(find.byType(GreetingHeader), findsOneWidget);
     });
 
     testWidgets('AC6: authenticated first-time user redirects to onboarding',
@@ -134,7 +136,8 @@ void main() {
 
       // Should now be on home
       expect(find.text('FSTrack Tractor'), findsOneWidget);
-      expect(find.text('Selamat datang, New User!'), findsOneWidget);
+      // Check for GreetingHeader widget (time-based greeting)
+      expect(find.byType(GreetingHeader), findsOneWidget);
     });
 
     testWidgets('AC3: logout redirects to login', (tester) async {

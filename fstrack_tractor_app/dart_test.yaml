@@ -1,0 +1,8 @@
+# Test configuration for flutter test runner
+
+# Tags configuration
+tags:
+  golden:
+    description: Golden file tests for visual regression testing
+    # To run only golden tests: flutter test --tags=golden
+    # To exclude golden tests: flutter test --exclude-tags=golden
