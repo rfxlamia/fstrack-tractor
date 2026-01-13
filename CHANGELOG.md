@@ -19,3 +19,4 @@ All notable changes to FSTrack-Tractor will be documented in this file.
 - Story 2.6: go_router authentication integration implemented with state-based redirects, first-time user onboarding flow, and placeholder pages for home and onboarding
 - Infrastructure: Backend staging environment deployed to Railway with PostgreSQL, CI/CD adjusted for controlled deployments, and Epic 2 DoD verification enabled
 - Story 3.1: HomePage dashboard implemented with time-based personalized greeting, WIB timezone clock with auto-update, and placeholder containers for weather and menu widgets
+- Story 3.2: Backend weather proxy implemented with Adapter pattern for OpenWeatherMap API, GET /api/v1/weather endpoint with Indonesian responses, and comprehensive error handling
