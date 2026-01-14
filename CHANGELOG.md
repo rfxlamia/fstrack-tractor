@@ -22,3 +22,4 @@ All notable changes to FSTrack-Tractor will be documented in this file.
 - Story 3.2: Backend weather proxy implemented with Adapter pattern for OpenWeatherMap API, GET /api/v1/weather endpoint with Indonesian responses, and comprehensive error handling
 - Story 3.3: WeatherWidget implemented with 30-minute caching, auto-refresh every 30 minutes, skeleton loading, graceful error handling with retry, and integration in HomePage dashboard
 - Story 3.4: Role-based menu cards implemented with Kasie getting 2 cards (create/view work plans) plus FAB, non-Kasie roles getting 1 card (view only), Coming Soon bottom sheet, and HomePage integration
+- Story 4.1: OfflineBanner widget implemented with animated slide transitions, ConnectivityService integration for real-time status, priority manager for multiple banners, and HomePage integration with tap-to-refresh functionality

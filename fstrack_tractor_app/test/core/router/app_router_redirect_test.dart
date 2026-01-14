@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fstrack_tractor/core/router/app_router.dart';
+import 'package:fstrack_tractor/core/network/connectivity_checker.dart';
 import 'package:fstrack_tractor/core/theme/app_theme.dart';
 import 'package:fstrack_tractor/features/auth/domain/entities/user_entity.dart';
 import 'package:fstrack_tractor/features/auth/presentation/bloc/auth_bloc.dart';
@@ -16,6 +17,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:fstrack_tractor/features/weather/presentation/bloc/weather_bloc.dart';
 import 'package:fstrack_tractor/features/weather/presentation/bloc/weather_event.dart';
 import 'package:fstrack_tractor/features/weather/presentation/bloc/weather_state.dart';
+import '../../mocks/mock_connectivity_checker.dart';
 
 class MockAuthBloc extends MockBloc<AuthEvent, AuthState> implements AuthBloc {}
 
@@ -29,6 +31,7 @@ const Duration _weatherWidgetInitDelay = Duration(milliseconds: 100);
 void main() {
   late MockAuthBloc mockAuthBloc;
   late MockWeatherBloc mockWeatherBloc;
+  late MockConnectivityChecker mockConnectivityChecker;
   late StreamController<AuthState> authStreamController;
   late StreamController<WeatherState> weatherStreamController;
 
@@ -51,6 +54,7 @@ void main() {
     getIt.registerSingleton<AuthBloc>(mockAuthBloc);
 
     mockWeatherBloc = MockWeatherBloc();
+    mockConnectivityChecker = MockConnectivityChecker();
     weatherStreamController = StreamController<WeatherState>.broadcast();
     when(() => mockWeatherBloc.state).thenReturn(const WeatherLoading());
     when(() => mockWeatherBloc.stream).thenAnswer((_) => weatherStreamController.stream);
@@ -63,6 +67,11 @@ void main() {
       getIt.unregister<WeatherBloc>();
     }
     getIt.registerSingleton<WeatherBloc>(mockWeatherBloc);
+
+    if (getIt.isRegistered<ConnectivityChecker>()) {
+      getIt.unregister<ConnectivityChecker>();
+    }
+    getIt.registerSingleton<ConnectivityChecker>(mockConnectivityChecker);
   });
 
   tearDown(() async {
@@ -70,6 +79,7 @@ void main() {
     await weatherStreamController.close();
     await mockAuthBloc.close();
     await mockWeatherBloc.close();
+    mockConnectivityChecker.dispose();
   });
 
   tearDownAll(() {
@@ -78,6 +88,9 @@ void main() {
     }
     if (getIt.isRegistered<WeatherBloc>()) {
       getIt.unregister<WeatherBloc>();
+    }
+    if (getIt.isRegistered<ConnectivityChecker>()) {
+      getIt.unregister<ConnectivityChecker>();
     }
     getIt.allowReassignment = false;
   });

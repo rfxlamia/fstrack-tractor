@@ -18,6 +18,9 @@ abstract class AppColors {
   static const Color error = Color(0xFFB00020);
   static const Color success = Color(0xFF4CAF50);
 
+  // Banner
+  static const Color bannerWarning = Color(0xFFFFA726);
+
   // Buttons
   static const Color buttonOrange = Color(0xFFFBA919);
   static const Color buttonBlue = Color(0xFF25AAE1);

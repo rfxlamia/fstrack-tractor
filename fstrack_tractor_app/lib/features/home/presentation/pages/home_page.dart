@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/constants/ui_strings.dart';
+import '../../../../core/network/connectivity_checker.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/banner_wrapper.dart';
 import '../../../../injection_container.dart';
 import '../../../auth/domain/entities/user_entity.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -41,8 +43,11 @@ class HomePage extends StatelessWidget {
       ),
       body: BlocProvider<WeatherBloc>(
         create: (context) => getIt<WeatherBloc>(),
-        child: const SafeArea(
-          child: HomePageContent(),
+        child: BannerWrapper(
+          connectivityChecker: getIt<ConnectivityChecker>(),
+          child: const SafeArea(
+            child: HomePageContent(),
+          ),
         ),
       ),
       // AC6: FAB with role-based visibility

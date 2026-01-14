@@ -21,6 +21,11 @@ class UIStrings {
   static const String weatherDisclaimer = 'Prakiraan cuaca, dapat berubah';
   static const String weatherUpdatedPrefix = 'Diperbarui:';
 
+  // Offline Banner
+  static const String offlineBannerText = 'Offline - Tap untuk refresh';
+  static const String offlineRetryMessage = 'Mencoba menghubungkan ulang...';
+  static const String offlineBannerSemanticsLabel = 'Offline. Tap untuk refresh';
+
   // Menu Cards
   static const String menuCardCreateTitle = 'Buat Rencana';
   static const String menuCardCreateSubtitle = 'Rencana Kerja Baru';
