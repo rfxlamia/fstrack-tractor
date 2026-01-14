@@ -12,6 +12,7 @@ import 'package:fstrack_tractor/features/auth/presentation/bloc/auth_state.dart'
 import 'package:fstrack_tractor/features/home/presentation/pages/home_page.dart';
 import 'package:fstrack_tractor/features/home/presentation/widgets/clock_widget.dart';
 import 'package:fstrack_tractor/features/home/presentation/widgets/greeting_header.dart';
+import 'package:fstrack_tractor/features/home/presentation/widgets/role_based_menu_cards.dart';
 import 'package:fstrack_tractor/injection_container.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:fstrack_tractor/features/weather/presentation/bloc/weather_bloc.dart';
@@ -193,16 +194,15 @@ void main() {
       expect(find.byType(ClockWidget), findsOneWidget);
     });
 
-    testWidgets('displays placeholder containers', (tester) async {
+    testWidgets('displays RoleBasedMenuCards - Story 3.4', (tester) async {
       when(() => mockAuthBloc.state).thenReturn(const AuthSuccess(user: testUser));
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump();
       await tester.pump(_weatherWidgetInitDelay);
 
-      // Check for placeholder texts - Story 3.3 removed weather placeholder
-      expect(find.text('Menu Cards'), findsOneWidget);
-      expect(find.text('Akan ditambahkan di Story 3.4'), findsOneWidget);
+      // Check for RoleBasedMenuCards widget
+      expect(find.byType(RoleBasedMenuCards), findsOneWidget);
     });
 
     testWidgets('layout has SafeArea and SingleChildScrollView', (tester) async {
@@ -237,6 +237,81 @@ void main() {
 
       // GreetingHeader should be above ClockWidget
       expect(greetingPos.dy < clockPos.dy, true);
+    });
+  });
+
+  group('HomePage FAB Tests (Story 3.4 - AC6)', () {
+    testWidgets('Kasie role shows FAB', (tester) async {
+      const kasieUser = UserEntity(
+        id: '1',
+        fullName: 'Kasie User',
+        role: UserRole.kasie,
+        estateId: 'estate1',
+        isFirstTime: false,
+      );
+      when(() => mockAuthBloc.state).thenReturn(const AuthSuccess(user: kasieUser));
+
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pump();
+      await tester.pump(_weatherWidgetInitDelay);
+
+      // Kasie should see FAB with Icons.add
+      expect(find.byType(FloatingActionButton), findsOneWidget);
+      expect(find.byIcon(Icons.add), findsOneWidget);
+    });
+
+    testWidgets('Operator role does not show FAB', (tester) async {
+      const operatorUser = UserEntity(
+        id: '2',
+        fullName: 'Operator User',
+        role: UserRole.operator,
+        estateId: 'estate1',
+        isFirstTime: false,
+      );
+      when(() => mockAuthBloc.state).thenReturn(const AuthSuccess(user: operatorUser));
+
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pump();
+      await tester.pump(_weatherWidgetInitDelay);
+
+      // Operator should NOT see FAB
+      expect(find.byType(FloatingActionButton), findsNothing);
+    });
+
+    testWidgets('Mandor role does not show FAB', (tester) async {
+      const mandorUser = UserEntity(
+        id: '3',
+        fullName: 'Mandor User',
+        role: UserRole.mandor,
+        estateId: 'estate1',
+        isFirstTime: false,
+      );
+      when(() => mockAuthBloc.state).thenReturn(const AuthSuccess(user: mandorUser));
+
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pump();
+      await tester.pump(_weatherWidgetInitDelay);
+
+      // Mandor should NOT see FAB
+      expect(find.byType(FloatingActionButton), findsNothing);
+    });
+
+    testWidgets('Admin role does not show FAB', (tester) async {
+      const adminUser = UserEntity(
+        id: '4',
+        fullName: 'Admin User',
+        role: UserRole.admin,
+        estateId: 'estate1',
+        isFirstTime: false,
+      );
+      when(() => mockAuthBloc.state).thenReturn(const AuthSuccess(user: adminUser));
+
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pump();
+      await tester.pump(_weatherWidgetInitDelay);
+
+      // Admin should NOT see FAB
+      expect(find.byType(FloatingActionButton), findsNothing);
     });
   });
 }

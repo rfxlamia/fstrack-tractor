@@ -20,4 +20,15 @@ class UIStrings {
   static const String weatherRetry = 'Coba Lagi';
   static const String weatherDisclaimer = 'Prakiraan cuaca, dapat berubah';
   static const String weatherUpdatedPrefix = 'Diperbarui:';
+
+  // Menu Cards
+  static const String menuCardCreateTitle = 'Buat Rencana';
+  static const String menuCardCreateSubtitle = 'Rencana Kerja Baru';
+  static const String menuCardViewTitle = 'Lihat Rencana';
+  static const String menuCardViewSubtitle = 'Daftar Rencana Kerja';
+
+  // Coming Soon
+  static const String comingSoonTitle = 'Fitur Segera Hadir';
+  static const String comingSoonSubtitle = 'sedang dalam pengembangan';
+  static const String comingSoonClose = 'Tutup';
 }
