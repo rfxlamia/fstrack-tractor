@@ -24,3 +24,4 @@ All notable changes to FSTrack-Tractor will be documented in this file.
 - Story 3.4: Role-based menu cards implemented with Kasie getting 2 cards (create/view work plans) plus FAB, non-Kasie roles getting 1 card (view only), Coming Soon bottom sheet, and HomePage integration
 - Story 4.1: OfflineBanner widget implemented with animated slide transitions, ConnectivityService integration for real-time status, priority manager for multiple banners, and HomePage integration with tap-to-refresh functionality
 - Story 4.2: JWT expiry warning banner implemented with SessionExpiryChecker service, rate-limited warnings (once per 24h), force logout on expired sessions with grace period, and actionable error messages in Bahasa Indonesia
+- Story 5.1: Backend first-time status endpoint implemented with PATCH /api/v1/users/me/first-time, JWT authentication, CurrentUser decorator, and database update for user onboarding completion tracking
