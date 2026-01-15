@@ -56,13 +56,15 @@ void main() {
       blocTest<AuthBloc, AuthState>(
         'emits [AuthLoading, AuthSuccess] when login succeeds',
         build: () {
-          when(() => mockLoginUserUseCase(rememberMe: any(named: 'rememberMe'), 
+          when(() => mockLoginUserUseCase(
+                rememberMe: any(named: 'rememberMe'),
                 username: any(named: 'username'),
                 password: any(named: 'password'),
               )).thenAnswer((_) async => Right(UserFixtures.kasieUser()));
           return authBloc;
         },
-        act: (bloc) => bloc.add(const LoginRequested(rememberMe: false, 
+        act: (bloc) => bloc.add(const LoginRequested(
+          rememberMe: false,
           username: testUsername,
           password: testPassword,
         )),
@@ -72,7 +74,8 @@ void main() {
               .having((s) => s.user.fullName, 'fullName', 'Pak Suswanto'),
         ],
         verify: (_) {
-          verify(() => mockLoginUserUseCase(rememberMe: any(named: 'rememberMe'), 
+          verify(() => mockLoginUserUseCase(
+                rememberMe: any(named: 'rememberMe'),
                 username: testUsername,
                 password: testPassword,
               )).called(1);
@@ -82,14 +85,17 @@ void main() {
       blocTest<AuthBloc, AuthState>(
         'emits [AuthLoading, AuthError] when login fails with wrong credentials',
         build: () {
-          when(() => mockLoginUserUseCase(rememberMe: any(named: 'rememberMe'), 
-                username: any(named: 'username'),
-                password: any(named: 'password'),
-              )).thenAnswer(
-              (_) async => Left(AuthFailure('Username atau password salah')));
+          when(() => mockLoginUserUseCase(
+                    rememberMe: any(named: 'rememberMe'),
+                    username: any(named: 'username'),
+                    password: any(named: 'password'),
+                  ))
+              .thenAnswer((_) async =>
+                  Left(AuthFailure('Username atau password salah')));
           return authBloc;
         },
-        act: (bloc) => bloc.add(const LoginRequested(rememberMe: false, 
+        act: (bloc) => bloc.add(const LoginRequested(
+          rememberMe: false,
           username: 'wrong',
           password: 'wrong',
         )),
@@ -103,14 +109,17 @@ void main() {
       blocTest<AuthBloc, AuthState>(
         'emits [AuthLoading, AuthError] when account is locked',
         build: () {
-          when(() => mockLoginUserUseCase(rememberMe: any(named: 'rememberMe'), 
-                username: any(named: 'username'),
-                password: any(named: 'password'),
-              )).thenAnswer(
-              (_) async => Left(AuthFailure('Akun terkunci selama 30 menit')));
+          when(() => mockLoginUserUseCase(
+                    rememberMe: any(named: 'rememberMe'),
+                    username: any(named: 'username'),
+                    password: any(named: 'password'),
+                  ))
+              .thenAnswer((_) async =>
+                  Left(AuthFailure('Akun terkunci selama 30 menit')));
           return authBloc;
         },
-        act: (bloc) => bloc.add(const LoginRequested(rememberMe: false, 
+        act: (bloc) => bloc.add(const LoginRequested(
+          rememberMe: false,
           username: testUsername,
           password: 'wrong',
         )),
@@ -124,14 +133,17 @@ void main() {
       blocTest<AuthBloc, AuthState>(
         'emits [AuthLoading, AuthError] when rate limited',
         build: () {
-          when(() => mockLoginUserUseCase(rememberMe: any(named: 'rememberMe'), 
-                username: any(named: 'username'),
-                password: any(named: 'password'),
-              )).thenAnswer((_) async =>
-              Left(AuthFailure('Terlalu banyak percobaan. Tunggu 15 menit.')));
+          when(() => mockLoginUserUseCase(
+                    rememberMe: any(named: 'rememberMe'),
+                    username: any(named: 'username'),
+                    password: any(named: 'password'),
+                  ))
+              .thenAnswer((_) async => Left(
+                  AuthFailure('Terlalu banyak percobaan. Tunggu 15 menit.')));
           return authBloc;
         },
-        act: (bloc) => bloc.add(const LoginRequested(rememberMe: false, 
+        act: (bloc) => bloc.add(const LoginRequested(
+          rememberMe: false,
           username: testUsername,
           password: 'wrong',
         )),
@@ -145,20 +157,22 @@ void main() {
       blocTest<AuthBloc, AuthState>(
         'emits [AuthLoading, AuthError] when network error occurs',
         build: () {
-          when(() => mockLoginUserUseCase(rememberMe: any(named: 'rememberMe'), 
+          when(() => mockLoginUserUseCase(
+                rememberMe: any(named: 'rememberMe'),
                 username: any(named: 'username'),
                 password: any(named: 'password'),
               )).thenAnswer((_) async => Left(NetworkFailure()));
           return authBloc;
         },
-        act: (bloc) => bloc.add(const LoginRequested(rememberMe: false, 
+        act: (bloc) => bloc.add(const LoginRequested(
+          rememberMe: false,
           username: testUsername,
           password: testPassword,
         )),
         expect: () => [
           const AuthLoading(),
-          isA<AuthError>().having((e) => e.message, 'message',
-              'Tidak dapat terhubung ke server'),
+          isA<AuthError>().having(
+              (e) => e.message, 'message', 'Tidak dapat terhubung ke server'),
         ],
       );
     });
@@ -236,16 +250,48 @@ void main() {
       blocTest<AuthBloc, AuthState>(
         'emits [AuthUnauthenticated] when clearing error state',
         build: () {
-          when(() => mockLoginUserUseCase(rememberMe: any(named: 'rememberMe'), 
-                username: any(named: 'username'),
-                password: any(named: 'password'),
-              )).thenAnswer(
-              (_) async => Left(AuthFailure('Username atau password salah')));
+          when(() => mockLoginUserUseCase(
+                    rememberMe: any(named: 'rememberMe'),
+                    username: any(named: 'username'),
+                    password: any(named: 'password'),
+                  ))
+              .thenAnswer((_) async =>
+                  Left(AuthFailure('Username atau password salah')));
           return authBloc;
         },
         seed: () => const AuthError(message: 'Test error'),
         act: (bloc) => bloc.add(const ClearError()),
         expect: () => [const AuthUnauthenticated()],
+      );
+    });
+
+    group('SessionExpiryChecked', () {
+      blocTest<AuthBloc, AuthState>(
+          'emits [AuthUnauthenticated] with sessionExpired reason when session expired and grace period passed',
+          build: () {
+            mockAuthRepository.mockTokenExpiry =
+                DateTime.now().subtract(const Duration(hours: 25));
+
+            when(() => mockLogoutUserUseCase()).thenAnswer((_) async {});
+            return authBloc;
+          },
+          act: (bloc) => bloc.add(const SessionExpiryChecked()),
+          expect: () => [
+                const AuthUnauthenticated(reason: LogoutReason.sessionExpired),
+              ],
+          verify: (_) {
+            verify(() => mockLogoutUserUseCase()).called(1);
+          });
+
+      blocTest<AuthBloc, AuthState>(
+        'emits nothing when session is not expired',
+        build: () {
+          mockAuthRepository.mockTokenExpiry =
+              DateTime.now().add(const Duration(hours: 1));
+          return authBloc;
+        },
+        act: (bloc) => bloc.add(const SessionExpiryChecked()),
+        expect: () => [],
       );
     });
   });

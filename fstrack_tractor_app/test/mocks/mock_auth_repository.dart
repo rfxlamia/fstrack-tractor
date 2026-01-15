@@ -61,4 +61,17 @@ class MockAuthRepository implements AuthRepository {
   Future<DateTime?> getTokenExpiry() async {
     return mockTokenExpiry;
   }
+
+  @override
+  Future<bool> isSessionExpired() async {
+    if (mockTokenExpiry == null) return true;
+    return DateTime.now().isAfter(mockTokenExpiry!);
+  }
+
+  @override
+  Future<bool> isGracePeriodPassed() async {
+    if (mockTokenExpiry == null) return true;
+    return DateTime.now()
+        .isAfter(mockTokenExpiry!.add(const Duration(hours: 24)));
+  }
 }

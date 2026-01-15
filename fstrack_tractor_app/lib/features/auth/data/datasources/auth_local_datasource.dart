@@ -63,8 +63,7 @@ class AuthLocalDataSource {
 
   /// Get stored token expiry DateTime
   Future<DateTime?> getExpiresAt() async {
-    final expiresAtString =
-        _hiveService.authBox.get(_expiresAtKey) as String?;
+    final expiresAtString = _hiveService.authBox.get(_expiresAtKey) as String?;
     if (expiresAtString == null) return null;
     return DateTime.tryParse(expiresAtString);
   }
@@ -82,5 +81,27 @@ class AuthLocalDataSource {
     await authBox.delete(_userJsonKey);
     await authBox.delete(_expiresAtKey);
     await authBox.delete(_rememberMeKey);
+  }
+
+  /// Get days until expiry
+  Future<int> getDaysUntilExpiry() async {
+    final expiresAt = await getExpiresAt();
+    if (expiresAt == null) return -1;
+    return expiresAt.difference(DateTime.now()).inDays;
+  }
+
+  /// Check if expiry warning should be shown
+  Future<bool> shouldShowExpiryWarning() async {
+    final days = await getDaysUntilExpiry();
+    return days >= 0 && days <= 2;
+  }
+
+  /// Check if grace period (24h) has passed since expiry
+  Future<bool> isGracePeriodPassed() async {
+    final expiresAt = await getExpiresAt();
+    if (expiresAt == null) return true; // No token = grace period passed
+
+    final gracePeriodEnd = expiresAt.add(const Duration(hours: 24));
+    return DateTime.now().isAfter(gracePeriodEnd);
   }
 }

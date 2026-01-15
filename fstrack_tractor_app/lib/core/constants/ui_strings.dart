@@ -24,7 +24,8 @@ class UIStrings {
   // Offline Banner
   static const String offlineBannerText = 'Offline - Tap untuk refresh';
   static const String offlineRetryMessage = 'Mencoba menghubungkan ulang...';
-  static const String offlineBannerSemanticsLabel = 'Offline. Tap untuk refresh';
+  static const String offlineBannerSemanticsLabel =
+      'Offline. Tap untuk refresh';
 
   // Menu Cards
   static const String menuCardCreateTitle = 'Buat Rencana';
@@ -36,4 +37,11 @@ class UIStrings {
   static const String comingSoonTitle = 'Fitur Segera Hadir';
   static const String comingSoonSubtitle = 'sedang dalam pengembangan';
   static const String comingSoonClose = 'Tutup';
+  // Session Warning Banner
+  static const String sessionExpiring =
+      'Sesi akan berakhir. Login ulang saat online.';
+  static const String sessionExpired =
+      'Sesi telah berakhir. Silakan login kembali.';
+  static const String sessionExpiringBannerText =
+      'Sesi berakhir dalam {days} hari. Login ulang saat online.';
 }

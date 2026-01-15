@@ -1,3 +1,5 @@
+import '../constants/ui_strings.dart';
+
 abstract class Failure {
   String get message;
 }
@@ -24,4 +26,9 @@ class AuthFailure extends Failure {
   @override
   final String message;
   AuthFailure(this.message);
+}
+
+class SessionExpiredFailure extends Failure {
+  @override
+  String get message => UIStrings.sessionExpired;
 }

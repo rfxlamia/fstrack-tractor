@@ -111,4 +111,16 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<DateTime?> getTokenExpiry() async {
     return _localDataSource.getExpiresAt();
   }
+
+  @override
+  Future<bool> isSessionExpired() async {
+    final expiresAt = await _localDataSource.getExpiresAt();
+    if (expiresAt == null) return true; // No token = session expired
+    return DateTime.now().isAfter(expiresAt);
+  }
+
+  @override
+  Future<bool> isGracePeriodPassed() async {
+    return _localDataSource.isGracePeriodPassed();
+  }
 }

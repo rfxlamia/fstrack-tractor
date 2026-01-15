@@ -24,8 +24,11 @@ import 'core/router/app_router.dart' as _i110;
 import 'core/storage/hive_service.dart' as _i946;
 import 'features/auth/data/datasources/auth_local_datasource.dart' as _i1043;
 import 'features/auth/data/datasources/auth_remote_datasource.dart' as _i588;
+import 'features/auth/data/datasources/session_warning_storage.dart' as _i1012;
 import 'features/auth/data/repositories/auth_repository_impl.dart' as _i111;
+import 'features/auth/data/services/session_expiry_checker_impl.dart' as _i363;
 import 'features/auth/domain/repositories/auth_repository.dart' as _i1015;
+import 'features/auth/domain/services/session_expiry_checker.dart' as _i406;
 import 'features/auth/domain/usecases/login_user_usecase.dart' as _i323;
 import 'features/auth/domain/usecases/logout_user_usecase.dart' as _i84;
 import 'features/auth/domain/usecases/validate_token_usecase.dart' as _i183;
@@ -63,12 +66,19 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i76.ConnectivityService(gh<_i895.Connectivity>()),
       dispose: (i) => i.dispose(),
     );
+    gh.lazySingleton<_i1012.SessionWarningStorage>(
+        () => _i1012.SessionWarningStorageImpl(gh<_i946.HiveService>()));
     gh.lazySingleton<_i1043.AuthLocalDataSource>(
         () => _i1043.AuthLocalDataSource(hiveService: gh<_i946.HiveService>()));
     gh.lazySingleton<_i871.ApiClient>(
         () => _i871.ApiClient(retryInterceptor: gh<_i189.RetryInterceptor>()));
     gh.lazySingleton<_i588.AuthRemoteDataSource>(
         () => _i588.AuthRemoteDataSource(apiClient: gh<_i871.ApiClient>()));
+    gh.lazySingleton<_i406.SessionExpiryChecker>(
+        () => _i363.SessionExpiryCheckerImpl(
+              gh<_i1043.AuthLocalDataSource>(),
+              gh<_i1012.SessionWarningStorage>(),
+            ));
     gh.lazySingleton<_i1015.AuthRepository>(() => _i111.AuthRepositoryImpl(
           remoteDataSource: gh<_i588.AuthRemoteDataSource>(),
           localDataSource: gh<_i1043.AuthLocalDataSource>(),

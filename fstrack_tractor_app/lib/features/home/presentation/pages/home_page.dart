@@ -8,6 +8,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/banner_wrapper.dart';
 import '../../../../injection_container.dart';
 import '../../../auth/domain/entities/user_entity.dart';
+import '../../../auth/domain/services/session_expiry_checker.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
@@ -45,6 +46,7 @@ class HomePage extends StatelessWidget {
         create: (context) => getIt<WeatherBloc>(),
         child: BannerWrapper(
           connectivityChecker: getIt<ConnectivityChecker>(),
+          sessionExpiryChecker: getIt<SessionExpiryChecker>(),
           child: const SafeArea(
             child: HomePageContent(),
           ),

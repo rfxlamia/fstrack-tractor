@@ -35,6 +35,28 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LogoutRequested>(_handleLogoutRequested);
     on<CheckAuthStatus>(_handleCheckAuthStatus);
     on<ClearError>(_handleClearError);
+    on<SessionExpiryChecked>(_handleSessionExpiryChecked);
+    on<SessionWarningDismissed>(_handleSessionWarningDismissed);
+  }
+
+  Future<void> _handleSessionExpiryChecked(
+    SessionExpiryChecked event,
+    Emitter<AuthState> emit,
+  ) async {
+    final isExpired = await _authRepository.isSessionExpired();
+    final isGracePeriodPassed = await _authRepository.isGracePeriodPassed();
+
+    if (isExpired && isGracePeriodPassed) {
+      await _logoutUserUseCase();
+      emit(const AuthUnauthenticated(reason: LogoutReason.sessionExpired));
+    }
+  }
+
+  void _handleSessionWarningDismissed(
+    SessionWarningDismissed event,
+    Emitter<AuthState> emit,
+  ) {
+    // No state change required currently
   }
 
   Future<void> _handleLoginRequested(

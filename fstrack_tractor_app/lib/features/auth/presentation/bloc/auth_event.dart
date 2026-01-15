@@ -47,3 +47,13 @@ class ClearError extends AuthEvent {
   @override
   List<Object?> get props => [];
 }
+
+/// Event when session expiry check runs
+class SessionExpiryChecked extends AuthEvent {
+  const SessionExpiryChecked();
+}
+
+/// Event when session warning banner is dismissed
+class SessionWarningDismissed extends AuthEvent {
+  const SessionWarningDismissed();
+}

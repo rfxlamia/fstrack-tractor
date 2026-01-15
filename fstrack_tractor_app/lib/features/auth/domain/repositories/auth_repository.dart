@@ -37,4 +37,10 @@ abstract class AuthRepository {
   /// Get token expiration DateTime
   /// Returns null if no token exists
   Future<DateTime?> getTokenExpiry();
+
+  /// Check if session is expired
+  Future<bool> isSessionExpired();
+
+  /// Check if grace period has passed
+  Future<bool> isGracePeriodPassed();
 }

@@ -17,12 +17,15 @@ import 'package:mocktail/mocktail.dart';
 import 'package:fstrack_tractor/features/weather/presentation/bloc/weather_bloc.dart';
 import 'package:fstrack_tractor/features/weather/presentation/bloc/weather_event.dart';
 import 'package:fstrack_tractor/features/weather/presentation/bloc/weather_state.dart';
+import 'package:fstrack_tractor/features/auth/domain/services/session_expiry_checker.dart';
 import '../../mocks/mock_connectivity_checker.dart';
 
 class MockAuthBloc extends MockBloc<AuthEvent, AuthState> implements AuthBloc {}
 
 class MockWeatherBloc extends MockBloc<WeatherEvent, WeatherState>
     implements WeatherBloc {}
+
+class MockSessionExpiryChecker extends Mock implements SessionExpiryChecker {}
 
 // WeatherWidget has Timer.periodic that prevents pumpAndSettle() from settling.
 // This delay allows initial build to complete before assertions.
@@ -32,12 +35,14 @@ void main() {
   late MockAuthBloc mockAuthBloc;
   late MockWeatherBloc mockWeatherBloc;
   late MockConnectivityChecker mockConnectivityChecker;
+  late MockSessionExpiryChecker mockSessionExpiryChecker;
   late StreamController<AuthState> authStreamController;
   late StreamController<WeatherState> weatherStreamController;
 
   setUpAll(() {
     registerFallbackValue(const LoginRequested(username: '', password: ''));
     registerFallbackValue(const LoadWeather());
+    registerFallbackValue(const SessionExpiryChecked());
     // Allow reassignment for tests
     getIt.allowReassignment = true;
   });
@@ -46,6 +51,8 @@ void main() {
     mockAuthBloc = MockAuthBloc();
     authStreamController = StreamController<AuthState>.broadcast();
     when(() => mockAuthBloc.stream).thenAnswer((_) => authStreamController.stream);
+    // Stub AuthBloc add() for any events
+    when(() => mockAuthBloc.add(any())).thenReturn(null);
 
     // Register mock AuthBloc in GetIt so LoginPage can find it
     if (getIt.isRegistered<AuthBloc>()) {
@@ -55,6 +62,7 @@ void main() {
 
     mockWeatherBloc = MockWeatherBloc();
     mockConnectivityChecker = MockConnectivityChecker();
+    mockSessionExpiryChecker = MockSessionExpiryChecker();
     weatherStreamController = StreamController<WeatherState>.broadcast();
     when(() => mockWeatherBloc.state).thenReturn(const WeatherLoading());
     when(() => mockWeatherBloc.stream).thenAnswer((_) => weatherStreamController.stream);
@@ -62,6 +70,16 @@ void main() {
     when(() => mockWeatherBloc.add(any())).thenReturn(null);
     // Stub close() for proper cleanup
     when(() => mockWeatherBloc.close()).thenAnswer((_) async {});
+
+    // Stub SessionExpiryChecker
+    when(() => mockSessionExpiryChecker.shouldShowWarning())
+        .thenAnswer((_) async => false);
+    when(() => mockSessionExpiryChecker.canShowWarningToday())
+        .thenAnswer((_) async => true);
+    when(() => mockSessionExpiryChecker.markWarningShown())
+        .thenAnswer((_) async {});
+    when(() => mockSessionExpiryChecker.getDaysUntilExpiry())
+        .thenAnswer((_) async => 10);
 
     if (getIt.isRegistered<WeatherBloc>()) {
       getIt.unregister<WeatherBloc>();
@@ -72,6 +90,11 @@ void main() {
       getIt.unregister<ConnectivityChecker>();
     }
     getIt.registerSingleton<ConnectivityChecker>(mockConnectivityChecker);
+
+    if (getIt.isRegistered<SessionExpiryChecker>()) {
+      getIt.unregister<SessionExpiryChecker>();
+    }
+    getIt.registerSingleton<SessionExpiryChecker>(mockSessionExpiryChecker);
   });
 
   tearDown(() async {
@@ -91,6 +114,9 @@ void main() {
     }
     if (getIt.isRegistered<ConnectivityChecker>()) {
       getIt.unregister<ConnectivityChecker>();
+    }
+    if (getIt.isRegistered<SessionExpiryChecker>()) {
+      getIt.unregister<SessionExpiryChecker>();
     }
     getIt.allowReassignment = false;
   });

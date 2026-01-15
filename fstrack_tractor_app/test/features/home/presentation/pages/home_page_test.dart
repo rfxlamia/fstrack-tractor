@@ -20,8 +20,11 @@ import '../../../../mocks/mock_connectivity_checker.dart';
 import 'package:fstrack_tractor/features/weather/presentation/bloc/weather_bloc.dart';
 import 'package:fstrack_tractor/features/weather/presentation/bloc/weather_event.dart';
 import 'package:fstrack_tractor/features/weather/presentation/bloc/weather_state.dart';
+import 'package:fstrack_tractor/features/auth/domain/services/session_expiry_checker.dart';
 
 class MockAuthBloc extends MockBloc<AuthEvent, AuthState> implements AuthBloc {}
+
+class MockSessionExpiryChecker extends Mock implements SessionExpiryChecker {}
 
 class MockWeatherBloc extends MockBloc<WeatherEvent, WeatherState>
     implements WeatherBloc {}
@@ -34,10 +37,12 @@ void main() {
   late MockAuthBloc mockAuthBloc;
   late MockWeatherBloc mockWeatherBloc;
   late MockConnectivityChecker mockConnectivityChecker;
+  late MockSessionExpiryChecker mockSessionExpiryChecker;
   late StreamController<WeatherState> weatherStreamController;
 
   setUpAll(() {
     registerFallbackValue(const LoadWeather());
+    registerFallbackValue(const SessionExpiryChecked());
     // Allow reassignment for tests
     getIt.allowReassignment = true;
   });
@@ -47,6 +52,7 @@ void main() {
 
     mockWeatherBloc = MockWeatherBloc();
     mockConnectivityChecker = MockConnectivityChecker();
+    mockSessionExpiryChecker = MockSessionExpiryChecker();
     weatherStreamController = StreamController<WeatherState>.broadcast();
     when(() => mockWeatherBloc.state).thenReturn(const WeatherLoading());
     when(() => mockWeatherBloc.stream).thenAnswer((_) => weatherStreamController.stream);
@@ -54,6 +60,21 @@ void main() {
     when(() => mockWeatherBloc.add(any())).thenReturn(null);
     // Stub close() for proper cleanup
     when(() => mockWeatherBloc.close()).thenAnswer((_) async {});
+
+    // Stub AuthBloc stream
+    when(() => mockAuthBloc.stream).thenAnswer((_) => const Stream<AuthState>.empty());
+    // Stub AuthBloc add() for SessionExpiryChecked events from BannerWrapper
+    when(() => mockAuthBloc.add(any())).thenReturn(null);
+
+    // Stub SessionExpiryChecker
+    when(() => mockSessionExpiryChecker.shouldShowWarning())
+        .thenAnswer((_) async => false);
+    when(() => mockSessionExpiryChecker.canShowWarningToday())
+        .thenAnswer((_) async => true);
+    when(() => mockSessionExpiryChecker.markWarningShown())
+        .thenAnswer((_) async {});
+    when(() => mockSessionExpiryChecker.getDaysUntilExpiry())
+        .thenAnswer((_) async => 10);
 
     if (getIt.isRegistered<WeatherBloc>()) {
       getIt.unregister<WeatherBloc>();
@@ -64,6 +85,11 @@ void main() {
       getIt.unregister<ConnectivityChecker>();
     }
     getIt.registerSingleton<ConnectivityChecker>(mockConnectivityChecker);
+
+    if (getIt.isRegistered<SessionExpiryChecker>()) {
+      getIt.unregister<SessionExpiryChecker>();
+    }
+    getIt.registerSingleton<SessionExpiryChecker>(mockSessionExpiryChecker);
   });
 
   tearDown(() async {
@@ -78,6 +104,9 @@ void main() {
     }
     if (getIt.isRegistered<ConnectivityChecker>()) {
       getIt.unregister<ConnectivityChecker>();
+    }
+    if (getIt.isRegistered<SessionExpiryChecker>()) {
+      getIt.unregister<SessionExpiryChecker>();
     }
     getIt.allowReassignment = false;
   });

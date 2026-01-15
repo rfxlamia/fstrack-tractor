@@ -40,7 +40,15 @@ class AuthError extends AuthState {
   List<Object?> get props => [message];
 }
 
+/// Reason for logout/unauthenticated state
+enum LogoutReason { userRequest, sessionExpired }
+
 /// State when user is not authenticated (initial or after logout)
 class AuthUnauthenticated extends AuthState {
-  const AuthUnauthenticated();
+  final LogoutReason reason;
+
+  const AuthUnauthenticated({this.reason = LogoutReason.userRequest});
+
+  @override
+  List<Object?> get props => [reason];
 }
