@@ -119,18 +119,18 @@ class _WeatherWidgetState extends State<WeatherWidget>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Temperature
+          // Temperature - UX Spec: 24px, w700
           Text(
             '$temperature°C',
-            style: AppTextStyles.w700s20.copyWith(
+            style: AppTextStyles.w700s24.copyWith(
               color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: AppSpacing.xs),
-          // Condition
+          // Condition - UX Spec: 13px
           Text(
             condition,
-            style: AppTextStyles.w500s12.copyWith(
+            style: AppTextStyles.w500s13.copyWith(
               color: AppColors.textSecondary,
             ),
           ),
@@ -153,12 +153,12 @@ class _WeatherWidgetState extends State<WeatherWidget>
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
-          // Timestamp
+          // Timestamp - UX Spec: 11px
           Align(
             alignment: Alignment.centerRight,
             child: Text(
               '${UIStrings.weatherUpdatedPrefix} ${_formatTime(lastUpdated)} WIB',
-              style: AppTextStyles.w400s10.copyWith(
+              style: AppTextStyles.w400s11.copyWith(
                 color: AppColors.greyDate,
               ),
             ),

@@ -88,16 +88,18 @@ class MenuCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // Title - UX Spec: 14px w600 for card titles
                       Text(
                         title,
-                        style: AppTextStyles.w600s12.copyWith(
+                        style: AppTextStyles.w600s14.copyWith(
                           color: AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 4),
+                      // Subtitle - UX Spec: 11px for secondary text
                       Text(
                         subtitle,
-                        style: AppTextStyles.w400s10.copyWith(
+                        style: AppTextStyles.w400s11.copyWith(
                           color: AppColors.textSecondary,
                         ),
                       ),

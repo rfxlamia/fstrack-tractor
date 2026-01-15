@@ -75,6 +75,67 @@ abstract class AppTextStyles {
   );
 
   // ==========================================
+  // UX Spec Alignment - TD-004 Fix (2026-01-15)
+  // Per ux-final-direction.html specifications
+  // ==========================================
+
+  // w400s11 - Weather time (11px, weight 400)
+  static const TextStyle w400s11 = TextStyle(
+    fontFamily: _fontFamily,
+    fontSize: 11,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textPrimary,
+  );
+
+  // w400s13 - Weather condition, Card date (13px, weight 400)
+  static const TextStyle w400s13 = TextStyle(
+    fontFamily: _fontFamily,
+    fontSize: 13,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textPrimary,
+  );
+
+  // w500s13 - Weather condition emphasized (13px, weight 500)
+  static const TextStyle w500s13 = TextStyle(
+    fontFamily: _fontFamily,
+    fontSize: 13,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textPrimary,
+  );
+
+  // w500s16 - Greeting (16px, weight 500)
+  static const TextStyle w500s16 = TextStyle(
+    fontFamily: _fontFamily,
+    fontSize: 16,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textPrimary,
+  );
+
+  // w600s14 - Section title (14px, weight 600)
+  static const TextStyle w600s14 = TextStyle(
+    fontFamily: _fontFamily,
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    color: AppColors.textPrimary,
+  );
+
+  // w700s18 - Card location (18px, weight 700)
+  static const TextStyle w700s18 = TextStyle(
+    fontFamily: _fontFamily,
+    fontSize: 18,
+    fontWeight: FontWeight.w700,
+    color: AppColors.textPrimary,
+  );
+
+  // w700s24 - Weather temperature (24px, weight 700)
+  static const TextStyle w700s24 = TextStyle(
+    fontFamily: _fontFamily,
+    fontSize: 24,
+    fontWeight: FontWeight.w700,
+    color: AppColors.textPrimary,
+  );
+
+  // ==========================================
   // Semantic Aliases for Backward Compatibility (AC4)
   // ==========================================
 

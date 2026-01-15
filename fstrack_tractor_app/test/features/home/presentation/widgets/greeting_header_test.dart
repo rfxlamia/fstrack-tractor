@@ -61,7 +61,7 @@ void main() {
       expect(find.textContaining('User'), findsOneWidget);
     });
 
-    testWidgets('uses correct typography (w700s20, textPrimary)',
+    testWidgets('uses correct typography (w500s16, textPrimary) per UX spec',
         (tester) async {
       when(() => mockAuthBloc.state)
           .thenReturn(const AuthSuccess(user: testUser));
@@ -69,8 +69,8 @@ void main() {
       await tester.pumpWidget(createWidget());
 
       final textWidget = tester.widget<Text>(find.byType(Text));
-      expect(textWidget.style?.fontSize, AppTextStyles.w700s20.fontSize);
-      expect(textWidget.style?.fontWeight, AppTextStyles.w700s20.fontWeight);
+      expect(textWidget.style?.fontSize, AppTextStyles.w500s16.fontSize);
+      expect(textWidget.style?.fontWeight, AppTextStyles.w500s16.fontWeight);
       expect(textWidget.style?.color, AppColors.textPrimary);
     });
 

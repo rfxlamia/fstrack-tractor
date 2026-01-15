@@ -60,3 +60,6 @@ pids
 # Coverage directory used by tools like istanbul
 coverage/
 *.lcov
+
+# Devlog
+forv.txt

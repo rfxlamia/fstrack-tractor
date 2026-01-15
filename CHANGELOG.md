@@ -23,3 +23,4 @@ All notable changes to FSTrack-Tractor will be documented in this file.
 - Story 3.3: WeatherWidget implemented with 30-minute caching, auto-refresh every 30 minutes, skeleton loading, graceful error handling with retry, and integration in HomePage dashboard
 - Story 3.4: Role-based menu cards implemented with Kasie getting 2 cards (create/view work plans) plus FAB, non-Kasie roles getting 1 card (view only), Coming Soon bottom sheet, and HomePage integration
 - Story 4.1: OfflineBanner widget implemented with animated slide transitions, ConnectivityService integration for real-time status, priority manager for multiple banners, and HomePage integration with tap-to-refresh functionality
+- Story 4.2: JWT expiry warning banner implemented with SessionExpiryChecker service, rate-limited warnings (once per 24h), force logout on expired sessions with grace period, and actionable error messages in Bahasa Indonesia

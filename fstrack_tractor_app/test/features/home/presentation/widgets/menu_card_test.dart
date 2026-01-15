@@ -140,7 +140,7 @@ void main() {
       expect(constrainedBox.constraints.minHeight, 80.0);
     });
 
-    testWidgets('applies correct text styles', (tester) async {
+    testWidgets('applies correct text styles per UX spec', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -155,20 +155,20 @@ void main() {
         ),
       );
 
-      // Find title Text widget
+      // Find title Text widget - UX Spec: 14px w600
       final titleWidget = tester.widget<Text>(
         find.text('Title Text'),
       );
       expect(titleWidget.style?.fontWeight, FontWeight.w600);
-      expect(titleWidget.style?.fontSize, 12);
+      expect(titleWidget.style?.fontSize, 14);
       expect(titleWidget.style?.color, AppColors.textPrimary);
 
-      // Find subtitle Text widget
+      // Find subtitle Text widget - UX Spec: 11px w400
       final subtitleWidget = tester.widget<Text>(
         find.text('Subtitle Text'),
       );
       expect(subtitleWidget.style?.fontWeight, FontWeight.w400);
-      expect(subtitleWidget.style?.fontSize, 10);
+      expect(subtitleWidget.style?.fontSize, 11);
       expect(subtitleWidget.style?.color, AppColors.textSecondary);
     });
 

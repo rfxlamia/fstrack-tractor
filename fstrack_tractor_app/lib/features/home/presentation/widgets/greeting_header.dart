@@ -36,7 +36,7 @@ class GreetingHeader extends StatelessWidget {
 
         return Text(
           '$greeting, $userName',
-          style: AppTextStyles.w700s20.copyWith(
+          style: AppTextStyles.w500s16.copyWith(
             color: AppColors.textPrimary,
           ),
         );
