@@ -33,6 +33,9 @@ import 'features/auth/domain/usecases/login_user_usecase.dart' as _i323;
 import 'features/auth/domain/usecases/logout_user_usecase.dart' as _i84;
 import 'features/auth/domain/usecases/validate_token_usecase.dart' as _i183;
 import 'features/auth/presentation/bloc/auth_bloc.dart' as _i363;
+import 'features/home/data/datasources/first_time_local_data_source.dart'
+    as _i644;
+import 'features/home/presentation/bloc/first_time_hints_bloc.dart' as _i127;
 import 'features/weather/data/datasources/weather_local_datasource.dart'
     as _i141;
 import 'features/weather/data/datasources/weather_remote_datasource.dart'
@@ -59,6 +62,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i946.HiveService>(() => coreModule.hiveService);
     gh.lazySingleton<_i895.Connectivity>(() => coreModule.connectivity);
     gh.lazySingleton<_i189.RetryInterceptor>(() => _i189.RetryInterceptor());
+    gh.lazySingleton<_i644.FirstTimeLocalDataSource>(
+        () => _i644.FirstTimeLocalDataSource());
     gh.factory<_i712.LocationProvider>(() => _i157.HardcodedLocationProvider());
     gh.factory<_i141.WeatherLocalDataSource>(
         () => _i141.WeatherLocalDataSource(gh<_i946.HiveService>()));
@@ -74,6 +79,10 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i871.ApiClient(retryInterceptor: gh<_i189.RetryInterceptor>()));
     gh.lazySingleton<_i588.AuthRemoteDataSource>(
         () => _i588.AuthRemoteDataSource(apiClient: gh<_i871.ApiClient>()));
+    gh.lazySingleton<_i127.FirstTimeHintsBloc>(() => _i127.FirstTimeHintsBloc(
+          dataSource: gh<_i644.FirstTimeLocalDataSource>(),
+          apiClient: gh<_i871.ApiClient>(),
+        ));
     gh.lazySingleton<_i406.SessionExpiryChecker>(
         () => _i363.SessionExpiryCheckerImpl(
               gh<_i1043.AuthLocalDataSource>(),

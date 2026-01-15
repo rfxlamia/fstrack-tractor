@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'core/constants/ui_strings.dart';
 import 'core/router/app_router.dart';
@@ -9,12 +10,17 @@ import 'core/utils/snackbar_helper.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/auth_event.dart';
 import 'features/auth/presentation/bloc/auth_state.dart';
+import 'features/home/data/datasources/first_time_local_data_source.dart';
 import 'injection_container.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await HiveService.initialize();
+
+  // Initialize first-time hints box
+  await Hive.openBox(FirstTimeLocalDataSource.boxName);
+
   await configureDependencies();
 
   // Check auth status on app start (AC9: Initial Route Determination)

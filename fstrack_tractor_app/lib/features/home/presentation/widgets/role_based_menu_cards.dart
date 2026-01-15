@@ -18,7 +18,10 @@ import 'menu_card_skeleton.dart';
 ///
 /// Handles loading state with skeleton placeholders.
 class RoleBasedMenuCards extends StatelessWidget {
-  const RoleBasedMenuCards({super.key});
+  /// GlobalKey for the "Lihat Rencana Kerja" MenuCard (for tooltip positioning)
+  final GlobalKey? viewMenuCardKey;
+
+  const RoleBasedMenuCards({super.key, this.viewMenuCardKey});
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +79,7 @@ class RoleBasedMenuCards extends StatelessWidget {
         // Card 2: "Lihat Rencana Kerja" (AC4)
         Expanded(
           child: MenuCard(
+            key: viewMenuCardKey,
             isFullWidth: false,
             icon: Icons.list_alt, // or Icons.assignment
             iconBackgroundColor: AppColors.buttonBlue,
@@ -94,6 +98,7 @@ class RoleBasedMenuCards extends StatelessWidget {
   /// Non-Kasie layout: 1 full-width card
   Widget _buildNonKasieLayout(BuildContext context) {
     return MenuCard(
+      key: viewMenuCardKey,
       isFullWidth: true,
       icon: Icons.list_alt,
       iconBackgroundColor: AppColors.buttonBlue,

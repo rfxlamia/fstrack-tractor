@@ -16,6 +16,7 @@ import '../../../weather/presentation/bloc/weather_bloc.dart';
 import '../../../weather/presentation/widgets/weather_widget.dart';
 import '../widgets/clock_widget.dart';
 import '../widgets/coming_soon_bottom_sheet.dart';
+import '../widgets/first_time_hints_wrapper.dart';
 import '../widgets/greeting_header.dart';
 import '../widgets/role_based_menu_cards.dart';
 
@@ -79,29 +80,41 @@ class HomePage extends StatelessWidget {
 }
 
 /// Home page content widget (separated for BlocProvider access)
-class HomePageContent extends StatelessWidget {
+class HomePageContent extends StatefulWidget {
   const HomePageContent({super.key});
 
   @override
+  State<HomePageContent> createState() => _HomePageContentState();
+}
+
+class _HomePageContentState extends State<HomePageContent> {
+  final GlobalKey _weatherWidgetKey = GlobalKey();
+  final GlobalKey _viewMenuCardKey = GlobalKey();
+
+  @override
   Widget build(BuildContext context) {
-    return const SingleChildScrollView(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: AppSpacing.lg),
-          // GreetingHeader - from AuthBloc
-          GreetingHeader(),
-          SizedBox(height: AppSpacing.xs),
-          // Clock Widget - standalone
-          ClockWidget(),
-          SizedBox(height: AppSpacing.lg),
-          // WeatherWidget - Story 3.3
-          WeatherWidget(),
-          SizedBox(height: AppSpacing.md),
-          // AC7: RoleBasedMenuCards - Story 3.4
-          RoleBasedMenuCards(),
-        ],
+    return FirstTimeHintsWrapper(
+      weatherWidgetKey: _weatherWidgetKey,
+      menuCardKey: _viewMenuCardKey,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: AppSpacing.lg),
+            // GreetingHeader - from AuthBloc
+            const GreetingHeader(),
+            const SizedBox(height: AppSpacing.xs),
+            // Clock Widget - standalone
+            const ClockWidget(),
+            const SizedBox(height: AppSpacing.lg),
+            // WeatherWidget - Story 3.3
+            WeatherWidget(key: _weatherWidgetKey),
+            const SizedBox(height: AppSpacing.md),
+            // AC7: RoleBasedMenuCards - Story 3.4
+            RoleBasedMenuCards(viewMenuCardKey: _viewMenuCardKey),
+          ],
+        ),
       ),
     );
   }
