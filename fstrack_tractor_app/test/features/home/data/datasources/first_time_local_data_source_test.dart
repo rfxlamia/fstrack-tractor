@@ -1,14 +1,18 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive/hive.dart';
 import 'package:fstrack_tractor/features/home/data/datasources/first_time_local_data_source.dart';
 
 void main() {
   late FirstTimeLocalDataSource dataSource;
   late Box testBox;
+  late Directory tempDir;
 
   setUpAll(() async {
-    // Initialize Hive for testing
-    await Hive.initFlutter();
+    // Use a temporary directory to avoid writing test artifacts into the repo.
+    tempDir = await Directory.systemTemp.createTemp('fstrack_tractor_hive_test_');
+    Hive.init(tempDir.path);
   });
 
   setUp(() async {
@@ -20,6 +24,12 @@ void main() {
 
   tearDown(() async {
     await testBox.clear();
+    await testBox.close();
+  });
+
+  tearDownAll(() async {
+    await Hive.close();
+    await tempDir.delete(recursive: true);
   });
 
   group('FirstTimeLocalDataSource', () {

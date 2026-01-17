@@ -1,10 +1,6 @@
-import 'dart:async';
-
-import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fstrack_tractor/core/network/connectivity_checker.dart';
 import 'package:fstrack_tractor/core/theme/app_theme.dart';
 import 'package:fstrack_tractor/features/auth/domain/entities/user_entity.dart';
 import 'package:fstrack_tractor/features/auth/presentation/bloc/auth_bloc.dart';
@@ -14,108 +10,23 @@ import 'package:fstrack_tractor/features/home/presentation/pages/home_page.dart'
 import 'package:fstrack_tractor/features/home/presentation/widgets/clock_widget.dart';
 import 'package:fstrack_tractor/features/home/presentation/widgets/greeting_header.dart';
 import 'package:fstrack_tractor/features/home/presentation/widgets/role_based_menu_cards.dart';
-import 'package:fstrack_tractor/injection_container.dart';
 import 'package:mocktail/mocktail.dart';
-import '../../../../mocks/mock_connectivity_checker.dart';
-import 'package:fstrack_tractor/features/weather/presentation/bloc/weather_bloc.dart';
-import 'package:fstrack_tractor/features/weather/presentation/bloc/weather_event.dart';
-import 'package:fstrack_tractor/features/weather/presentation/bloc/weather_state.dart';
-import 'package:fstrack_tractor/features/auth/domain/services/session_expiry_checker.dart';
-
-class MockAuthBloc extends MockBloc<AuthEvent, AuthState> implements AuthBloc {}
-
-class MockSessionExpiryChecker extends Mock implements SessionExpiryChecker {}
-
-class MockWeatherBloc extends MockBloc<WeatherEvent, WeatherState>
-    implements WeatherBloc {}
-
-// WeatherWidget has Timer.periodic that prevents pumpAndSettle() from settling.
-// This delay allows initial build to complete before assertions.
-const Duration _weatherWidgetInitDelay = Duration(milliseconds: 100);
+import '../../../../helpers/home_page_test_helper.dart';
 
 void main() {
-  late MockAuthBloc mockAuthBloc;
-  late MockWeatherBloc mockWeatherBloc;
-  late MockConnectivityChecker mockConnectivityChecker;
-  late MockSessionExpiryChecker mockSessionExpiryChecker;
-  late StreamController<WeatherState> weatherStreamController;
+  final helper = HomePageTestHelper();
 
-  setUpAll(() {
-    registerFallbackValue(const LoadWeather());
-    registerFallbackValue(const SessionExpiryChecked());
-    // Allow reassignment for tests
-    getIt.allowReassignment = true;
-  });
+  setUpAll(() => helper.setUpAll());
 
-  setUp(() {
-    mockAuthBloc = MockAuthBloc();
-
-    mockWeatherBloc = MockWeatherBloc();
-    mockConnectivityChecker = MockConnectivityChecker();
-    mockSessionExpiryChecker = MockSessionExpiryChecker();
-    weatherStreamController = StreamController<WeatherState>.broadcast();
-    when(() => mockWeatherBloc.state).thenReturn(const WeatherLoading());
-    when(() => mockWeatherBloc.stream).thenAnswer((_) => weatherStreamController.stream);
-    // Stub add() to prevent actual event processing
-    when(() => mockWeatherBloc.add(any())).thenReturn(null);
-    // Stub close() for proper cleanup
-    when(() => mockWeatherBloc.close()).thenAnswer((_) async {});
-
-    // Stub AuthBloc stream
-    when(() => mockAuthBloc.stream).thenAnswer((_) => const Stream<AuthState>.empty());
-    // Stub AuthBloc add() for SessionExpiryChecked events from BannerWrapper
-    when(() => mockAuthBloc.add(any())).thenReturn(null);
-
-    // Stub SessionExpiryChecker
-    when(() => mockSessionExpiryChecker.shouldShowWarning())
-        .thenAnswer((_) async => false);
-    when(() => mockSessionExpiryChecker.canShowWarningToday())
-        .thenAnswer((_) async => true);
-    when(() => mockSessionExpiryChecker.markWarningShown())
-        .thenAnswer((_) async {});
-    when(() => mockSessionExpiryChecker.getDaysUntilExpiry())
-        .thenAnswer((_) async => 10);
-
-    if (getIt.isRegistered<WeatherBloc>()) {
-      getIt.unregister<WeatherBloc>();
-    }
-    getIt.registerSingleton<WeatherBloc>(mockWeatherBloc);
-
-    if (getIt.isRegistered<ConnectivityChecker>()) {
-      getIt.unregister<ConnectivityChecker>();
-    }
-    getIt.registerSingleton<ConnectivityChecker>(mockConnectivityChecker);
-
-    if (getIt.isRegistered<SessionExpiryChecker>()) {
-      getIt.unregister<SessionExpiryChecker>();
-    }
-    getIt.registerSingleton<SessionExpiryChecker>(mockSessionExpiryChecker);
-  });
-
-  tearDown(() async {
-    await weatherStreamController.close();
-    await mockWeatherBloc.close();
-    mockConnectivityChecker.dispose();
-  });
-
-  tearDownAll(() {
-    if (getIt.isRegistered<WeatherBloc>()) {
-      getIt.unregister<WeatherBloc>();
-    }
-    if (getIt.isRegistered<ConnectivityChecker>()) {
-      getIt.unregister<ConnectivityChecker>();
-    }
-    if (getIt.isRegistered<SessionExpiryChecker>()) {
-      getIt.unregister<SessionExpiryChecker>();
-    }
-    getIt.allowReassignment = false;
-  });
+  setUp(() => helper.setUp());
+  tearDown(() => helper.tearDown());
+  tearDownAll(() => helper.tearDownAll());
 
   Widget createWidgetUnderTest() {
     return MaterialApp(
       theme: AppTheme.light,
       home: BlocProvider<AuthBloc>.value(
-        value: mockAuthBloc,
+        value: helper.mockAuthBloc,
         child: const HomePage(),
       ),
     );
@@ -130,22 +41,24 @@ void main() {
         estateId: 'estate1',
         isFirstTime: false,
       );
-      when(() => mockAuthBloc.state).thenReturn(const AuthSuccess(user: user));
+      when(() => helper.mockAuthBloc.state)
+          .thenReturn(const AuthSuccess(user: user));
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump();
-      await tester.pump(_weatherWidgetInitDelay);
+      await tester.pump(weatherWidgetInitDelay);
 
       // Verify user name appears in greeting
       expect(find.textContaining('Test User'), findsOneWidget);
     });
 
     testWidgets('displays default name when not authenticated', (tester) async {
-      when(() => mockAuthBloc.state).thenReturn(const AuthUnauthenticated());
+      when(() => helper.mockAuthBloc.state)
+          .thenReturn(const AuthUnauthenticated());
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump();
-      await tester.pump(_weatherWidgetInitDelay);
+      await tester.pump(weatherWidgetInitDelay);
 
       // Fallback to 'User'
       expect(find.textContaining('User'), findsOneWidget);
@@ -159,11 +72,12 @@ void main() {
         estateId: 'estate1',
         isFirstTime: false,
       );
-      when(() => mockAuthBloc.state).thenReturn(const AuthSuccess(user: user));
+      when(() => helper.mockAuthBloc.state)
+          .thenReturn(const AuthSuccess(user: user));
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump();
-      await tester.pump(_weatherWidgetInitDelay);
+      await tester.pump(weatherWidgetInitDelay);
 
       expect(find.text('FSTrack Tractor'), findsOneWidget);
     });
@@ -176,11 +90,12 @@ void main() {
         estateId: 'estate1',
         isFirstTime: false,
       );
-      when(() => mockAuthBloc.state).thenReturn(const AuthSuccess(user: user));
+      when(() => helper.mockAuthBloc.state)
+          .thenReturn(const AuthSuccess(user: user));
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump();
-      await tester.pump(_weatherWidgetInitDelay);
+      await tester.pump(weatherWidgetInitDelay);
 
       expect(find.byIcon(Icons.logout), findsOneWidget);
     });
@@ -194,16 +109,17 @@ void main() {
         estateId: 'estate1',
         isFirstTime: false,
       );
-      when(() => mockAuthBloc.state).thenReturn(const AuthSuccess(user: user));
+      when(() => helper.mockAuthBloc.state)
+          .thenReturn(const AuthSuccess(user: user));
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump();
-      await tester.pump(_weatherWidgetInitDelay);
+      await tester.pump(weatherWidgetInitDelay);
 
       await tester.tap(find.byIcon(Icons.logout));
       await tester.pump();
 
-      verify(() => mockAuthBloc.add(const LogoutRequested())).called(1);
+      verify(() => helper.mockAuthBloc.add(const LogoutRequested())).called(1);
     });
   });
 
@@ -217,42 +133,46 @@ void main() {
     );
 
     testWidgets('displays GreetingHeader widget', (tester) async {
-      when(() => mockAuthBloc.state).thenReturn(const AuthSuccess(user: testUser));
+      when(() => helper.mockAuthBloc.state)
+          .thenReturn(const AuthSuccess(user: testUser));
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump();
-      await tester.pump(_weatherWidgetInitDelay);
+      await tester.pump(weatherWidgetInitDelay);
 
       expect(find.byType(GreetingHeader), findsOneWidget);
     });
 
     testWidgets('displays ClockWidget', (tester) async {
-      when(() => mockAuthBloc.state).thenReturn(const AuthSuccess(user: testUser));
+      when(() => helper.mockAuthBloc.state)
+          .thenReturn(const AuthSuccess(user: testUser));
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump();
-      await tester.pump(_weatherWidgetInitDelay);
+      await tester.pump(weatherWidgetInitDelay);
 
       expect(find.byType(ClockWidget), findsOneWidget);
     });
 
     testWidgets('displays RoleBasedMenuCards - Story 3.4', (tester) async {
-      when(() => mockAuthBloc.state).thenReturn(const AuthSuccess(user: testUser));
+      when(() => helper.mockAuthBloc.state)
+          .thenReturn(const AuthSuccess(user: testUser));
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump();
-      await tester.pump(_weatherWidgetInitDelay);
+      await tester.pump(weatherWidgetInitDelay);
 
       // Check for RoleBasedMenuCards widget
       expect(find.byType(RoleBasedMenuCards), findsOneWidget);
     });
 
     testWidgets('layout has SafeArea and SingleChildScrollView', (tester) async {
-      when(() => mockAuthBloc.state).thenReturn(const AuthSuccess(user: testUser));
+      when(() => helper.mockAuthBloc.state)
+          .thenReturn(const AuthSuccess(user: testUser));
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump();
-      await tester.pump(_weatherWidgetInitDelay);
+      await tester.pump(weatherWidgetInitDelay);
 
       // HomePage should contain SafeArea (at least one)
       expect(find.byType(SafeArea), findsWidgets);
@@ -260,11 +180,12 @@ void main() {
     });
 
     testWidgets('layout has correct widget order', (tester) async {
-      when(() => mockAuthBloc.state).thenReturn(const AuthSuccess(user: testUser));
+      when(() => helper.mockAuthBloc.state)
+          .thenReturn(const AuthSuccess(user: testUser));
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump();
-      await tester.pump(_weatherWidgetInitDelay);
+      await tester.pump(weatherWidgetInitDelay);
 
       // Verify GreetingHeader appears before ClockWidget
       final greetingFinder = find.byType(GreetingHeader);
@@ -291,11 +212,12 @@ void main() {
         estateId: 'estate1',
         isFirstTime: false,
       );
-      when(() => mockAuthBloc.state).thenReturn(const AuthSuccess(user: kasieUser));
+      when(() => helper.mockAuthBloc.state)
+          .thenReturn(const AuthSuccess(user: kasieUser));
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump();
-      await tester.pump(_weatherWidgetInitDelay);
+      await tester.pump(weatherWidgetInitDelay);
 
       // Kasie should see FAB with Icons.add
       expect(find.byType(FloatingActionButton), findsOneWidget);
@@ -310,11 +232,12 @@ void main() {
         estateId: 'estate1',
         isFirstTime: false,
       );
-      when(() => mockAuthBloc.state).thenReturn(const AuthSuccess(user: operatorUser));
+      when(() => helper.mockAuthBloc.state)
+          .thenReturn(const AuthSuccess(user: operatorUser));
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump();
-      await tester.pump(_weatherWidgetInitDelay);
+      await tester.pump(weatherWidgetInitDelay);
 
       // Operator should NOT see FAB
       expect(find.byType(FloatingActionButton), findsNothing);
@@ -328,11 +251,12 @@ void main() {
         estateId: 'estate1',
         isFirstTime: false,
       );
-      when(() => mockAuthBloc.state).thenReturn(const AuthSuccess(user: mandorUser));
+      when(() => helper.mockAuthBloc.state)
+          .thenReturn(const AuthSuccess(user: mandorUser));
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump();
-      await tester.pump(_weatherWidgetInitDelay);
+      await tester.pump(weatherWidgetInitDelay);
 
       // Mandor should NOT see FAB
       expect(find.byType(FloatingActionButton), findsNothing);
@@ -346,11 +270,12 @@ void main() {
         estateId: 'estate1',
         isFirstTime: false,
       );
-      when(() => mockAuthBloc.state).thenReturn(const AuthSuccess(user: adminUser));
+      when(() => helper.mockAuthBloc.state)
+          .thenReturn(const AuthSuccess(user: adminUser));
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump();
-      await tester.pump(_weatherWidgetInitDelay);
+      await tester.pump(weatherWidgetInitDelay);
 
       // Admin should NOT see FAB
       expect(find.byType(FloatingActionButton), findsNothing);
