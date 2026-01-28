@@ -23,8 +23,8 @@
 #   ASSISTANT_MANAGER, KABAG_FIELD_ESTABLISHMENT, MANAGER, MANAGER_FE_PG,
 #   MANDOR, ADMINISTRASI, ADMINISTRASI_PG, PG_MANAGER, DEPUTY
 #
-# Valid plantation_group_ids (examples):
-#   ALL, MG1, PG1, PG2, PG3
+# Valid plantation_group_ids (from production - 9 total):
+#   ALL, LR1, LR3, LR4, MG1, PG1, PG2, PG3, PG4
 #
 username,password,fullname,role_id,plantation_group_id,index,email,phone,address,picture_url
 tyastono,Password123,Tyastono Anandito,ASSISTANT_MANAGER,PG1,3838,tyastono.andito@gg-foods.com,,,

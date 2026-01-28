@@ -56,7 +56,7 @@ export function validateHeaders(headers: string[]): ValidationError[] {
       line: 1,
       field: 'header',
       value: col,
-      message: 'missing required column',
+      message: `is required (missing from CSV headers)`,
     });
   }
 

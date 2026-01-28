@@ -22,6 +22,16 @@ export async function getConnection(): Promise<DataSource> {
   const database = process.env.DB_DATABASE || process.env.DATABASE_NAME;
   const sslEnabled = (process.env.DB_SSL || process.env.DATABASE_SSL) === 'true';
 
+  // Validate required credentials
+  if (!username || !password || !database) {
+    throw new Error(
+      'Missing required database credentials. Please set:\n' +
+      '  - DB_USERNAME (or DATABASE_USERNAME)\n' +
+      '  - DB_PASSWORD (or DATABASE_PASSWORD)\n' +
+      '  - DB_DATABASE (or DATABASE_NAME)'
+    );
+  }
+
   dataSource = new DataSource({
     type: 'postgres',
     host,

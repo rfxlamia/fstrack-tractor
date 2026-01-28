@@ -85,14 +85,18 @@ PG_MANAGER
 DEPUTY
 ```
 
-## 📍 Valid Plantation Group IDs (Examples)
+## 📍 Valid Plantation Group IDs (from Production)
 
 ```
 ALL      - All groups (special)
+LR1      - Land Reserve 1
+LR3      - Land Reserve 3
+LR4      - Land Reserve 4
 MG1      - Management Group 1
 PG1      - Plantation Group 1
 PG2      - Plantation Group 2
 PG3      - Plantation Group 3
+PG4      - Plantation Group 4
 ```
 
 ## 📄 CSV Example

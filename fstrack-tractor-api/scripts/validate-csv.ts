@@ -139,7 +139,7 @@ async function main() {
     // Validate headers first (fail fast)
     const headerErrors = validateHeaders(headers);
     if (headerErrors.length > 0) {
-      console.log(formatErrorReport(headerErrors));
+      console.error(formatErrorReport(headerErrors));
       process.exit(1);
     }
 
@@ -191,7 +191,7 @@ async function main() {
     const result = await validateUserData(validatorRows, mockOptions);
 
     if (!result.isValid) {
-      console.log(formatErrorReport(result.errors));
+      console.error(formatErrorReport(result.errors));
       process.exit(1);
     }
 

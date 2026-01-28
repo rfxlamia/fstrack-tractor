@@ -40,7 +40,7 @@ describe('csv-validator', () => {
       expect(errors.length).toBeGreaterThan(0);
       expect(errors[0].field).toBe('header');
       expect(errors[0].value).toBe('role_id');
-      expect(errors[0].message).toContain('missing required column');
+      expect(errors[0].message).toContain('is required');
     });
 
     it('passes with optional headers included', () => {
