@@ -1,0 +1,39 @@
+# CSV User Import Template for FSTrack
+# ======================================
+#
+# Required Columns:
+#   username        - VARCHAR(255), required, unique
+#   password        - VARCHAR, required, min 8 chars + 1 digit
+#   fullname        - VARCHAR(255), required
+#   role_id         - VARCHAR(32), required, FK to roles table
+#   plantation_group_id - VARCHAR(10), optional
+#
+# Optional Columns:
+#   index           - VARCHAR(255)
+#   email           - VARCHAR(255), basic email format if provided
+#   phone           - VARCHAR(16)
+#   address         - TEXT
+#   picture_url     - TEXT, valid URL format if provided
+#
+# WARNING: These usernames already exist in production database!
+# Use this file as a reference/template only. Replace usernames with new ones.
+#
+# Valid role_ids (from production):
+#   MASTER_LOKASI, OPERATOR, SUPERADMIN, OPERATOR_PG1, KASIE_PG, KASIE_FE,
+#   ASSISTANT_MANAGER, KABAG_FIELD_ESTABLISHMENT, MANAGER, MANAGER_FE_PG,
+#   MANDOR, ADMINISTRASI, ADMINISTRASI_PG, PG_MANAGER, DEPUTY
+#
+# Valid plantation_group_ids (examples):
+#   ALL, MG1, PG1, PG2, PG3
+#
+username,password,fullname,role_id,plantation_group_id,index,email,phone,address,picture_url
+tyastono,Password123,Tyastono Anandito,ASSISTANT_MANAGER,PG1,3838,tyastono.andito@gg-foods.com,,,
+agungm,Password123,agung maulana,SUPERADMIN,PG1,,agung.maulana@gg-foods.com,,,
+lokasi,Password123,lokasi master,MASTER_LOKASI,MG1,,,,,
+suparnoir,Password123,Suparno IR,MANAGER,ALL,,,,,
+rivaldisaputra,Password123,Rivaldi Saputra,OPERATOR,PG1,,,,,
+yukinon,Password123,yuki,SUPERADMIN,PG1,1234,yuki@gmail.com,0867746657,Bandung,uploads/image-1755068257883-816381660.jpg
+owotheoperator,Password123,Owo Sang Operator Handal,OPERATOR,MG1,,,,,
+dadan.iskandar,Password123,Dadan Iskandar,ASSISTANT_MANAGER,PG2,3728,dadan.iskandar@gg-foods.com,082183357724,,
+rosikin,Password123,Rosikin,MANAGER,PG1,1235,rosikin.rosikin@gg-foods.com,,,
+operatortest2,Password123,Operator Test PG,OPERATOR,PG2,,,,,uploads/image-1752203971601-985377588.jpeg

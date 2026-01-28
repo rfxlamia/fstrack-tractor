@@ -1,0 +1,3 @@
+username,password,fullname,role_id,plantation_group_id,index,email,phone,address,picture_url
+duplicate,Password123,First User,OPERATOR,PG1,0001,dupe1@example.com,
+duplicate,Password123,Second User,OPERATOR,PG2,0002,dupe2@example.com,

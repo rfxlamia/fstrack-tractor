@@ -1,0 +1,2 @@
+username,password,fullname,role_id,plantation_group_id,index,email,phone,address,picture_url
+badrole,Password123,Bad Role User,SUPERVISOR,PG1,0001,badrole@example.com,

@@ -1,0 +1,3 @@
+username,password,fullname,role_id,plantation_group_id,index,email,phone,address,picture_url
+tyastono,Password123,Tyastono Anandito,ASSISTANT_MANAGER,PG1,3838,tyastono.andito@gg-foods.com,,,
+agungm,Password123,agung maulana,SUPERADMIN,PG1,,agung.maulana@gg-foods.com,,,
