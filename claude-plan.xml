@@ -1,0 +1,619 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<claude-plan-mode-rules version="1.0" project="FsTrack-Tractor" owner="V" last-updated="2026-01-07">
+
+  <critical-context>
+    This document defines ABSOLUTE rules for Claude Code operation in plan mode.
+    These rules solve three critical problems:
+    1. Claude forgets plans when relying only on to-do lists
+    2. Context window fills up → plan file is the ONLY session bridge
+    3. Confusion about plan mode restrictions causes exhausting clarifications
+
+    THESE RULES ARE NON-NEGOTIABLE when plan mode is active.
+  </critical-context>
+
+  <plan-mode-rules>
+
+    <rule id="1" priority="critical" enforcement="automatic">
+      <name>Plan Mode at Session Start</name>
+      <requirement>Plan mode is ALWAYS active at the start of EVERY session</requirement>
+      <rationale>
+        Every action must be based on a clear plan. To-do lists alone are insufficient
+        because Claude often forgets context between sessions.
+      </rationale>
+      <enforcement>Automatic by system - you cannot disable this</enforcement>
+    </rule>
+
+    <rule id="2" priority="critical" type="permission">
+      <name>Read-Only Actions ARE ALLOWED</name>
+      <principle>Plan mode DOES NOT prohibit read-only actions</principle>
+
+      <allowed-actions category="read-only">
+        <action type="workflow">Run workflow status checks (`/workflow-status`)</action>
+        <action type="file-read">Read files to understand context</action>
+        <action type="search">Search codebase (Grep, Glob)</action>
+        <action type="analysis">Analyze existing code</action>
+        <action type="presentation">Present status information</action>
+        <action type="workflow-readonly">Execute read-only workflows (no edits)</action>
+        <action type="tool">Use LSP, Read, Grep, Glob tools</action>
+        <rationale>
+          These actions gather context WITHOUT modifying the system.
+          They are ESSENTIAL for creating informed plans.
+        </rationale>
+      </allowed-actions>
+
+      <forbidden-actions category="write">
+        <action type="file-edit">Edit files (EXCEPT plan file itself)</action>
+        <action type="command">Run non-readonly commands (npm install, build, etc.)</action>
+        <action type="git">Make commits or push changes</action>
+        <action type="config">Change configurations</action>
+        <rationale>
+          Write actions require explicit plan approval before execution.
+        </rationale>
+      </forbidden-actions>
+
+      <decision-flowchart>
+        Q: "Can I do X in plan mode?"
+        ├─ Does X modify ANY file (except plan file)?
+        │  └─ YES → ❌ FORBIDDEN - draft in plan, exit plan mode to execute
+        │  └─ NO → Continue to next question
+        └─ Does X only READ information?
+           └─ YES → ✅ ALLOWED - proceed immediately
+           └─ NO → ❌ FORBIDDEN - draft in plan first
+      </decision-flowchart>
+    </rule>
+
+    <rule id="3" priority="high" type="workflow">
+      <name>Draft Edits in Plan Mode</name>
+      <capability>You CAN draft workflow edits in the plan file while in plan mode</capability>
+
+      <process>
+        <step n="1">Draft the proposed changes/additions in the plan file</step>
+        <step n="2">Present draft to user for review</step>
+        <step n="3">User reviews and provides feedback → LOOP if needed</step>
+        <step n="4">User approves → Exit plan mode</step>
+        <step n="5">Execute actual changes to project files</step>
+      </process>
+
+      <purpose>
+        Enables collaborative refinement BEFORE committing changes.
+        Prevents wasted effort on wrong approach.
+      </purpose>
+
+      <examples>
+        <example scenario="workflow-edit">
+          <situation>User asks to update Architecture.md</situation>
+          <correct-approach>
+            1. IN PLAN MODE: Draft new Architecture.md content in plan file
+            2. Show draft to user
+            3. User approves
+            4. Exit plan mode
+            5. Write to actual Architecture.md
+          </correct-approach>
+          <wrong-approach>
+            ❌ Immediately edit Architecture.md (plan mode blocks this)
+            ❌ Exit plan mode without showing draft (no user review)
+          </wrong-approach>
+        </example>
+      </examples>
+    </rule>
+
+    <rule id="4" priority="critical" type="architecture">
+      <name>Plan Mode = Context Engineering</name>
+      <principle>
+        Plan mode is the ONLY RELIABLE way to handle context window limitations
+      </principle>
+
+      <context-window-problem>
+        <problem>Context window fills up during complex work</problem>
+        <failure-mode>Without plan file, new session has NO context</failure-mode>
+        <solution>Plan file = single source of truth for session continuity</solution>
+      </context-window-problem>
+
+      <mandatory-practice>
+        ALWAYS create comprehensive plan files that can stand alone
+        WITHOUT requiring previous conversation history.
+      </mandatory-practice>
+
+      <plan-file-must-include>
+        <item>All decisions made in previous sessions</item>
+        <item>Critical file paths and their purposes</item>
+        <item>Dependencies and blockers</item>
+        <item>Next concrete steps with file paths</item>
+        <item>Success criteria</item>
+      </plan-file-must-include>
+    </rule>
+
+  </plan-mode-rules>
+
+  <workflow-decision-matrix>
+
+    <decision-tree>
+      <question>What type of workflow is this?</question>
+
+      <branch type="status-check">
+        <identifier>
+          <keyword>/workflow-status</keyword>
+          <keyword>status check</keyword>
+          <keyword>read-only workflow</keyword>
+        </identifier>
+
+        <classification>
+          <type>Read-only status presentation</type>
+          <allowed-in-plan-mode>✅ YES - Execute immediately</allowed-in-plan-mode>
+          <purpose>Present current project status and guide to next step</purpose>
+          <actions>Only reads YAML file and displays information</actions>
+          <exit-plan-mode-required>❌ NO</exit-plan-mode-required>
+        </classification>
+
+        <execution-flow>
+          <step>User runs /workflow-status</step>
+          <step>Claude reads bmm-workflow-status.yaml (read-only)</step>
+          <step>Claude displays status information</step>
+          <step>STILL IN PLAN MODE - no exit needed</step>
+        </execution-flow>
+      </branch>
+
+      <branch type="execution-workflow">
+        <identifier>
+          <keyword>/create-prd</keyword>
+          <keyword>/create-architecture</keyword>
+          <keyword>/create-epics-and-stories</keyword>
+          <keyword>Any workflow that CREATES or EDITS files</keyword>
+        </identifier>
+
+        <classification>
+          <type>Document generation and editing</type>
+          <allowed-in-plan-mode>
+            ✅ YES for DRAFTING
+            ❌ NO for FINAL EXECUTION
+          </allowed-in-plan-mode>
+          <actions>Creates/edits files, runs templates, saves outputs</actions>
+          <exit-plan-mode-required>✅ YES - Must exit before final execution</exit-plan-mode-required>
+        </classification>
+
+        <execution-flow>
+          <step n="1" mode="plan-mode">Draft content/edits in plan file</step>
+          <step n="2" mode="plan-mode">Present draft to user for review</step>
+          <step n="3" mode="plan-mode">User reviews → LOOP if changes needed</step>
+          <step n="4" mode="plan-mode">User approves draft</step>
+          <step n="5" mode="transition">EXIT PLAN MODE</step>
+          <step n="6" mode="execution">Execute workflow to write actual files</step>
+        </execution-flow>
+
+        <examples>
+          <example>
+            <workflow>/create-architecture</workflow>
+            <correct-sequence>
+              1. [PLAN MODE] Draft architecture decisions in plan file
+              2. [PLAN MODE] Show draft to user
+              3. [PLAN MODE] User: "looks good, proceed"
+              4. [EXIT PLAN MODE]
+              5. [EXECUTION] Run /create-architecture to write architecture.md
+            </correct-sequence>
+            <wrong-sequence>
+              ❌ Immediately run /create-architecture without drafting
+              ❌ Exit plan mode before user reviews draft
+            </wrong-sequence>
+          </example>
+        </examples>
+      </branch>
+    </decision-tree>
+
+    <quick-reference-matrix>
+      <workflow-type name="Status Check" plan-mode="allowed" draft-first="no" exit-required="no" example="/workflow-status"/>
+      <workflow-type name="File Read" plan-mode="allowed" draft-first="no" exit-required="no" example="Read artifacts"/>
+      <workflow-type name="Search/Analysis" plan-mode="allowed" draft-first="no" exit-required="no" example="Grep, Glob, LSP"/>
+      <workflow-type name="Document Creation" plan-mode="draft-only" draft-first="yes" exit-required="yes" example="/create-prd"/>
+      <workflow-type name="File Editing" plan-mode="draft-only" draft-first="yes" exit-required="yes" example="Update docs"/>
+      <workflow-type name="Code Execution" plan-mode="forbidden" draft-first="yes" exit-required="yes" example="npm install"/>
+    </quick-reference-matrix>
+
+  </workflow-decision-matrix>
+
+  <session-start-sequence mandatory="true">
+    <critical-reminder>
+      This sequence MUST be followed at EVERY session start.
+      NO EXCEPTIONS unless explicitly overridden by user.
+    </critical-reminder>
+
+    <step n="1" status="automatic" mode="plan-mode">
+      <action>Plan Mode Active (automatic system enforcement)</action>
+      <verification>
+        Confirm: System message shows "Plan mode is active"
+        If NOT in plan mode → Something is wrong, alert user
+      </verification>
+    </step>
+
+    <step n="2" mode="plan-mode" type="context-gathering">
+      <action>Read Context (ALL read-only actions ALLOWED in plan mode)</action>
+
+      <required-reads priority="critical">
+        <read order="1" file="CLAUDE.md" rationale="Project rules - read FIRST"/>
+        <read order="2" file="claude-plan.xml" rationale="Plan mode rules - read when plan mode active"/>
+        <read order="3" file="/workflow-status" rationale="Current workflow state"/>
+        <read order="4" pattern="~/.claude/plans/*.md" rationale="Previous session plans"/>
+        <read order="5" file="_bmad-output/planning-artifacts/bmm-workflow-status.yaml" rationale="Detailed status"/>
+      </required-reads>
+
+      <optional-reads>
+        <read file="current work artifacts" condition="if referenced in status"/>
+        <read file="relevant source code" condition="if needed for planning"/>
+      </optional-reads>
+
+      <thinking-process>
+        Based on what I read:
+        1. Where are we in the project? (Phase, Epic, Story)
+        2. What was last completed?
+        3. What are current blockers?
+        4. What does user want to do THIS session?
+      </thinking-process>
+    </step>
+
+    <step n="3" mode="plan-mode" type="plan-creation">
+      <action>Create/Update Plan in Plan File</action>
+
+      <plan-file-template>
+        # [Task Name for This Session]
+
+        ## Session Context
+        - Date: [today]
+        - Previous plan: [path to last plan file]
+        - Current workflow status: [Phase X / Epic Y / Story Z]
+        - Last completed: [what was finished in last session]
+        - Blockers: [any known issues]
+
+        ## User Request
+        [What user asked for THIS session - quote if needed]
+
+        ## Background (Standalone Context)
+        [Everything needed to understand this task WITHOUT reading previous conversation]
+        [Include relevant decisions from previous sessions]
+
+        ## Critical Files
+        - [file 1]: [purpose and current state]
+        - [file 2]: [purpose and current state]
+
+        ## Implementation Plan
+        1. [Concrete step with specific file paths]
+        2. [Concrete step with specific file paths]
+        ...
+
+        ## Decisions to Make
+        - [Decision 1]: [options and trade-offs]
+        - [Decision 2]: [options and trade-offs]
+
+        ## Success Criteria
+        - [Measurable criteria 1]
+        - [Measurable criteria 2]
+      </plan-file-template>
+
+      <plan-quality-checklist>
+        ✓ Can new session understand task from plan alone?
+        ✓ Are all file paths explicit and complete?
+        ✓ Are all decisions from previous sessions included?
+        ✓ Are dependencies and blockers documented?
+        ✓ Is the success criteria clear and measurable?
+      </plan-quality-checklist>
+    </step>
+
+    <step n="4" mode="plan-mode" type="user-collaboration">
+      <action>Clarify with User</action>
+
+      <clarification-triggers>
+        <trigger condition="ambiguous requirements">Ask specific questions</trigger>
+        <trigger condition="multiple valid approaches">Present options with trade-offs</trigger>
+        <trigger condition="missing information">Request needed context</trigger>
+        <trigger condition="draft ready">Present for review and approval</trigger>
+      </clarification-triggers>
+
+      <collaboration-loop>
+        WHILE (user has feedback OR questions remain):
+          Present current understanding
+          Ask clarifying questions
+          Update plan based on feedback
+          Show updated plan
+        END WHILE
+      </collaboration-loop>
+    </step>
+
+    <step n="5" mode="transition" type="checkpoint">
+      <action>Exit Plan Mode (ONLY after plan complete and user approves)</action>
+
+      <exit-criteria>
+        <criteria>✓ Plan file is comprehensive and standalone</criteria>
+        <criteria>✓ User has reviewed plan (for execution workflows)</criteria>
+        <criteria>✓ User explicitly approved OR said "proceed"</criteria>
+        <criteria>✓ No remaining ambiguities in requirements</criteria>
+        <criteria>✓ All questions answered</criteria>
+      </exit-criteria>
+
+      <exit-methods>
+        <method type="tool">Call ExitPlanMode tool with reason</method>
+        <method type="auto">System exits after user approval (automatic)</method>
+      </exit-methods>
+
+      <caution>
+        ⚠️ DO NOT exit plan mode if:
+        - User hasn't reviewed execution workflow drafts
+        - Critical questions remain unanswered
+        - Plan file is incomplete or unclear
+      </caution>
+    </step>
+
+    <step n="6" mode="execution" type="implementation">
+      <action>Execute Plan</action>
+
+      <execution-rules>
+        <rule>Follow plan steps in order</rule>
+        <rule>Update user on progress</rule>
+        <rule>Document any deviations from plan</rule>
+        <rule>If blockers arise, update plan file and re-enter plan mode if needed</rule>
+      </execution-rules>
+    </step>
+
+    <flow-diagram>
+      Session Start
+          ↓
+      [1] Plan Mode ACTIVE (automatic)
+          ↓
+      [2] Read Context
+          ├─ CLAUDE.md
+          ├─ claude-plan.xml (THIS FILE)
+          ├─ /workflow-status
+          ├─ Previous plans
+          └─ Current artifacts
+          ↓
+      [3] Draft Plan in Plan File
+          ↓
+      [4] Clarify with User ←──┐
+          ├─ Questions?      │
+          ├─ Feedback?       │
+          └─ Approved? ──NO──┘
+              │
+             YES
+              ↓
+      [5] Exit Plan Mode
+          ↓
+      [6] Execute Plan
+    </flow-diagram>
+  </session-start-sequence>
+
+  <context-engineering-strategy>
+
+    <core-principle>
+      Plan files are CONTEXT BRIDGES between sessions.
+      When context window fills up, the plan file becomes the ONLY source of truth.
+    </core-principle>
+
+    <context-window-problem-solution>
+      <problem>
+        Complex projects fill context window quickly (100k-200k tokens)
+        New sessions have ZERO context from previous conversation
+      </problem>
+
+      <traditional-failure>
+        "Continue from where we left off" → Claude: "I have no context"
+        Requires user to re-explain everything → exhausting and error-prone
+      </traditional-failure>
+
+      <solution>
+        Comprehensive plan files that are STANDALONE and COMPLETE
+        Next session reads plan file → instant full context recovery
+      </solution>
+    </context-window-problem-solution>
+
+    <plan-file-mandatory-structure>
+      <section name="Header" required="true">
+        # [Descriptive Task Name]
+
+        ## Session Context
+        - Date: YYYY-MM-DD HH:MM
+        - Previous plan: [absolute path to previous plan file]
+        - Current workflow status: Phase X / Epic Y / Story Z
+        - Last completed: [specific completions with file paths]
+        - Current blockers: [explicit blockers or "None"]
+      </section>
+
+      <section name="User Request" required="true">
+        ## User Request
+        [EXACT quote of what user asked for THIS session]
+        [Include any clarifications from user]
+      </section>
+
+      <section name="Background" required="true" standalone="true">
+        ## Background (Standalone Context)
+
+        This section MUST be readable WITHOUT any previous conversation.
+        Include:
+        - Project overview (what is this project about?)
+        - Relevant architectural decisions
+        - Dependencies between components
+        - Any domain-specific knowledge needed
+        - Decisions from previous sessions that impact current work
+
+        Test: Could a new Claude instance understand the task from this section alone?
+      </section>
+
+      <section name="Critical Files" required="true">
+        ## Critical Files
+        - [absolute/path/to/file1.md]: [purpose, current state, will be modified/read]
+        - [absolute/path/to/file2.ts]: [purpose, current state, will be modified/read]
+
+        For each file:
+        ✓ Absolute path (not relative)
+        ✓ Purpose and role
+        ✓ Current state
+        ✓ Planned action (read/modify/create)
+      </section>
+
+      <section name="Implementation Plan" required="true">
+        ## Implementation Plan
+
+        1. [Action verb] [specific target] at [file path]
+           - Expected outcome: [what success looks like]
+           - Dependencies: [what must be done first]
+
+        2. [Action verb] [specific target] at [file path]
+           - Expected outcome: [what success looks like]
+           - Dependencies: [what must be done first]
+
+        Each step must be:
+        ✓ Concrete (not "analyze code" but "Read auth.ts lines 45-120 to understand token flow")
+        ✓ Actionable (clear verb: Read, Write, Edit, Run, Verify)
+        ✓ File-specific (include exact paths)
+      </section>
+
+      <section name="Decisions" required="true">
+        ## Decisions Made (or To Make)
+
+        ### Decision 1: [Decision Name]
+        - **Options:**
+          A. [Option A]: [trade-offs]
+          B. [Option B]: [trade-offs]
+        - **Chosen:** [Option X]
+        - **Rationale:** [why this choice]
+        - **Impact:** [files/components affected]
+
+        Document ALL decisions, even "obvious" ones.
+        Future sessions need this context.
+      </section>
+
+      <section name="Success Criteria" required="true">
+        ## Success Criteria
+
+        ✓ [Measurable criterion 1 - e.g., "All tests pass"]
+        ✓ [Measurable criterion 2 - e.g., "Architecture.md updated with X section"]
+        ✓ [Measurable criterion 3 - e.g., "User approves draft"]
+
+        Criteria must be VERIFIABLE (not "good code" but "passes linter, has tests, reviewed")
+      </section>
+    </plan-file-mandatory-structure>
+
+    <workflow-draft-extension>
+      <when>When drafting workflow edits in plan mode</when>
+
+      <additional-section>
+        ## Proposed Changes
+
+        ### File: [absolute/path/to/file]
+
+        #### Current Content (Relevant Excerpt)
+        ```
+        [Current content that will be changed]
+        [Include enough context - at least 10 lines before/after]
+        ```
+
+        #### Proposed New Content
+        ```
+        [Complete new content or diff]
+        [Show FULL proposed change, not just snippets]
+        ```
+
+        #### Rationale
+        - Why this change?
+        - What problem does it solve?
+        - How does it align with architectural decisions?
+        - What are the trade-offs?
+
+        #### Impact Analysis
+        - Files affected: [list]
+        - Components affected: [list]
+        - Risks: [potential issues]
+        - Mitigation: [how risks are handled]
+      </additional-section>
+    </workflow-draft-extension>
+
+    <quality-checklist>
+      <title>Plan File Quality Gate</title>
+
+      Before exiting plan mode, verify:
+
+      ✓ **Standalone:** New session can understand task without conversation history
+      ✓ **Complete:** All decisions, files, dependencies documented
+      ✓ **Specific:** File paths are absolute, steps are concrete
+      ✓ **Actionable:** Each step has clear verb and target
+      ✓ **Measurable:** Success criteria are verifiable
+      ✓ **Traceable:** Links to previous plan files
+      ✓ **Context-rich:** Background explains WHY, not just WHAT
+
+      If ANY criterion fails → Plan is incomplete → Continue refining
+    </quality-checklist>
+
+    <anti-patterns>
+      <bad-practice id="1">
+        ❌ Vague plan: "Update architecture"
+        ✅ Specific plan: "Edit _bmad-output/planning-artifacts/architecture.md lines 150-200 to add Database Schema section with Supabase tables: users, reports, methods"
+      </bad-practice>
+
+      <bad-practice id="2">
+        ❌ Assumes context: "Continue where we left off"
+        ✅ Explicit context: "Previous session completed Epic 3 Story 3.4. This session implements Epic 3 Story 3.5: Method Detail Pages (FR19). See architecture.md:450-500 for routing decisions."
+      </bad-practice>
+
+      <bad-practice id="3">
+        ❌ Missing rationale: "Use Zustand for state"
+        ✅ Full decision: "Use Zustand over Context API because: 1) Better DevTools, 2) No provider hell, 3) Easier testing. Trade-off: Additional dependency (3KB). See architecture.md:300."
+      </bad-practice>
+    </anti-patterns>
+
+  </context-engineering-strategy>
+
+  <common-mistakes>
+
+    <mistake id="1" severity="critical">
+      <wrong>❌ "I can't run /workflow-status because I'm in plan mode"</wrong>
+      <correct>✅ "/workflow-status is read-only → ALLOWED in plan mode → Execute immediately"</correct>
+      <rationale>
+        Plan mode prohibits WRITES, not READS.
+        /workflow-status only reads YAML and displays - no files modified.
+      </rationale>
+    </mistake>
+
+    <mistake id="2" severity="critical">
+      <wrong>❌ Exit plan mode immediately to "check status"</wrong>
+      <correct>✅ Stay in plan mode, run /workflow-status, use result to inform plan</correct>
+      <rationale>
+        Exiting plan mode before planning defeats the purpose.
+        Gather ALL context WHILE in plan mode, THEN create plan.
+      </rationale>
+    </mistake>
+
+    <mistake id="3" severity="high">
+      <wrong>❌ Create minimal plan: "Fix the bug"</wrong>
+      <correct>✅ Comprehensive plan: "Fix auth token expiry bug in src/auth/token.ts:145. Bug: tokens expire immediately instead of 1hr. Root cause: timestamp calculation uses seconds instead of milliseconds. Solution: multiply by 1000 on line 145. Test: verify token lasts 1hr in auth.test.ts."</correct>
+      <rationale>
+        New session must understand task without conversation history.
+        Include what, where, why, how, and verification.
+      </rationale>
+    </mistake>
+
+    <mistake id="4" severity="high">
+      <wrong>❌ "Continue from previous session" without reading plan file</wrong>
+      <correct>✅ Read previous plan file, extract context, create NEW plan for this session</correct>
+      <rationale>
+        Context window doesn't carry over between sessions.
+        Plan file is the ONLY context bridge.
+      </rationale>
+    </mistake>
+
+    <mistake id="5" severity="medium">
+      <wrong>❌ Edit files directly when user asks to update documentation</wrong>
+      <correct>✅ [PLAN MODE] Draft changes → Show to user → User approves → Exit plan mode → Write changes</correct>
+      <rationale>
+        User may want to review/modify before committing.
+        Collaborative refinement prevents wasted effort.
+      </rationale>
+    </mistake>
+
+    <mistake id="6" severity="medium">
+      <wrong>❌ Use relative paths in plan: "Update docs/architecture.md"</wrong>
+      <correct>✅ Use absolute paths: "Update /home/v/project/{project-root}/_bmad-output/planning-artifacts/architecture.md"</correct>
+      <rationale>
+        New sessions may have different working directory.
+        Absolute paths are unambiguous.
+      </rationale>
+    </mistake>
+
+  </common-mistakes>
+
+</claude-plan-mode-rules>

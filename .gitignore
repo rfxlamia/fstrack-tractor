@@ -3,11 +3,6 @@
 .claude/
 .gemini/
 .opencode/
-_bmad-output/
-_bmad/
-CLAUDE.md
-claude-plan.xml
-project-context.md
 
 # Environment variables
 .env*
