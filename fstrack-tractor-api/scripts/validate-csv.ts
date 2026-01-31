@@ -6,7 +6,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import csvParser from 'csv-parser';
+import csvParser = require('csv-parser');
 import { validateHeaders, validateUserData } from './lib/csv-validator';
 import { closeConnection } from './lib/db-connection';
 import type { CsvRow as ValidatorCsvRow } from './lib/csv-validator';
