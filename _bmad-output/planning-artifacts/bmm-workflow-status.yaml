@@ -1,0 +1,149 @@
+# Workflow Status Template
+
+# This tracks progress through BMM methodology Analysis, Planning, and Solutioning phases.
+# Implementation phase is tracked separately in sprint-status.yaml
+
+# STATUS DEFINITIONS:
+# ==================
+# Initial Status (before completion):
+#   - required: Must be completed to progress
+#   - optional: Can be completed but not required
+#   - recommended: Strongly suggested but not required
+#   - conditional: Required only if certain conditions met (e.g., if_has_ui)
+#
+# Completion Status:
+#   - {file-path}: File created/found (e.g., "docs/product-brief.md")
+#   - skipped: Optional/conditional workflow that was skipped
+
+generated: "2026-01-29"
+updated: "2026-01-31T10:00:00Z"
+project: "fstrack-tractor"
+project_type: "Fase 2 - Work Plan Management"
+selected_track: "bmad-method"
+field_type: "brownfield"
+workflow_path: "{project-root}/_bmad/bmm/workflows/workflow-status/paths/bmad-method-brownfield.yaml"
+workflow_status:
+  - phase: 0
+    name: "Documentation"
+    status: "skipped"
+    note: "Fase 1 docs already exist in docs/planning-phase/"
+    workflows:
+      - id: "document-project"
+        status: "skipped"
+        output: "docs/planning-phase/prd.md, architecture.md, epics.md"
+  - phase: 1
+    name: "Analysis (Optional)"
+    status: "skipped"
+    note: "Fase 2 requirements already documented in phase2.md"
+    workflows:
+      - id: "brainstorm-project"
+        status: "skipped"
+        agent: "analyst"
+        command: "/bmad:bmm:workflows:brainstorming"
+      - id: "research"
+        status: "skipped"
+        agent: "analyst"
+        command: "/bmad:bmm:workflows:research"
+      - id: "product-brief"
+        status: "skipped"
+        agent: "analyst"
+        command: "/bmad:bmm:workflows:create-product-brief"
+  - phase: 2
+    name: "Planning"
+    status: "completed"
+    completed_at: "2026-01-30"
+    workflows:
+      - id: "prd"
+        status: "_bmad-output/planning-artifacts/prd.md"
+        agent: "pm"
+        command: "/bmad:bmm:workflows:create-prd"
+        output: "Fase 2 PRD - Work Plan Management (30 FRs, 27 NFRs)"
+        input: "docs/planning-phase/phase2.md"
+        completed_at: "2026-01-29"
+      - id: "create-ux-design"
+        status: "_bmad-output/planning-artifacts/ux-design-specification.md"
+        agent: "ux-designer"
+        command: "/bmad:bmm:workflows:create-ux-design"
+        condition: "if_has_ui"
+        output: "Fase 2 UX Design Specification (Extended from Fase 1)"
+        completed_at: "2026-01-30"
+  - phase: 3
+    name: "Solutioning"
+    status: "completed"
+    completed_at: "2026-01-31"
+    workflows:
+      - id: "create-architecture"
+        status: "_bmad-output/planning-artifacts/architecture.md"
+        agent: "architect"
+        command: "/bmad:bmm:workflows:create-architecture"
+        output: "Architecture Decision Document - Fase 2"
+        completed_at: "2026-01-30"
+      - id: "create-epics-and-stories"
+        status: "_bmad-output/planning-artifacts/epics.md"
+        agent: "pm"
+        command: "/bmad:bmm:workflows:create-epics-and-stories"
+        output: "4 Epics, 17 Stories - 100% FR coverage"
+        completed_at: "2026-01-31"
+      - id: "test-design"
+        status: "optional"
+        agent: "tea"
+        command: "/bmad:bmm:workflows:testarch-test-design"
+      - id: "implementation-readiness"
+        status: "_bmad-output/planning-artifacts/implementation-readiness-report-2026-01-31.md"
+        agent: "architect"
+        command: "/bmad:bmm:workflows:check-implementation-readiness"
+        output: "Assessment Report - READY status, 0 critical issues"
+        completed_at: "2026-01-31"
+  - phase: 4
+    name: "Implementation"
+    status: "ready"
+    workflows:
+      - id: "sprint-planning"
+        status: "required"
+        agent: "sm"
+        command: "/bmad:bmm:workflows:sprint-planning"
+      - id: "create-story"
+        status: "required"
+        agent: "dev"
+        command: "/bmad:bmm:workflows:create-story"
+      - id: "dev-story"
+        status: "required"
+        agent: "dev"
+        command: "/bmad:bmm:workflows:dev-story"
+
+# Current Phase Info
+current_phase: 4
+current_workflow: "sprint-planning"
+next_workflow: "sprint-planning"
+next_agent: "sm"
+next_command: "/bmad:bmm:workflows:sprint-planning"
+last_completed: "implementation-readiness"
+last_completed_at: "2026-01-31"
+phase_3_completed: "2026-01-31"
+readiness_status: "READY"
+readiness_report: "_bmad-output/planning-artifacts/implementation-readiness-report-2026-01-31.md"
+
+# Epics Summary
+epics_summary:
+  total_epics: 4
+  total_stories: 17
+  fr_coverage: "30/30 (100%)"
+  epics:
+    - id: 1
+      name: "Backend Foundation & RBAC System"
+      stories: 6
+    - id: 2
+      name: "Work Plan Creation (Kasie PG)"
+      stories: 4
+    - id: 3
+      name: "Work Plan Assignment (Kasie FE)"
+      stories: 3
+    - id: 4
+      name: "Work Plan Viewing (All Roles)"
+      stories: 4
+
+# Context
+phase1_docs_location: "docs/planning-phase/"
+phase2_draft_location: "docs/planning-phase/phase2.md"
+phase1_completion_date: "2026-01-10"
+planning_artifacts_location: "_bmad-output/planning-artifacts/"

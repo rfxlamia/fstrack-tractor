@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FSTrack-Tractor - Fase 2 Design Direction (Extended)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Bulldozer Tokens - Exact Match */
+      --primary: #008945;
+      --primary-light: #00a854;
+      --primary-dark: #006633;
+      --background: #F5F5F5;
+      --surface: #FFFFFF;
+      --text-primary: #333333;
+      --text-secondary: #666666;
+      --text-muted: #828282;
+      --error: #B00020;
+      --button-orange: #FBA919;
+      --button-blue: #25AAE1;
+      --grey-card: #F0F0F0;
+      --divider: #E0E0E0;
+
+      /* Warm Friendly additions */
+      --radius-sm: 12px;
+      --radius-md: 16px;
+      --radius-lg: 20px;
+      --radius-xl: 24px;
+      --shadow-soft: 0 4px 16px rgba(0,0,0,0.08);
+      --shadow-medium: 0 8px 24px rgba(0,0,0,0.12);
+      --shadow-elevated: 0 12px 32px rgba(0,0,0,0.16);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #1a1a2e;
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    /* Page Header */
+    .page-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .page-header h1 {
+      color: white;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .page-header p {
+      color: rgba(255,255,255,0.7);
+      font-size: 14px;
+    }
+
+    .badge-row {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      background: rgba(0,137,69,0.2);
+      color: #4ade80;
+      padding: 6px 14px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .badge.fase2 {
+      background: rgba(251, 169, 25, 0.2);
+      color: #FBA919;
+    }
+
+    /* Section Divider */
+    .section-divider {
+      max-width: 1200px;
+      margin: 60px auto;
+      text-align: center;
+      border-top: 2px solid rgba(255,255,255,0.1);
+      padding-top: 40px;
+    }
+
+    .section-title {
+      color: white;
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .section-subtitle {
+      color: rgba(255,255,255,0.6);
+      font-size: 14px;
+    }
+
+    /* Showcase Grid */
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .showcase-item {
+      text-align: center;
+    }
+
+    .showcase-label {
+      color: var(--button-orange);
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+
+    .showcase-label.fase2 {
+      color: #4ade80;
+    }
+
+    .showcase-description {
+      color: rgba(255,255,255,0.6);
+      font-size: 12px;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    /* Phone Frame */
+    .phone-frame {
+      width: 320px;
+      height: 640px;
+      background: #1a1a1a;
+      border-radius: 40px;
+      padding: 12px;
+      margin: 0 auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      position: relative;
+    }
+
+    .phone-screen {
+      width: 100%;
+      height: 100%;
+      border-radius: 32px;
+      overflow: hidden;
+      position: relative;
+      background: var(--background);
+    }
+
+    /* Status Bar */
+    .status-bar {
+      height: 32px;
+      background: var(--primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: white;
+    }
+
+    /* App Header */
+    .app-header {
+      background: var(--primary);
+      padding: 16px 20px;
+      color: white;
+    }
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .app-header h1 {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .header-time {
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0.9;
+    }
+
+    /* Main Content */
+    .main-content {
+      padding: 16px;
+      height: calc(100% - 32px - 60px);
+      overflow-y: auto;
+    }
+
+    /* Greeting */
+    .greeting {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+
+    /* Weather Widget */
+    .weather-widget {
+      background: var(--surface);
+      padding: 16px;
+      border-radius: var(--radius-md);
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .weather-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .weather-icon {
+      font-size: 36px;
+    }
+
+    .weather-temp {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .weather-condition {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .weather-time {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Section Title */
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-title .count {
+      background: var(--primary);
+      color: white;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+
+    /* Fase 2: Work Plan Card */
+    .workplan-card {
+      background: var(--surface);
+      padding: 16px;
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-soft);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-left: 4px solid transparent;
+    }
+
+    .workplan-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-medium);
+    }
+
+    .workplan-card.status-open {
+      border-left-color: var(--button-orange);
+    }
+
+    .workplan-card.status-assigned {
+      border-left-color: var(--button-blue);
+    }
+
+    .workplan-card.status-completed {
+      border-left-color: var(--primary);
+    }
+
+    .wp-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .wp-location {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .wp-location-icon {
+      margin-right: 6px;
+    }
+
+    .wp-status {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .wp-status.open {
+      background: rgba(251, 169, 25, 0.15);
+      color: #E69500;
+    }
+
+    .wp-status.assigned {
+      background: rgba(37, 170, 225, 0.15);
+      color: var(--button-blue);
+    }
+
+    .wp-status.completed {
+      background: rgba(0, 137, 69, 0.15);
+      color: var(--primary);
+    }
+
+    .wp-date {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .wp-details {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .wp-detail-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* FAB Button */
+    .fab {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      width: 56px;
+      height: 56px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-elevated);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 10;
+    }
+
+    .fab:hover {
+      transform: scale(1.1);
+      background: var(--primary-light);
+    }
+
+    .fab-icon {
+      font-size: 28px;
+      color: white;
+      font-weight: 300;
+    }
+
+    /* Bottom Sheet Overlay */
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      border-radius: 32px;
+      z-index: 20;
+    }
+
+    /* Bottom Sheet */
+    .bottom-sheet {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      z-index: 30;
+      max-height: 85%;
+      overflow-y: auto;
+    }
+
+    .sheet-handle {
+      width: 40px;
+      height: 4px;
+      background: var(--divider);
+      border-radius: 2px;
+      margin: 12px auto;
+    }
+
+    .sheet-header {
+      padding: 0 20px 16px;
+      border-bottom: 1px solid var(--divider);
+    }
+
+    .sheet-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .sheet-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .sheet-content {
+      padding: 20px;
+    }
+
+    /* Detail Sheet Specific */
+    .detail-section {
+      margin-bottom: 20px;
+    }
+
+    .detail-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .detail-value {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    /* Action Buttons in Sheet */
+    .sheet-actions {
+      display: flex;
+      gap: 12px;
+      padding: 20px;
+      border-top: 1px solid var(--divider);
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn.primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .action-btn.secondary {
+      background: var(--grey-card);
+      color: var(--text-primary);
+    }
+
+    .action-btn.warning {
+      background: rgba(251, 169, 25, 0.15);
+      color: #E69500;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    /* Form Elements in Sheet */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .form-label .required {
+      color: var(--error);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid var(--divider);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-family: 'Poppins', sans-serif;
+      background: var(--grey-card);
+      color: var(--text-primary);
+      transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: var(--surface);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .form-select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid var(--divider);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-family: 'Poppins', sans-serif;
+      background: var(--grey-card);
+      color: var(--text-primary);
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23828282' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 20px;
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: var(--divider);
+      margin: 16px 0;
+    }
+
+    /* Info Box */
+    .info-box {
+      background: rgba(0,137,69,0.1);
+      border: 1px solid rgba(0,137,69,0.3);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-top: 40px;
+    }
+
+    .info-box h3 {
+      color: var(--primary);
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .info-box ul {
+      color: rgba(255,255,255,0.8);
+      font-size: 13px;
+      padding-left: 20px;
+    }
+
+    .info-box li {
+      margin-bottom: 4px;
+    }
+
+    /* Comparison Section */
+    .comparison-section {
+      max-width: 1200px;
+      margin: 60px auto 0;
+      padding: 30px;
+      background: rgba(255,255,255,0.05);
+      border-radius: var(--radius-xl);
+    }
+
+    .comparison-section h2 {
+      color: white;
+      font-size: 20px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .comparison-card {
+      background: rgba(255,255,255,0.08);
+      border-radius: var(--radius-md);
+      padding: 20px;
+    }
+
+    .comparison-card h3 {
+      color: var(--button-orange);
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .comparison-card p {
+      color: rgba(255,255,255,0.7);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    /* Role Indicator */
+    .role-indicator {
+      position: absolute;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--button-orange);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1>FSTrack-Tractor - Fase 2 Design Direction</h1>
+    <p>Extended: Work Plan Management (CREATE → ASSIGN → VIEW)</p>
+    <div class="badge-row">
+      <span class="badge">Fase 1 Foundation</span>
+      <span class="badge fase2">Fase 2 Extended</span>
+      <span class="badge">Bottom Sheet Pattern</span>
+      <span class="badge">FAB for Create</span>
+      <span class="badge fase2">Status Workflow</span>
+    </div>
+  </header>
+
+  <!-- FASE 2 WORK PLAN MANAGEMENT SCREENS -->
+  <div class="section-divider">
+    <h2 class="section-title">Fase 2: Work Plan Management</h2>
+    <p class="section-subtitle">CREATE → ASSIGN → VIEW workflow untuk 6 user roles</p>
+  </div>
+
+  <div class="showcase-grid">
+
+    <!-- Screen 1: Kasie PG - Main Page dengan FAB -->
+    <div class="showcase-item">
+      <div class="showcase-label fase2">Kasie PG - Main Page</div>
+      <div class="showcase-description">
+        FAB (+) visible untuk CREATE work plan<br>
+        List work plan dengan status indicators
+      </div>
+      <div class="phone-frame">
+        <div class="role-indicator">KASIE PG</div>
+        <div class="phone-screen">
+          <div class="status-bar">
+            <span>06:32</span>
+            <span>4G 100%</span>
+          </div>
+          <div class="app-header">
+            <div class="header-row">
+              <h1>FSTrack</h1>
+              <span class="header-time">06:32 WIB</span>
+            </div>
+          </div>
+          <div class="main-content">
+            <div class="greeting">Selamat pagi, Pak Suswanto</div>
+
+            <div class="weather-widget">
+              <div class="weather-left">
+                <span class="weather-icon">☀️</span>
+                <div>
+                  <div class="weather-temp">26°C</div>
+                  <div class="weather-condition">Cerah</div>
+                </div>
+              </div>
+              <span class="weather-time">Diperbarui 06:30</span>
+            </div>
+
+            <div class="section-title">
+              Rencana Kerja
+              <span class="count">3</span>
+            </div>
+
+            <!-- Card 1 - OPEN -->
+            <div class="workplan-card status-open">
+              <div class="wp-header">
+                <div class="wp-location">
+                  <span class="wp-location-icon">📍</span>002C
+                </div>
+                <span class="wp-status open">Open</span>
+              </div>
+              <div class="wp-date">📅 29 Januari 2026</div>
+              <div class="wp-details">
+                <span class="wp-detail-item">🚜 -</span>
+                <span class="wp-detail-item">👤 -</span>
+              </div>
+            </div>
+
+            <!-- Card 2 - ASSIGNED -->
+            <div class="workplan-card status-assigned">
+              <div class="wp-header">
+                <div class="wp-location">
+                  <span class="wp-location-icon">📍</span>423W2
+                </div>
+                <span class="wp-status assigned">Assigned</span>
+              </div>
+              <div class="wp-date">📅 28 Januari 2026</div>
+              <div class="wp-details">
+                <span class="wp-detail-item">🚜 CD8019</span>
+                <span class="wp-detail-item">👤 Pak Budi</span>
+              </div>
+            </div>
+
+            <!-- Card 3 - COMPLETED -->
+            <div class="workplan-card status-completed">
+              <div class="wp-header">
+                <div class="wp-location">
+                  <span class="wp-location-icon">📍</span>115A
+                </div>
+                <span class="wp-status completed">Completed</span>
+              </div>
+              <div class="wp-date">📅 25 Januari 2026</div>
+              <div class="wp-details">
+                <span class="wp-detail-item">🚜 CD8021</span>
+                <span class="wp-detail-item">👤 Pak Ahmad</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- FAB - Kasie PG Only -->
+          <div class="fab">
+            <span class="fab-icon">+</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 2: CREATE Work Plan Bottom Sheet -->
+    <div class="showcase-item">
+      <div class="showcase-label fase2">CREATE - Bottom Sheet</div>
+      <div class="showcase-description">
+        Form pembuatan rencana kerja<br>
+        Tanggal auto-filled, 4 field required
+      </div>
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <div class="status-bar">
+            <span>06:35</span>
+            <span>4G 100%</span>
+          </div>
+          <div class="app-header">
+            <div class="header-row">
+              <h1>FSTrack</h1>
+              <span class="header-time">06:35 WIB</span>
+            </div>
+          </div>
+
+          <!-- Dimmed Content -->
+          <div class="main-content" style="opacity: 0.3; pointer-events: none;">
+            <div class="greeting">Selamat pagi, Pak Suswanto</div>
+            <div class="weather-widget">
+              <div class="weather-left">
+                <span class="weather-icon">☀️</span>
+                <div>
+                  <div class="weather-temp">26°C</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Overlay -->
+          <div class="overlay"></div>
+
+          <!-- Bottom Sheet - Create Form -->
+          <div class="bottom-sheet" style="max-height: 75%;">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+              <div class="sheet-title">➕ Buat Rencana Kerja</div>
+              <div class="sheet-subtitle">Isi informasi dasar rencana kerja baru</div>
+            </div>
+            <div class="sheet-content">
+              <div class="form-group">
+                <label class="form-label">
+                  Tanggal Kerja <span class="required">*</span>
+                </label>
+                <input type="text" class="form-input" value="29/01/2026">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  Pola Kerja <span class="required">*</span>
+                </label>
+                <select class="form-select">
+                  <option>Rotasi</option>
+                  <option>Pembersihan</option>
+                  <option>Pemupukan</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  Shift <span class="required">*</span>
+                </label>
+                <select class="form-select">
+                  <option>Pagi (06:00 - 14:00)</option>
+                  <option>Siang (14:00 - 22:00)</option>
+                  <option>Malam (22:00 - 06:00)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  Lokasi / Kavling <span class="required">*</span>
+                </label>
+                <input type="text" class="form-input" placeholder="Contoh: 002C, 423W2">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  Unit Traktor
+                </label>
+                <select class="form-select">
+                  <option>Pilih unit...</option>
+                  <option>Unit 1 - CD8019</option>
+                  <option>Unit 2 - CD8021</option>
+                </select>
+              </div>
+            </div>
+            <div class="sheet-actions">
+              <button class="action-btn secondary">
+                Batal
+              </button>
+              <button class="action-btn primary">
+                Simpan
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 3: Kasie FE - ASSIGN Work Plan -->
+    <div class="showcase-item">
+      <div class="showcase-label fase2">Kasie FE - ASSIGN</div>
+      <div class="showcase-description">
+        Tap card OPEN → Assign operator<br>
+        Status berubah: OPEN → ASSIGNED
+      </div>
+      <div class="phone-frame">
+        <div class="role-indicator">KASIE FE</div>
+        <div class="phone-screen">
+          <div class="status-bar">
+            <span>06:32</span>
+            <span>4G 100%</span>
+          </div>
+          <div class="app-header">
+            <div class="header-row">
+              <h1>FSTrack</h1>
+              <span class="header-time">06:32 WIB</span>
+            </div>
+          </div>
+
+          <!-- Dimmed Content -->
+          <div class="main-content" style="opacity: 0.3; pointer-events: none;">
+            <div class="greeting">Selamat pagi, Pak Siswanto</div>
+          </div>
+
+          <!-- Overlay -->
+          <div class="overlay"></div>
+
+          <!-- Bottom Sheet - Assign Form -->
+          <div class="bottom-sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+              <div class="sheet-title">📍 Lokasi 002C</div>
+              <div class="sheet-subtitle">Assign Operator - 29 Januari 2026</div>
+            </div>
+            <div class="sheet-content">
+              <div class="detail-grid">
+                <div class="detail-section">
+                  <div class="detail-label">Tanggal</div>
+                  <div class="detail-value">29/01/2026</div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">Status</div>
+                  <div class="detail-value" style="color: #E69500;">OPEN</div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">Pola Kerja</div>
+                  <div class="detail-value">Rotasi</div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">Shift</div>
+                  <div class="detail-value">Pagi</div>
+                </div>
+              </div>
+              <div class="divider"></div>
+              <div class="form-group">
+                <label class="form-label">
+                  Pilih Operator <span class="required">*</span>
+                </label>
+                <select class="form-select">
+                  <option>Pilih operator...</option>
+                  <option>👤 Pak Budi (available)</option>
+                  <option>👤 Pak Ahmad (available)</option>
+                  <option>👤 Pak Citra (busy)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">
+                  Unit Traktor
+                </label>
+                <select class="form-select">
+                  <option>Unit 1 - CD8019</option>
+                  <option>Unit 2 - CD8021</option>
+                </select>
+              </div>
+            </div>
+            <div class="sheet-actions">
+              <button class="action-btn secondary">
+                Batal
+              </button>
+              <button class="action-btn primary">
+                Tugaskan Operator
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 4: Operator - VIEW Only -->
+    <div class="showcase-item">
+      <div class="showcase-label fase2">Operator - VIEW</div>
+      <div class="showcase-description">
+        No FAB, VIEW only<br>
+        Filtered list: assigned-to-me only
+      </div>
+      <div class="phone-frame">
+        <div class="role-indicator" style="background: var(--button-blue);">OPERATOR</div>
+        <div class="phone-screen">
+          <div class="status-bar">
+            <span>06:02</span>
+            <span>4G 98%</span>
+          </div>
+          <div class="app-header">
+            <div class="header-row">
+              <h1>FSTrack</h1>
+              <span class="header-time">06:02 WIB</span>
+            </div>
+          </div>
+          <div class="main-content">
+            <div class="greeting">Selamat pagi, Pak Budi</div>
+
+            <div class="weather-widget">
+              <div class="weather-left">
+                <span class="weather-icon">☀️</span>
+                <div>
+                  <div class="weather-temp">28°C</div>
+                  <div class="weather-condition">Cerah</div>
+                </div>
+              </div>
+              <span class="weather-time">Diperbarui 06:00</span>
+            </div>
+
+            <div class="section-title">
+              Tugas Saya
+              <span class="count">2</span>
+            </div>
+
+            <!-- Card 1 - ASSIGNED to this operator -->
+            <div class="workplan-card status-assigned">
+              <div class="wp-header">
+                <div class="wp-location">
+                  <span class="wp-location-icon">📍</span>423W2
+                </div>
+                <span class="wp-status assigned">Assigned</span>
+              </div>
+              <div class="wp-date">📅 Hari ini, 29 Januari 2026</div>
+              <div class="wp-details">
+                <span class="wp-detail-item">🚜 CD8019</span>
+                <span class="wp-detail-item">⏰ Shift Pagi</span>
+              </div>
+            </div>
+
+            <!-- Card 2 - ASSIGNED to this operator -->
+            <div class="workplan-card status-assigned">
+              <div class="wp-header">
+                <div class="wp-location">
+                  <span class="wp-location-icon">📍</span>115A
+                </div>
+                <span class="wp-status assigned">Assigned</span>
+              </div>
+              <div class="wp-date">📅 Besok, 30 Januari 2026</div>
+              <div class="wp-details">
+                <span class="wp-detail-item">🚜 CD8019</span>
+                <span class="wp-detail-item">⏰ Shift Pagi</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- NO FAB for Operator -->
+          <div style="position: absolute; bottom: 24px; right: 24px; color: var(--text-muted); font-size: 11px; text-align: right;">
+            No FAB<br>(Operator View-Only)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 5: Detail View - Read Only -->
+    <div class="showcase-item">
+      <div class="showcase-label fase2">Detail View - Read Only</div>
+      <div class="showcase-description">
+        All roles: View detail work plan<br>
+        Read-only untuk Operator/Mandor
+      </div>
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <div class="status-bar">
+            <span>06:02</span>
+            <span>4G 98%</span>
+          </div>
+          <div class="app-header">
+            <div class="header-row">
+              <h1>FSTrack</h1>
+              <span class="header-time">06:02 WIB</span>
+            </div>
+          </div>
+
+          <!-- Dimmed Content -->
+          <div class="main-content" style="opacity: 0.3; pointer-events: none;">
+            <div class="greeting">Selamat pagi, Pak Budi</div>
+          </div>
+
+          <!-- Overlay -->
+          <div class="overlay"></div>
+
+          <!-- Bottom Sheet - Detail View -->
+          <div class="bottom-sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+              <div class="sheet-title">📍 Lokasi 423W2</div>
+              <div class="sheet-subtitle">Detail Rencana Kerja</div>
+            </div>
+            <div class="sheet-content">
+              <div class="detail-grid">
+                <div class="detail-section">
+                  <div class="detail-label">Tanggal</div>
+                  <div class="detail-value">29/01/2026</div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">Status</div>
+                  <div class="detail-value" style="color: var(--button-blue);">ASSIGNED</div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">Pola Kerja</div>
+                  <div class="detail-value">Rotasi</div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">Shift</div>
+                  <div class="detail-value">Pagi (06:00 - 14:00)</div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">Unit Traktor</div>
+                  <div class="detail-value">CD8019</div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">Operator</div>
+                  <div class="detail-value">Pak Budi</div>
+                </div>
+              </div>
+              <div class="divider"></div>
+              <div class="detail-section">
+                <div class="detail-label">Dibuat Oleh</div>
+                <div class="detail-value">Pak Suswanto (Kasie PG)</div>
+              </div>
+              <div class="detail-section">
+                <div class="detail-label">Di-assign Oleh</div>
+                <div class="detail-value">Pak Siswanto (Kasie FE)</div>
+              </div>
+            </div>
+            <div class="sheet-actions">
+              <button class="action-btn secondary" style="flex: 1;">
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 6: Status Workflow Visualization -->
+    <div class="showcase-item">
+      <div class="showcase-label fase2">Status Workflow</div>
+      <div class="showcase-description">
+        OPEN → ASSIGNED → IN_PROGRESS → COMPLETED<br>
+        Color-coded status indicators
+      </div>
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <div class="status-bar">
+            <span>06:32</span>
+            <span>4G 100%</span>
+          </div>
+          <div class="app-header">
+            <div class="header-row">
+              <h1>FSTrack</h1>
+              <span class="header-time">06:32 WIB</span>
+            </div>
+          </div>
+          <div class="main-content">
+            <div class="greeting">Status Workflow</div>
+
+            <div class="section-title">
+              Semua Status
+            </div>
+
+            <!-- OPEN -->
+            <div class="workplan-card status-open">
+              <div class="wp-header">
+                <div class="wp-location">
+                  <span class="wp-location-icon">📍</span>002C
+                </div>
+                <span class="wp-status open">OPEN</span>
+              </div>
+              <div class="wp-date">📅 29 Januari 2026</div>
+              <div class="wp-details">
+                <span style="color: #E69500; font-size: 11px;">🟠 Baru dibuat, belum di-assign</span>
+              </div>
+            </div>
+
+            <!-- ASSIGNED -->
+            <div class="workplan-card status-assigned">
+              <div class="wp-header">
+                <div class="wp-location">
+                  <span class="wp-location-icon">📍</span>423W2
+                </div>
+                <span class="wp-status assigned">ASSIGNED</span>
+              </div>
+              <div class="wp-date">📅 29 Januari 2026</div>
+              <div class="wp-details">
+                <span style="color: var(--button-blue); font-size: 11px;">🔵 Sudah di-assign, siap dikerjakan</span>
+              </div>
+            </div>
+
+            <!-- COMPLETED -->
+            <div class="workplan-card status-completed">
+              <div class="wp-header">
+                <div class="wp-location">
+                  <span class="wp-location-icon">📍</span>115A
+                </div>
+                <span class="wp-status completed">COMPLETED</span>
+              </div>
+              <div class="wp-date">📅 25 Januari 2026</div>
+              <div class="wp-details">
+                <span style="color: var(--primary); font-size: 11px;">🟢 Selesai dikerjakan</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="fab" style="opacity: 0.5;">
+            <span class="fab-icon">+</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Design Decisions Summary -->
+  <div class="comparison-section">
+    <h2>📋 Fase 2 Design Direction Summary</h2>
+    <div class="comparison-grid">
+      <div class="comparison-card">
+        <h3>CREATE Flow (Kasie PG)</h3>
+        <p>
+          <strong>FAB → Bottom Sheet Form:</strong><br><br>
+          • Tap FAB (+) untuk buat rencana baru<br>
+          • 4 field: Tanggal, Pola, Shift, Lokasi<br>
+          • Tanggal auto-filled hari ini<br>
+          • Simpan → Toast success → Card muncul
+        </p>
+      </div>
+      <div class="comparison-card">
+        <h3>ASSIGN Flow (Kasie FE)</h3>
+        <p>
+          <strong>Tap OPEN Card → Assign Bottom Sheet:</strong><br><br>
+          • Lihat list work plan dengan status<br>
+          • Tap card OPEN untuk assign<br>
+          • Pilih operator dari dropdown<br>
+          • Status berubah: OPEN → ASSIGNED
+        </p>
+      </div>
+      <div class="comparison-card">
+        <h3>VIEW Flow (All Roles)</h3>
+        <p>
+          <strong>Role-based Filtering:</strong><br><br>
+          • Kasie PG/FE: Lihat semua work plan<br>
+          • Operator: Hanya assigned-to-me<br>
+          • Mandor/Estate: VIEW only, no actions<br>
+          • Tap card untuk detail view
+        </p>
+      </div>
+      <div class="comparison-card">
+        <h3>Status Indicators</h3>
+        <p>
+          <strong>Color-coded Border Left:</strong><br><br>
+          • 🟠 OPEN - Orange #FBA919<br>
+          • 🔵 ASSIGNED - Blue #25AAE1<br>
+          • 🟢 COMPLETED - Green #008945<br>
+          • Visual recognition instant
+        </p>
+      </div>
+      <div class="comparison-card">
+        <h3>Role-Based UI</h3>
+        <p>
+          <strong>Subtle Differentiation:</strong><br><br>
+          • FAB: Kasie PG only<br>
+          • Assign action: Kasie FE only<br>
+          • View detail: All roles<br>
+          • Filtered list: Role-based
+        </p>
+      </div>
+      <div class="comparison-card">
+        <h3>Fase 2 Extension</h3>
+        <p>
+          <strong>Foundation dari Fase 1:</strong><br><br>
+          • Same color tokens & typography<br>
+          • Same design system (Material 3)<br>
+          • New components: WorkPlanCard<br>
+          • Extended bottom sheet patterns
+        </p>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
