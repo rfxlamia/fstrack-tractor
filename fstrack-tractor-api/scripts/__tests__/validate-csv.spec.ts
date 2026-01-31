@@ -1,11 +1,9 @@
-import { execSync } from 'child_process';
-import * as fs from 'fs';
+import { spawnSync } from 'child_process';
 import * as path from 'path';
 
 // Integration tests for validate-csv.ts script
 // These tests run the actual CLI script with fixture files
 
-const SCRIPT_PATH = path.join(__dirname, '../validate-csv.ts');
 const FIXTURES_DIR = path.join(__dirname, 'fixtures');
 const TEST_ENV = {
   ...process.env,
@@ -15,69 +13,53 @@ const TEST_ENV = {
   CSV_EXISTING_USERS: 'tyastono,agungm',
 };
 
+function runCsvValidate(filePath?: string): { exitCode: number; output: string } {
+  const args = filePath
+    ? ['run', 'csv:validate', '--', `--file=${filePath}`]
+    : ['run', 'csv:validate'];
+
+  const result = spawnSync('npm', args, {
+    cwd: process.cwd(),
+    env: TEST_ENV,
+    encoding: 'utf-8',
+  });
+
+  const output = (result.stdout || '') + (result.stderr || '');
+  return {
+    exitCode: result.status ?? 1,
+    output,
+  };
+}
+
 describe('validate-csv CLI script', () => {
   describe('valid CSV', () => {
     it('validates successfully with exit code 0', () => {
       const fixturePath = path.join(FIXTURES_DIR, 'valid-users.csv');
-
-      expect(() => {
-        execSync(`npm run csv:validate -- --file=${fixturePath}`, {
-          cwd: process.cwd(),
-          env: TEST_ENV,
-          stdio: 'pipe',
-        });
-      }).not.toThrow();
+      const { exitCode } = runCsvValidate(fixturePath);
+      expect(exitCode).toBe(0);
     });
 
     it('outputs success message with role breakdown', () => {
       const fixturePath = path.join(FIXTURES_DIR, 'valid-users.csv');
+      const { output } = runCsvValidate(fixturePath);
 
-      const result = execSync(`npm run csv:validate -- --file=${fixturePath}`, {
-        cwd: process.cwd(),
-        env: TEST_ENV,
-        encoding: 'utf-8',
-        stdio: 'pipe',
-      });
-
-      expect(result).toContain('✅');
-      expect(result).toContain('Validation Passed');
-      expect(result).toContain('Total rows');
-      expect(result).toContain('Roles breakdown');
+      expect(output).toContain('✅');
+      expect(output).toContain('Validation Passed');
+      expect(output).toContain('Total rows');
+      expect(output).toContain('Roles breakdown');
     });
   });
 
   describe('invalid CSV with password errors', () => {
     it('fails validation with exit code 1', () => {
       const fixturePath = path.join(FIXTURES_DIR, 'invalid-password.csv');
-
-      let exitCode: number | null = null;
-      try {
-        execSync(`npm run csv:validate -- --file=${fixturePath}`, {
-          cwd: process.cwd(),
-          env: TEST_ENV,
-          stdio: 'pipe',
-        });
-      } catch (error) {
-        exitCode = (error as any).status;
-      }
-
+      const { exitCode } = runCsvValidate(fixturePath);
       expect(exitCode).toBe(1);
     });
 
     it('outputs password validation error', () => {
       const fixturePath = path.join(FIXTURES_DIR, 'invalid-password.csv');
-
-      let output = '';
-      try {
-        execSync(`npm run csv:validate -- --file=${fixturePath}`, {
-          cwd: process.cwd(),
-          env: TEST_ENV,
-          encoding: 'utf-8',
-          stdio: 'pipe',
-        });
-      } catch (error) {
-        output = (error as any).stdout || (error as any).stderr || '';
-      }
+      const { output } = runCsvValidate(fixturePath);
 
       expect(output).toContain('❌');
       expect(output).toContain('Validation Failed');
@@ -88,35 +70,13 @@ describe('validate-csv CLI script', () => {
   describe('invalid CSV with role errors', () => {
     it('fails validation with exit code 1', () => {
       const fixturePath = path.join(FIXTURES_DIR, 'invalid-role.csv');
-
-      let exitCode: number | null = null;
-      try {
-        execSync(`npm run csv:validate -- --file=${fixturePath}`, {
-          cwd: process.cwd(),
-          env: TEST_ENV,
-          stdio: 'pipe',
-        });
-      } catch (error) {
-        exitCode = (error as any).status;
-      }
-
+      const { exitCode } = runCsvValidate(fixturePath);
       expect(exitCode).toBe(1);
     });
 
     it('outputs role_id validation error', () => {
       const fixturePath = path.join(FIXTURES_DIR, 'invalid-role.csv');
-
-      let output = '';
-      try {
-        execSync(`npm run csv:validate -- --file=${fixturePath}`, {
-          cwd: process.cwd(),
-          env: TEST_ENV,
-          encoding: 'utf-8',
-          stdio: 'pipe',
-        });
-      } catch (error) {
-        output = (error as any).stdout || (error as any).stderr || '';
-      }
+      const { output } = runCsvValidate(fixturePath);
 
       expect(output).toContain('❌');
       expect(output).toContain('role_id');
@@ -126,35 +86,13 @@ describe('validate-csv CLI script', () => {
   describe('invalid CSV with duplicate usernames', () => {
     it('fails validation with exit code 1', () => {
       const fixturePath = path.join(FIXTURES_DIR, 'duplicate-username.csv');
-
-      let exitCode: number | null = null;
-      try {
-        execSync(`npm run csv:validate -- --file=${fixturePath}`, {
-          cwd: process.cwd(),
-          env: TEST_ENV,
-          stdio: 'pipe',
-        });
-      } catch (error) {
-        exitCode = (error as any).status;
-      }
-
+      const { exitCode } = runCsvValidate(fixturePath);
       expect(exitCode).toBe(1);
     });
 
     it('outputs duplicate username error', () => {
       const fixturePath = path.join(FIXTURES_DIR, 'duplicate-username.csv');
-
-      let output = '';
-      try {
-        execSync(`npm run csv:validate -- --file=${fixturePath}`, {
-          cwd: process.cwd(),
-          env: TEST_ENV,
-          encoding: 'utf-8',
-          stdio: 'pipe',
-        });
-      } catch (error) {
-        output = (error as any).stdout || (error as any).stderr || '';
-      }
+      const { output } = runCsvValidate(fixturePath);
 
       expect(output).toContain('❌');
       expect(output).toContain('duplicate');
@@ -164,35 +102,13 @@ describe('validate-csv CLI script', () => {
   describe('invalid CSV with missing headers', () => {
     it('fails validation with exit code 1', () => {
       const fixturePath = path.join(FIXTURES_DIR, 'invalid-headers.csv');
-
-      let exitCode: number | null = null;
-      try {
-        execSync(`npm run csv:validate -- --file=${fixturePath}`, {
-          cwd: process.cwd(),
-          env: TEST_ENV,
-          stdio: 'pipe',
-        });
-      } catch (error) {
-        exitCode = (error as any).status;
-      }
-
+      const { exitCode } = runCsvValidate(fixturePath);
       expect(exitCode).toBe(1);
     });
 
     it('outputs header validation error', () => {
       const fixturePath = path.join(FIXTURES_DIR, 'invalid-headers.csv');
-
-      let output = '';
-      try {
-        execSync(`npm run csv:validate -- --file=${fixturePath}`, {
-          cwd: process.cwd(),
-          env: TEST_ENV,
-          encoding: 'utf-8',
-          stdio: 'pipe',
-        });
-      } catch (error) {
-        output = (error as any).stdout || (error as any).stderr || '';
-      }
+      const { output } = runCsvValidate(fixturePath);
 
       expect(output).toContain('❌');
       expect(output).toContain('header');
@@ -202,20 +118,7 @@ describe('validate-csv CLI script', () => {
   describe('missing file', () => {
     it('fails with clear error message', () => {
       const fixturePath = path.join(FIXTURES_DIR, 'non-existent.csv');
-
-      let output = '';
-      let exitCode: number | null = null;
-      try {
-        execSync(`npm run csv:validate -- --file=${fixturePath}`, {
-          cwd: process.cwd(),
-          env: TEST_ENV,
-          encoding: 'utf-8',
-          stdio: 'pipe',
-        });
-      } catch (error) {
-        exitCode = (error as any).status;
-        output = (error as any).stdout || (error as any).stderr || '';
-      }
+      const { exitCode, output } = runCsvValidate(fixturePath);
 
       expect(exitCode).toBe(1);
       expect(output).toContain('Error');
@@ -225,19 +128,7 @@ describe('validate-csv CLI script', () => {
 
   describe('missing --file parameter', () => {
     it('fails with usage message', () => {
-      let output = '';
-      let exitCode: number | null = null;
-      try {
-        execSync('npm run csv:validate', {
-          cwd: process.cwd(),
-          env: TEST_ENV,
-          encoding: 'utf-8',
-          stdio: 'pipe',
-        });
-      } catch (error) {
-        exitCode = (error as any).status;
-        output = (error as any).stdout || (error as any).stderr || '';
-      }
+      const { exitCode, output } = runCsvValidate();
 
       expect(exitCode).toBe(1);
       expect(output).toContain('--file');

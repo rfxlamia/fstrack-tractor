@@ -13,7 +13,7 @@ describe('SeedService', () => {
   let mockConfigGet: jest.Mock;
 
   const mockUser: Partial<User> = {
-    id: 'test-uuid',
+    id: 1,
     username: 'dev_kasie',
     fullName: 'Dev Kasie User',
     role: UserRole.KASIE,

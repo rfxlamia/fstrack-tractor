@@ -23,7 +23,7 @@ export class UsersController {
   @ApiResponse({ status: 400, description: 'Invalid request body' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async updateFirstTimeStatus(
-    @CurrentUser() user: { id: string },
+    @CurrentUser() user: { id: number },
     @Body() dto: UpdateFirstTimeDto,
   ) {
     await this.usersService.updateFirstTime(user.id, dto.isFirstTime);

@@ -20,38 +20,38 @@ export class UsersService {
   }
 
   /**
-   * Finds a user by their UUID.
-   * @param id - The user's UUID
+   * Finds a user by their ID.
+   * @param id - The user's ID (integer)
    * @returns The User entity if found, null otherwise
    */
-  async findById(id: string): Promise<User | null> {
+  async findById(id: number): Promise<User | null> {
     return this.userRepository.findOne({ where: { id } });
   }
 
   /**
    * Updates the user's first-time login flag.
-   * @param id - The user's UUID
+   * @param id - The user's ID (integer)
    * @param isFirstTime - Whether this is the user's first login
    */
-  async updateFirstTime(id: string, isFirstTime: boolean): Promise<void> {
+  async updateFirstTime(id: number, isFirstTime: boolean): Promise<void> {
     await this.userRepository.update(id, { isFirstTime });
   }
 
   /**
    * Updates the user's last login timestamp to current time.
-   * @param id - The user's UUID
+   * @param id - The user's ID (integer)
    */
-  async updateLastLogin(id: string): Promise<void> {
+  async updateLastLogin(id: number): Promise<void> {
     await this.userRepository.update(id, { lastLogin: new Date() });
   }
 
   /**
    * Increments failed_login_attempts atomically.
    * Returns the new count for lockout threshold check.
-   * @param userId - The user's UUID
+   * @param userId - The user's ID (integer)
    * @returns The new failed login attempts count
    */
-  async incrementFailedAttempts(userId: string): Promise<number> {
+  async incrementFailedAttempts(userId: number): Promise<number> {
     await this.userRepository
       .createQueryBuilder()
       .update(User)
@@ -66,9 +66,9 @@ export class UsersService {
   /**
    * Resets failed attempts and clears any lock.
    * Called on successful login.
-   * @param userId - The user's UUID
+   * @param userId - The user's ID (integer)
    */
-  async resetFailedAttempts(userId: string): Promise<void> {
+  async resetFailedAttempts(userId: number): Promise<void> {
     await this.userRepository.update(userId, {
       failedLoginAttempts: 0,
       lockedUntil: null,
@@ -78,9 +78,9 @@ export class UsersService {
   /**
    * Locks account for 30 minutes.
    * Called when failed_login_attempts reaches 10.
-   * @param userId - The user's UUID
+   * @param userId - The user's ID (integer)
    */
-  async lockAccount(userId: string): Promise<void> {
+  async lockAccount(userId: number): Promise<void> {
     const lockUntil = new Date();
     lockUntil.setMinutes(lockUntil.getMinutes() + 30);
 
@@ -92,9 +92,9 @@ export class UsersService {
   /**
    * Clears expired lockout.
    * Called when user attempts login after lock expired.
-   * @param userId - The user's UUID
+   * @param userId - The user's ID (integer)
    */
-  async clearExpiredLockout(userId: string): Promise<void> {
+  async clearExpiredLockout(userId: number): Promise<void> {
     await this.userRepository.update(userId, {
       failedLoginAttempts: 0,
       lockedUntil: null,

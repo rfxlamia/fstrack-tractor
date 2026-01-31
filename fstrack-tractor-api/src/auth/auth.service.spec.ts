@@ -17,7 +17,7 @@ describe('AuthService', () => {
   let jwtService: jest.Mocked<JwtService>;
 
   const mockUser: User = {
-    id: '123e4567-e89b-12d3-a456-426614174000',
+    id: 1,
     username: 'dev_kasie',
     passwordHash: '$2b$10$hashedpassword',
     fullName: 'Dev Kasie User',

@@ -30,7 +30,7 @@ describe('UsersController', () => {
     it('should return 200 response payload on success', async () => {
       usersService.updateFirstTime.mockResolvedValue();
 
-      const user = { id: '123e4567-e89b-12d3-a456-426614174000' };
+      const user = { id: 1 };
       const dto: UpdateFirstTimeDto = { isFirstTime: false };
 
       const result = await controller.updateFirstTimeStatus(user, dto);
@@ -45,7 +45,7 @@ describe('UsersController', () => {
     it('should call usersService.updateFirstTime with correct params', async () => {
       usersService.updateFirstTime.mockResolvedValue();
 
-      const user = { id: '123e4567-e89b-12d3-a456-426614174000' };
+      const user = { id: 1 };
       const dto: UpdateFirstTimeDto = { isFirstTime: false };
 
       await controller.updateFirstTimeStatus(user, dto);
@@ -60,7 +60,7 @@ describe('UsersController', () => {
       const error = new Error('Database connection failed');
       usersService.updateFirstTime.mockRejectedValue(error);
 
-      const user = { id: '123e4567-e89b-12d3-a456-426614174000' };
+      const user = { id: 1 };
       const dto: UpdateFirstTimeDto = { isFirstTime: false };
 
       await expect(controller.updateFirstTimeStatus(user, dto)).rejects.toThrow(

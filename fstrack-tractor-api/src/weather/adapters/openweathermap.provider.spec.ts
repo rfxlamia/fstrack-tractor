@@ -27,6 +27,10 @@ describe('OpenWeatherMapProvider', () => {
       name: 'Lampung Tengah',
       dt: 1705133400,
     },
+    status: 200,
+    statusText: 'OK',
+    headers: {},
+    config: { headers: {} as any },
   };
 
   beforeEach(async () => {

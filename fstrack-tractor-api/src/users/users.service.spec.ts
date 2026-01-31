@@ -13,7 +13,7 @@ describe('UsersService', () => {
   let service: UsersService;
 
   const mockUser: User = {
-    id: '123e4567-e89b-12d3-a456-426614174000',
+    id: 1,
     username: 'dev_kasie',
     passwordHash: '$2b$10$abcdefghijklmnopqrstuv',
     fullName: 'Dev Kasie User',
@@ -96,11 +96,11 @@ describe('UsersService', () => {
     it('should return null when user not found', async () => {
       mockRepository.findOne.mockResolvedValue(null);
 
-      const result = await service.findById('nonexistent-id');
+      const result = await service.findById(999);
 
       expect(result).toBeNull();
       expect(mockRepository.findOne).toHaveBeenCalledWith({
-        where: { id: 'nonexistent-id' },
+        where: { id: 999 },
       });
     });
   });
@@ -141,10 +141,8 @@ describe('UsersService', () => {
         generatedMaps: [],
       });
 
-      await expect(
-        service.updateFirstTime('non-existent-id', false),
-      ).resolves.not.toThrow();
-      expect(mockRepository.update).toHaveBeenCalledWith('non-existent-id', {
+      await expect(service.updateFirstTime(999, false)).resolves.not.toThrow();
+      expect(mockRepository.update).toHaveBeenCalledWith(999, {
         isFirstTime: false,
       });
     });
@@ -169,7 +167,7 @@ describe('UsersService', () => {
       );
 
       const updateCall = mockRepository.update.mock.calls[0] as [
-        string,
+        number,
         MockUpdateCall,
       ];
       const passedDate = updateCall[1].lastLogin;
@@ -183,9 +181,7 @@ describe('UsersService', () => {
         generatedMaps: [],
       });
 
-      await expect(
-        service.updateLastLogin('non-existent-id'),
-      ).resolves.not.toThrow();
+      await expect(service.updateLastLogin(999)).resolves.not.toThrow();
     });
   });
 
@@ -244,9 +240,7 @@ describe('UsersService', () => {
         generatedMaps: [],
       });
 
-      await expect(
-        service.resetFailedAttempts('non-existent-id'),
-      ).resolves.not.toThrow();
+      await expect(service.resetFailedAttempts(999)).resolves.not.toThrow();
     });
   });
 
@@ -290,9 +284,7 @@ describe('UsersService', () => {
         generatedMaps: [],
       });
 
-      await expect(
-        service.lockAccount('non-existent-id'),
-      ).resolves.not.toThrow();
+      await expect(service.lockAccount(999)).resolves.not.toThrow();
     });
   });
 
@@ -319,9 +311,7 @@ describe('UsersService', () => {
         generatedMaps: [],
       });
 
-      await expect(
-        service.clearExpiredLockout('non-existent-id'),
-      ).resolves.not.toThrow();
+      await expect(service.clearExpiredLockout(999)).resolves.not.toThrow();
     });
   });
 });
