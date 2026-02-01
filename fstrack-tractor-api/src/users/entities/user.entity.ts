@@ -6,7 +6,6 @@ import {
   UpdateDateColumn,
   Index,
 } from 'typeorm';
-import { UserRole } from '../enums/user-role.enum';
 
 @Entity('users')
 export class User {
@@ -17,17 +16,22 @@ export class User {
   @Index('idx_users_username')
   username: string;
 
-  @Column({ name: 'password_hash', type: 'varchar', length: 255 })
-  passwordHash: string;
+  @Column({ type: 'text' })
+  password: string; // was: passwordHash with column 'password_hash'
 
-  @Column({ name: 'full_name', type: 'varchar', length: 100 })
-  fullName: string;
+  @Column({ type: 'varchar', length: 255 })
+  fullname: string; // was: fullName with column 'full_name'
 
-  @Column({ type: 'varchar', length: 20 })
-  role: UserRole;
+  @Column({ name: 'role_id', type: 'varchar', length: 32, nullable: true })
+  roleId: string | null; // was: role: UserRole (enum)
 
-  @Column({ name: 'estate_id', type: 'uuid', nullable: true })
-  estateId: string | null;
+  @Column({
+    name: 'plantation_group_id',
+    type: 'varchar',
+    length: 10,
+    nullable: true,
+  })
+  plantationGroupId: string | null; // was: estateId: string (UUID)
 
   @Column({ name: 'is_first_time', type: 'boolean', default: true })
   isFirstTime: boolean;

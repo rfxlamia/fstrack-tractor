@@ -5,7 +5,6 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
-import { UserRole } from '../users/enums/user-role.enum';
 import { AccountLockedException } from './exceptions';
 import * as bcrypt from 'bcrypt';
 
@@ -18,11 +17,11 @@ describe('AuthService', () => {
 
   const mockUser: User = {
     id: 1,
-    username: 'dev_kasie',
-    passwordHash: '$2b$10$hashedpassword',
-    fullName: 'Dev Kasie User',
-    role: UserRole.KASIE,
-    estateId: null,
+    username: 'dev_kasie_pg',
+    password: '$2b$10$hashedpassword',
+    fullname: 'Dev Kasie PG User',
+    roleId: 'KASIE_PG',
+    plantationGroupId: null,
     isFirstTime: true,
     failedLoginAttempts: 0,
     lockedUntil: null,
@@ -88,7 +87,7 @@ describe('AuthService', () => {
       expect(usersService.findByUsername).toHaveBeenCalledWith('dev_kasie');
       expect(bcrypt.compare).toHaveBeenCalledWith(
         'DevPassword123',
-        mockUser.passwordHash,
+        mockUser.password,
       );
       expect(usersService.resetFailedAttempts).toHaveBeenCalledWith(
         mockUser.id,
@@ -123,7 +122,7 @@ describe('AuthService', () => {
       expect(usersService.findByUsername).toHaveBeenCalledWith('dev_kasie');
       expect(bcrypt.compare).toHaveBeenCalledWith(
         'wrongpassword',
-        mockUser.passwordHash,
+        mockUser.password,
       );
       expect(usersService.incrementFailedAttempts).toHaveBeenCalledWith(
         mockUser.id,
@@ -290,9 +289,9 @@ describe('AuthService', () => {
         accessToken: mockToken,
         user: {
           id: mockUser.id,
-          fullName: mockUser.fullName,
-          role: mockUser.role,
-          estateId: mockUser.estateId,
+          fullname: mockUser.fullname,
+          roleId: mockUser.roleId,
+          plantationGroupId: mockUser.plantationGroupId,
           isFirstTime: mockUser.isFirstTime,
         },
       });
@@ -306,22 +305,22 @@ describe('AuthService', () => {
       expect(jwtService.sign).toHaveBeenCalledWith({
         sub: mockUser.id,
         username: mockUser.username,
-        role: mockUser.role,
-        estateId: mockUser.estateId,
+        roleId: mockUser.roleId,
+        plantationGroupId: mockUser.plantationGroupId,
       });
     });
 
-    it('should include estateId in payload when user has one', () => {
-      const userWithEstate = { ...mockUser, estateId: 'estate-123' };
+    it('should include plantationGroupId in payload when user has one', () => {
+      const userWithPG = { ...mockUser, plantationGroupId: 'PG001' };
       jwtService.sign.mockReturnValue('token');
 
-      authService.login(userWithEstate);
+      authService.login(userWithPG);
 
       expect(jwtService.sign).toHaveBeenCalledWith({
-        sub: userWithEstate.id,
-        username: userWithEstate.username,
-        role: userWithEstate.role,
-        estateId: 'estate-123',
+        sub: userWithPG.id,
+        username: userWithPG.username,
+        roleId: userWithPG.roleId,
+        plantationGroupId: 'PG001',
       });
     });
   });

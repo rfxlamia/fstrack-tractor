@@ -5,16 +5,16 @@ export class UserResponseDto {
   id: number;
 
   @ApiProperty({ example: 'Dev Kasie User' })
-  fullName: string;
+  fullname: string;
 
-  @ApiProperty({ example: 'KASIE' })
-  role: string;
+  @ApiProperty({ example: 'KASIE_PG' })
+  roleId: string | null;
 
   @ApiProperty({
-    example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+    example: 'PG001',
     nullable: true,
   })
-  estateId: string | null;
+  plantationGroupId: string | null;
 
   @ApiProperty({ example: true })
   isFirstTime: boolean;

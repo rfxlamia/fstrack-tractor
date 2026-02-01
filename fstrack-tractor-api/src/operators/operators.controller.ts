@@ -23,7 +23,7 @@ import { Roles } from '../auth/decorators';
  * Base path: /api/v1/operators
  *
  * RBAC Rules:
- * - LIST: kasie_fe only (for assignment purposes)
+ * - LIST: KASIE_FE only (for assignment purposes)
  * - Other roles may be added later for viewing
  */
 @ApiTags('Operators')
@@ -40,12 +40,12 @@ export class OperatorsController {
    * Returns list of active operators sorted alphabetically by name.
    * Each operator includes id, operatorName (from user.fullname), and unitId.
    *
-   * RBAC: Only kasie_fe can access this endpoint
+   * RBAC: Only KASIE_FE can access this endpoint
    */
   @Get()
-  @Roles('kasie_fe')
+  @Roles('KASIE_FE')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Dapatkan daftar operator (kasie_fe only)' })
+  @ApiOperation({ summary: 'Dapatkan daftar operator (KASIE_FE only)' })
   @ApiResponse({
     status: 200,
     description: 'Daftar operator berhasil diambil',
@@ -53,7 +53,7 @@ export class OperatorsController {
   })
   @ApiResponse({
     status: 403,
-    description: 'Forbidden - Hanya kasie_fe yang bisa melihat daftar operator',
+    description: 'Forbidden - Hanya KASIE_FE yang bisa melihat daftar operator',
   })
   async findAll(): Promise<{
     statusCode: number;

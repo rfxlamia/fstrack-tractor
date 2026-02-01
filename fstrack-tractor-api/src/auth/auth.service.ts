@@ -42,7 +42,7 @@ export class AuthService {
     }
 
     // Step 3: Validate password using bcrypt.compare (timing-safe)
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       // Increment failed attempts
       const newCount = await this.usersService.incrementFailedAttempts(user.id);
@@ -65,7 +65,7 @@ export class AuthService {
 
   /**
    * Generates JWT access token and returns auth response with user data.
-   * JWT payload contains: sub (userId), username, role, estateId.
+   * JWT payload contains: sub (userId), username, roleId, plantationGroupId.
    * Token expires in 14 days as per NFR11.
    * @param user - The validated User entity
    * @returns AuthResponseDto containing accessToken and user info
@@ -74,17 +74,17 @@ export class AuthService {
     const payload = {
       sub: user.id,
       username: user.username,
-      role: user.role,
-      estateId: user.estateId,
+      roleId: user.roleId,
+      plantationGroupId: user.plantationGroupId,
     };
 
     return {
       accessToken: this.jwtService.sign(payload),
       user: {
         id: user.id,
-        fullName: user.fullName,
-        role: user.role,
-        estateId: user.estateId,
+        fullname: user.fullname,
+        roleId: user.roleId,
+        plantationGroupId: user.plantationGroupId,
         isFirstTime: user.isFirstTime,
       },
     };

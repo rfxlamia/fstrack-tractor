@@ -3,7 +3,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
-import { UserRole } from './enums/user-role.enum';
 
 interface MockUpdateCall {
   lastLogin: Date;
@@ -14,11 +13,11 @@ describe('UsersService', () => {
 
   const mockUser: User = {
     id: 1,
-    username: 'dev_kasie',
-    passwordHash: '$2b$10$abcdefghijklmnopqrstuv',
-    fullName: 'Dev Kasie User',
-    role: UserRole.KASIE,
-    estateId: null,
+    username: 'dev_kasie_pg',
+    password: '$2b$10$abcdefghijklmnopqrstuv',
+    fullname: 'Dev Kasie PG User',
+    roleId: 'KASIE_PG',
+    plantationGroupId: null,
     isFirstTime: true,
     failedLoginAttempts: 0,
     lockedUntil: null,

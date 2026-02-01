@@ -9,14 +9,14 @@ describe('RolesGuard', () => {
 
   // Mock ExecutionContext factory
   const createMockExecutionContext = (
-    userRole: string | undefined,
+    userRoleId: string | undefined,
   ): ExecutionContext => {
     return {
       getHandler: jest.fn(),
       getClass: jest.fn(),
       switchToHttp: jest.fn().mockReturnValue({
         getRequest: jest.fn().mockReturnValue({
-          user: userRole ? { role: userRole } : undefined,
+          user: userRoleId ? { roleId: userRoleId } : undefined,
         }),
       }),
     } as unknown as ExecutionContext;
@@ -30,8 +30,8 @@ describe('RolesGuard', () => {
   describe('canActivate', () => {
     it('should allow access when user has matching role', () => {
       // Arrange
-      const mockContext = createMockExecutionContext('kasie_pg');
-      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['kasie_pg']);
+      const mockContext = createMockExecutionContext('KASIE_PG');
+      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['KASIE_PG']);
 
       // Act
       const result = guard.canActivate(mockContext);
@@ -42,8 +42,8 @@ describe('RolesGuard', () => {
 
     it('should throw ForbiddenException when user has non-matching role', () => {
       // Arrange
-      const mockContext = createMockExecutionContext('operator');
-      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['kasie_pg']);
+      const mockContext = createMockExecutionContext('OPERATOR');
+      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['KASIE_PG']);
 
       // Act & Assert
       expect(() => guard.canActivate(mockContext)).toThrow(
@@ -53,7 +53,7 @@ describe('RolesGuard', () => {
 
     it('should allow access when no roles are defined (undefined)', () => {
       // Arrange
-      const mockContext = createMockExecutionContext('operator');
+      const mockContext = createMockExecutionContext('OPERATOR');
       jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(undefined);
 
       // Act
@@ -65,7 +65,7 @@ describe('RolesGuard', () => {
 
     it('should allow access when no roles are defined (empty array)', () => {
       // Arrange
-      const mockContext = createMockExecutionContext('operator');
+      const mockContext = createMockExecutionContext('OPERATOR');
       jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([]);
 
       // Act
@@ -77,10 +77,10 @@ describe('RolesGuard', () => {
 
     it('should allow access when user has one of multiple required roles (OR logic)', () => {
       // Arrange
-      const mockContext = createMockExecutionContext('kasie_fe');
+      const mockContext = createMockExecutionContext('KASIE_FE');
       jest
         .spyOn(reflector, 'getAllAndOverride')
-        .mockReturnValue(['kasie_pg', 'kasie_fe']);
+        .mockReturnValue(['KASIE_PG', 'KASIE_FE']);
 
       // Act
       const result = guard.canActivate(mockContext);
@@ -91,10 +91,10 @@ describe('RolesGuard', () => {
 
     it('should throw ForbiddenException when user has none of multiple required roles', () => {
       // Arrange
-      const mockContext = createMockExecutionContext('operator');
+      const mockContext = createMockExecutionContext('OPERATOR');
       jest
         .spyOn(reflector, 'getAllAndOverride')
-        .mockReturnValue(['kasie_pg', 'kasie_fe']);
+        .mockReturnValue(['KASIE_PG', 'KASIE_FE']);
 
       // Act & Assert
       expect(() => guard.canActivate(mockContext)).toThrow(
@@ -104,8 +104,8 @@ describe('RolesGuard', () => {
 
     it('should use method-level roles over class-level roles', () => {
       // Arrange
-      const mockContext = createMockExecutionContext('kasie_fe');
-      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['kasie_fe']);
+      const mockContext = createMockExecutionContext('KASIE_FE');
+      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['KASIE_FE']);
 
       // Act
       const result = guard.canActivate(mockContext);
@@ -116,8 +116,8 @@ describe('RolesGuard', () => {
 
     it('should throw ForbiddenException with correct error message in Bahasa Indonesia', () => {
       // Arrange
-      const mockContext = createMockExecutionContext('operator');
-      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['kasie_pg']);
+      const mockContext = createMockExecutionContext('OPERATOR');
+      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['KASIE_PG']);
 
       // Act & Assert
       expect(() => guard.canActivate(mockContext)).toThrow(ForbiddenException);
@@ -126,10 +126,10 @@ describe('RolesGuard', () => {
       );
     });
 
-    it('should handle kasie_pg role correctly', () => {
+    it('should handle KASIE_PG role correctly', () => {
       // Arrange
-      const mockContext = createMockExecutionContext('kasie_pg');
-      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['kasie_pg']);
+      const mockContext = createMockExecutionContext('KASIE_PG');
+      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['KASIE_PG']);
 
       // Act
       const result = guard.canActivate(mockContext);
@@ -138,10 +138,10 @@ describe('RolesGuard', () => {
       expect(result).toBe(true);
     });
 
-    it('should handle kasie_fe role correctly', () => {
+    it('should handle KASIE_FE role correctly', () => {
       // Arrange
-      const mockContext = createMockExecutionContext('kasie_fe');
-      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['kasie_fe']);
+      const mockContext = createMockExecutionContext('KASIE_FE');
+      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['KASIE_FE']);
 
       // Act
       const result = guard.canActivate(mockContext);
@@ -150,10 +150,10 @@ describe('RolesGuard', () => {
       expect(result).toBe(true);
     });
 
-    it('should handle operator role correctly when not authorized', () => {
+    it('should handle OPERATOR role correctly when not authorized', () => {
       // Arrange
-      const mockContext = createMockExecutionContext('operator');
-      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['kasie_pg']);
+      const mockContext = createMockExecutionContext('OPERATOR');
+      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['KASIE_PG']);
 
       // Act & Assert
       expect(() => guard.canActivate(mockContext)).toThrow(ForbiddenException);
@@ -162,7 +162,7 @@ describe('RolesGuard', () => {
     it('should handle undefined user gracefully', () => {
       // Arrange
       const mockContext = createMockExecutionContext(undefined);
-      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['kasie_pg']);
+      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['KASIE_PG']);
 
       // Act & Assert
       expect(() => guard.canActivate(mockContext)).toThrow(ForbiddenException);

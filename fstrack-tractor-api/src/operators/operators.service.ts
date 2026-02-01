@@ -38,7 +38,7 @@ export class OperatorsService {
       relations: ['user'],
       order: {
         user: {
-          fullName: 'ASC',
+          fullname: 'ASC',
         },
       },
     });
@@ -52,7 +52,7 @@ export class OperatorsService {
 
       return plainToClass(OperatorResponseDto, {
         id: operator.id,
-        operatorName: operator.user?.fullName || 'Unknown',
+        operatorName: operator.user?.fullname || 'Unknown',
         unitId: operator.unitId,
       });
     });

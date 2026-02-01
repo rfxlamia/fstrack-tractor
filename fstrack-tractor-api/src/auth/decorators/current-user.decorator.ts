@@ -3,10 +3,10 @@ import { Request } from 'express';
 
 type AuthenticatedRequest = Request & {
   user: {
-    id: string;
+    id: number;
     username?: string;
-    role?: string;
-    estateId?: string | null;
+    roleId?: string;
+    plantationGroupId?: string | null;
   };
 };
 

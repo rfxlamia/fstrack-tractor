@@ -14,22 +14,20 @@ describe('AuthController (e2e)', () => {
   let dataSource: DataSource;
 
   const testUser = {
-    id: '00000000-0000-0000-0000-000000000001',
     username: 'test_user',
     password: 'TestPassword123',
-    fullName: 'Test User',
-    role: 'KASIE',
-    estateId: null,
+    fullname: 'Test User',
+    roleId: 'KASIE_PG',
+    plantationGroupId: null,
     isFirstTime: true,
   };
 
   const lockedUser = {
-    id: '00000000-0000-0000-0000-000000000002',
     username: 'locked_user',
     password: 'LockedPassword123',
-    fullName: 'Locked User',
-    role: 'KASIE',
-    estateId: null,
+    fullname: 'Locked User',
+    roleId: 'KASIE_PG',
+    plantationGroupId: null,
     isFirstTime: true,
     lockedUntil: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes from now
   };
@@ -62,15 +60,14 @@ describe('AuthController (e2e)', () => {
     const lockedPasswordHash = await bcrypt.hash(lockedUser.password, 10);
 
     await dataSource.query(
-      `INSERT INTO users (id, username, password_hash, full_name, role, estate_id, is_first_time, failed_login_attempts, locked_until)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      `INSERT INTO users (username, password, fullname, role_id, plantation_group_id, is_first_time, failed_login_attempts, locked_until)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
       [
-        testUser.id,
         testUser.username,
         passwordHash,
-        testUser.fullName,
-        testUser.role,
-        testUser.estateId,
+        testUser.fullname,
+        testUser.roleId,
+        testUser.plantationGroupId,
         testUser.isFirstTime,
         0,
         null,
@@ -78,15 +75,14 @@ describe('AuthController (e2e)', () => {
     );
 
     await dataSource.query(
-      `INSERT INTO users (id, username, password_hash, full_name, role, estate_id, is_first_time, failed_login_attempts, locked_until)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      `INSERT INTO users (username, password, fullname, role_id, plantation_group_id, is_first_time, failed_login_attempts, locked_until)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
       [
-        lockedUser.id,
         lockedUser.username,
         lockedPasswordHash,
-        lockedUser.fullName,
-        lockedUser.role,
-        lockedUser.estateId,
+        lockedUser.fullname,
+        lockedUser.roleId,
+        lockedUser.plantationGroupId,
         lockedUser.isFirstTime,
         10,
         lockedUser.lockedUntil,
@@ -115,13 +111,13 @@ describe('AuthController (e2e)', () => {
 
       expect(response.body).toHaveProperty('accessToken');
       expect(response.body).toHaveProperty('user');
-      expect(response.body.user).toEqual({
-        id: testUser.id,
-        fullName: testUser.fullName,
-        role: testUser.role,
-        estateId: testUser.estateId,
+      expect(response.body.user).toMatchObject({
+        fullname: testUser.fullname,
+        roleId: testUser.roleId,
+        plantationGroupId: testUser.plantationGroupId,
         isFirstTime: testUser.isFirstTime,
       });
+      expect(response.body.user.id).toBeDefined(); // ID is auto-generated
 
       // Verify JWT is valid format
       expect(response.body.accessToken).toMatch(/^eyJ/);
@@ -203,8 +199,8 @@ describe('AuthController (e2e)', () => {
     it('should update last_login on successful login', async () => {
       // Get last_login before
       const beforeResult = await dataSource.query(
-        'SELECT last_login FROM users WHERE id = $1',
-        [testUser.id],
+        'SELECT last_login FROM users WHERE username = $1',
+        [testUser.username],
       );
       const beforeLogin = beforeResult[0].last_login;
 
@@ -218,8 +214,8 @@ describe('AuthController (e2e)', () => {
 
       // Get last_login after
       const afterResult = await dataSource.query(
-        'SELECT last_login FROM users WHERE id = $1',
-        [testUser.id],
+        'SELECT last_login FROM users WHERE username = $1',
+        [testUser.username],
       );
       const afterLogin = afterResult[0].last_login;
 

@@ -14,6 +14,37 @@ This document has been updated to reflect actual production database schema disc
 Key changes: `operator_id` is INTEGER, `location_id` is VARCHAR(32), `unit_id` is VARCHAR(16), status values are OPEN/CLOSED/CANCEL.
 See `/home/v/work/fstrack-tractor/docs/schema-reference.md` for complete production schema.
 
+---
+
+## 🚨 CRITICAL INVESTIGATION NOTICE (2026-02-01)
+
+**Issue:** Epic 1 Role Schema Misalignment Detected
+**Severity:** CRITICAL - May Block Epic 2-4 Implementation
+
+**Summary:**
+During Story 1.6 validation, critical discrepancies discovered between:
+- **Production Schema:** 15 roles, FK pattern (`role_id → roles.id`)
+- **Architecture Design:** 6 roles (kasie_pg, kasie_fe, operator, mandor, estate_pg, admin)
+- **Current Implementation:** 4 roles enum (KASIE, OPERATOR, MANDOR, ADMIN)
+
+Epic 2-4 explicitly require distinct `kasie_pg` and `kasie_fe` roles for permission separation (CREATE vs ASSIGN), but current implementation cannot distinguish between them.
+
+**Investigation Document:** `/home/v/work/fstrack-tractor/_bmad-output/implementation-artifacts/epic-1-failure.md`
+
+**Action Required:**
+1. ✅ Verify production schema accuracy (documented in schema-reference.md)
+2. ⏳ Choose alignment strategy: Option A (proper FK fix) or Option B (extend enum to 6 roles)
+3. ⏳ Update Story 1.6 or create Story 1.7 accordingly
+
+**Status:** Under investigation - Story 1.6 validation on hold pending decision
+
+**Impact on Epics:**
+- Epic 2 (Stories 2.2-2.3): Requires `kasie_pg` role check for CREATE permission
+- Epic 3 (Stories 3.2-3.3): Requires `kasie_fe` role check for ASSIGN permission
+- Epic 4 (Story 4.1): Requires `estate_pg` role for filtering
+
+---
+
 ## Overview
 
 This document provides the complete epic and story breakdown for fstrack-tractor Fase 2 (Work Plan Management), decomposing the requirements from the PRD, UX Design, and Architecture requirements into implementable stories.

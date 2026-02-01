@@ -2,7 +2,6 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
-import { UserRole } from '../users/enums/user-role.enum';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 
@@ -26,26 +25,54 @@ export class SeedService implements OnModuleInit {
   }
 
   private async seedDevUser() {
-    const existingUser = await this.usersRepository.findOne({
+    // Check for OLD dev_kasie user (from previous implementation)
+    const oldDevUser = await this.usersRepository.findOne({
       where: { username: 'dev_kasie' },
     });
-
-    if (existingUser) {
-      this.logger.log('Dev user already exists: dev_kasie');
-      return;
+    if (oldDevUser) {
+      this.logger.log(
+        'Found old dev_kasie user - will be replaced by new dev users',
+      );
+      await this.usersRepository.delete({ username: 'dev_kasie' });
     }
+
+    // Seed new dev users with distinct roles
+    const devUsers = [
+      {
+        username: 'dev_kasie_pg',
+        fullname: 'Dev Kasie PG User',
+        roleId: 'KASIE_PG',
+      },
+      {
+        username: 'dev_kasie_fe',
+        fullname: 'Dev Kasie FE User',
+        roleId: 'KASIE_FE',
+      },
+      {
+        username: 'dev_operator',
+        fullname: 'Dev Operator User',
+        roleId: 'OPERATOR',
+      },
+    ];
 
     const passwordHash = await bcrypt.hash('DevPassword123', 10);
 
-    const devUser = this.usersRepository.create({
-      username: 'dev_kasie',
-      passwordHash,
-      fullName: 'Dev Kasie User',
-      role: UserRole.KASIE,
-      isFirstTime: true,
-    });
+    for (const userData of devUsers) {
+      const exists = await this.usersRepository.findOne({
+        where: { username: userData.username },
+      });
+      if (exists) {
+        this.logger.log(`Dev user already exists: ${userData.username}`);
+        continue;
+      }
 
-    await this.usersRepository.save(devUser);
-    this.logger.log('Dev user seeded successfully: dev_kasie');
+      const user = this.usersRepository.create({
+        ...userData,
+        password: passwordHash,
+        isFirstTime: true,
+      });
+      await this.usersRepository.save(user);
+      this.logger.log(`Dev user seeded: ${userData.username}`);
+    }
   }
 }

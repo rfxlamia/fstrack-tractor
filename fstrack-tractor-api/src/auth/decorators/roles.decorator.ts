@@ -11,12 +11,12 @@ export const ROLES_KEY = 'roles';
  *
  * @example
  * // Single role
- * @Roles('kasie_pg')
+ * @Roles('KASIE_PG')
  * async createSchedule(...) { }
  *
  * @example
  * // Multiple roles (OR logic)
- * @Roles('kasie_pg', 'kasie_fe')
+ * @Roles('KASIE_PG', 'KASIE_FE')
  * async someEndpoint(...) { }
  *
  * @param roles - Array of role strings required to access the resource

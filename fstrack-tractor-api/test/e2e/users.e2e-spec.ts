@@ -14,12 +14,11 @@ describe('UsersController (e2e)', () => {
   let dataSource: DataSource;
 
   const testUser = {
-    id: '00000000-0000-0000-0000-000000000101',
     username: 'users_e2e_user',
     password: 'UsersE2EPassword123',
-    fullName: 'Users E2E User',
-    role: 'KASIE',
-    estateId: null,
+    fullname: 'Users E2E User',
+    roleId: 'KASIE_PG',
+    plantationGroupId: null,
     isFirstTime: true,
   };
 
@@ -59,15 +58,14 @@ describe('UsersController (e2e)', () => {
 
     const passwordHash = await bcrypt.hash(testUser.password, 10);
     await dataSource.query(
-      `INSERT INTO users (id, username, password_hash, full_name, role, estate_id, is_first_time, failed_login_attempts, locked_until)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      `INSERT INTO users (username, password, fullname, role_id, plantation_group_id, is_first_time, failed_login_attempts, locked_until)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
       [
-        testUser.id,
         testUser.username,
         passwordHash,
-        testUser.fullName,
-        testUser.role,
-        testUser.estateId,
+        testUser.fullname,
+        testUser.roleId,
+        testUser.plantationGroupId,
         testUser.isFirstTime,
         0,
         null,
@@ -77,8 +75,8 @@ describe('UsersController (e2e)', () => {
 
   beforeEach(async () => {
     await dataSource.query(
-      'UPDATE users SET is_first_time = $1 WHERE id = $2',
-      [true, testUser.id],
+      'UPDATE users SET is_first_time = $1 WHERE username = $2',
+      [true, testUser.username],
     );
   });
 
@@ -106,8 +104,8 @@ describe('UsersController (e2e)', () => {
       });
 
       const result = await dataSource.query(
-        'SELECT is_first_time FROM users WHERE id = $1',
-        [testUser.id],
+        'SELECT is_first_time FROM users WHERE username = $1',
+        [testUser.username],
       );
       expect(result[0].is_first_time).toBe(false);
     });

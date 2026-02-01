@@ -41,8 +41,8 @@ import { Roles } from '../auth/decorators';
  * Base path: /api/v1/schedules
  *
  * RBAC Rules:
- * - CREATE: kasie_pg only (enforced via @Roles decorator)
- * - ASSIGN: kasie_fe only (enforced via @Roles decorator)
+ * - CREATE: KASIE_PG only (enforced via @Roles decorator)
+ * - ASSIGN: KASIE_FE only (enforced via @Roles decorator)
  * - VIEW: All authenticated roles (no @Roles decorator on GET endpoints)
  */
 @ApiTags('Schedules')
@@ -56,13 +56,13 @@ export class SchedulesController {
    * Create a new schedule
    * POST /api/v1/schedules
    *
-   * RBAC: Only kasie_pg can create schedules
+   * RBAC: Only KASIE_PG can create schedules
    */
   @Post()
-  @Roles('kasie_pg')
+  @Roles('KASIE_PG')
   @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ValidationPipe({ transform: true }))
-  @ApiOperation({ summary: 'Buat rencana kerja baru (kasie_pg only)' })
+  @ApiOperation({ summary: 'Buat rencana kerja baru (KASIE_PG only)' })
   @ApiResponse({
     status: 201,
     description: 'Rencana kerja berhasil dibuat',
@@ -74,7 +74,7 @@ export class SchedulesController {
   })
   @ApiResponse({
     status: 403,
-    description: 'Forbidden - Hanya kasie_pg yang bisa membuat rencana kerja',
+    description: 'Forbidden - Hanya KASIE_PG yang bisa membuat rencana kerja',
   })
   async create(@Body() createScheduleDto: CreateScheduleDto) {
     const schedule = await this.schedulesService.create(createScheduleDto);
@@ -190,14 +190,14 @@ export class SchedulesController {
    * Assign an operator to a schedule
    * PATCH /api/v1/schedules/:id
    *
-   * RBAC: Only kasie_fe can assign operators
+   * RBAC: Only KASIE_FE can assign operators
    * Changes schedule status from OPEN to CLOSED (production schema)
    */
   @Patch(':id')
-  @Roles('kasie_fe')
+  @Roles('KASIE_FE')
   @UsePipes(new ValidationPipe({ transform: true }))
   @ApiOperation({
-    summary: 'Tugaskan operator ke rencana kerja (kasie_fe only)',
+    summary: 'Tugaskan operator ke rencana kerja (KASIE_FE only)',
   })
   @ApiParam({
     name: 'id',
@@ -215,7 +215,7 @@ export class SchedulesController {
   })
   @ApiResponse({
     status: 403,
-    description: 'Forbidden - Hanya kasie_fe yang bisa menugaskan operator',
+    description: 'Forbidden - Hanya KASIE_FE yang bisa menugaskan operator',
   })
   @ApiResponse({
     status: 404,
@@ -243,11 +243,11 @@ export class SchedulesController {
    * Cancel a schedule
    * PATCH /api/v1/schedules/:id/cancel
    *
-   * RBAC: Both kasie_pg and kasie_fe can cancel schedules
+   * RBAC: Both KASIE_PG and KASIE_FE can cancel schedules
    * Only schedules in OPEN status can be cancelled
    */
   @Patch(':id/cancel')
-  @Roles('kasie_pg', 'kasie_fe')
+  @Roles('KASIE_PG', 'KASIE_FE')
   @UsePipes(new ValidationPipe({ transform: true }))
   @ApiOperation({ summary: 'Batalkan rencana kerja' })
   @ApiParam({
@@ -268,7 +268,7 @@ export class SchedulesController {
   @ApiResponse({
     status: 403,
     description:
-      'Forbidden - Hanya kasie_pg atau kasie_fe yang bisa membatalkan',
+      'Forbidden - Hanya KASIE_PG atau KASIE_FE yang bisa membatalkan',
   })
   @ApiResponse({
     status: 404,

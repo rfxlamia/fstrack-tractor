@@ -28,7 +28,7 @@ import { AUTH_ERROR_MESSAGES } from '../constants/error-messages.constant';
  * @example
  * // Method-level usage
  * @Post()
- * @Roles('kasie_pg')
+ * @Roles('KASIE_PG')
  * async create(...) { ... }
  */
 @Injectable()
@@ -61,12 +61,12 @@ export class RolesGuard implements CanActivate {
     interface JwtUser {
       sub: number;
       username: string;
-      role: string;
+      roleId: string;
     }
     const { user } = context.switchToHttp().getRequest<{ user: JwtUser }>();
 
     // Check if user has at least one of the required roles (OR logic)
-    const hasRole = requiredRoles.includes(user?.role ?? '');
+    const hasRole = requiredRoles.includes(user?.roleId ?? '');
 
     if (!hasRole) {
       throw new ForbiddenException(AUTH_ERROR_MESSAGES.FORBIDDEN);

@@ -242,10 +242,7 @@ export class SchedulesService {
 
     // Validate status transition using state machine
     // Note: validateStatusTransition throws BadRequestException if invalid
-    this.validateStatusTransition(
-      schedule.status as ScheduleStatus,
-      'CANCEL',
-    );
+    this.validateStatusTransition(schedule.status as ScheduleStatus, 'CANCEL');
 
     schedule.status = 'CANCEL';
 

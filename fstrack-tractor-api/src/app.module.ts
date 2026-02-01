@@ -9,6 +9,8 @@ import { WeatherModule } from './weather/weather.module';
 import { SchedulesModule } from './schedules/schedules.module';
 import { OperatorsModule } from './operators/operators.module';
 import { SharedModule } from './shared/shared.module';
+import { RolesModule } from './roles/roles.module';
+import { PlantationGroupsModule } from './plantation-groups/plantation-groups.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { SharedModule } from './shared/shared.module';
     }),
     HealthModule,
     DatabaseModule,
+    RolesModule,
+    PlantationGroupsModule,
     UsersModule,
     AuthModule,
     WeatherModule,

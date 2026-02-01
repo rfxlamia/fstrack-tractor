@@ -42,8 +42,8 @@ describe('OperatorsService', () => {
 
   describe('findAll', () => {
     it('should return operators with user names (SUCCESS case)', async () => {
-      const mockUser1 = { id: 1, fullName: 'Budi Santoso' } as User;
-      const mockUser2 = { id: 2, fullName: 'Ahmad Wijaya' } as User;
+      const mockUser1 = { id: 1, fullname: 'Budi Santoso' } as User;
+      const mockUser2 = { id: 2, fullname: 'Ahmad Wijaya' } as User;
 
       const mockOperators: Operator[] = [
         {
@@ -74,7 +74,7 @@ describe('OperatorsService', () => {
         relations: ['user'],
         order: {
           user: {
-            fullName: 'ASC',
+            fullname: 'ASC',
           },
         },
       });
@@ -112,9 +112,9 @@ describe('OperatorsService', () => {
     it('should sort operators alphabetically by user.fullname ASC', async () => {
       // Create operators - mock returns them in SORTED order (as DB would)
       // This simulates TypeORM returning sorted results
-      const mockUserA = { id: 2, fullName: 'Ahmad Wijaya' } as User;
-      const mockUserM = { id: 3, fullName: 'Muhammad Ali' } as User;
-      const mockUserZ = { id: 1, fullName: 'Zulkarnain' } as User;
+      const mockUserA = { id: 2, fullname: 'Ahmad Wijaya' } as User;
+      const mockUserM = { id: 3, fullname: 'Muhammad Ali' } as User;
+      const mockUserZ = { id: 1, fullname: 'Zulkarnain' } as User;
 
       // Mock returns already sorted (simulating DB ORDER BY)
       const mockOperators: Operator[] = [
@@ -147,7 +147,7 @@ describe('OperatorsService', () => {
         relations: ['user'],
         order: {
           user: {
-            fullName: 'ASC',
+            fullname: 'ASC',
           },
         },
       });
@@ -160,7 +160,7 @@ describe('OperatorsService', () => {
     });
 
     it('should transform entities to DTOs using plainToClass', async () => {
-      const mockUser = { id: 1, fullName: 'Budi Santoso' } as User;
+      const mockUser = { id: 1, fullname: 'Budi Santoso' } as User;
       const mockOperators: Operator[] = [
         {
           id: 1,
@@ -181,7 +181,7 @@ describe('OperatorsService', () => {
     });
 
     it('should handle mixed operators (with and without users)', async () => {
-      const mockUser = { id: 1, fullName: 'Budi Santoso' } as User;
+      const mockUser = { id: 1, fullname: 'Budi Santoso' } as User;
 
       const mockOperators: Operator[] = [
         {
@@ -208,7 +208,7 @@ describe('OperatorsService', () => {
     });
 
     it('should handle null unitId', async () => {
-      const mockUser = { id: 1, fullName: 'Budi Santoso' } as User;
+      const mockUser = { id: 1, fullname: 'Budi Santoso' } as User;
 
       const mockOperators: Operator[] = [
         {
