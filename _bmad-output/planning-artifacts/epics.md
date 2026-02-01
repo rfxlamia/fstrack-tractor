@@ -9,6 +9,11 @@ inputDocuments:
 
 # fstrack-tractor - Epic Breakdown
 
+**PRODUCTION SCHEMA UPDATE (2026-01-31):**
+This document has been updated to reflect actual production database schema discovered in Story 1.1.
+Key changes: `operator_id` is INTEGER, `location_id` is VARCHAR(32), `unit_id` is VARCHAR(16), status values are OPEN/CLOSED/CANCEL.
+See `/home/v/work/fstrack-tractor/docs/schema-reference.md` for complete production schema.
+
 ## Overview
 
 This document provides the complete epic and story breakdown for fstrack-tractor Fase 2 (Work Plan Management), decomposing the requirements from the PRD, UX Design, and Architecture requirements into implementable stories.
@@ -33,7 +38,7 @@ This document provides the complete epic and story breakdown for fstrack-tractor
 | FR-F2-7 | User Kasie FE dapat melihat work plan dengan status OPEN |
 | FR-F2-8 | User Kasie FE dapat ASSIGN work plan OPEN ke operator |
 | FR-F2-9 | User Kasie FE dapat memilih operator dari dropdown |
-| FR-F2-10 | System update status: OPEN → ASSIGNED saat ASSIGN |
+| FR-F2-10 | System update status: OPEN → CLOSED saat ASSIGN (production behavior) |
 | FR-F2-11 | User Operator dapat melihat work plan yang di-assign ke dirinya |
 | FR-F2-12 | User Operator dapat melihat detail work plan yang di-assign |
 | FR-F2-13 | User semua role dapat melihat work plan list |
@@ -161,8 +166,10 @@ This document provides the complete epic and story breakdown for fstrack-tractor
 - Bottom sheet pattern untuk semua aksi (CREATE/ASSIGN/VIEW)
 - Color-coded status badges:
   - OPEN: Orange (#FBA919)
-  - ASSIGNED: Blue (#25AAE1)
-  - COMPLETED: Green (#008945)
+- **StatusBadge** - Color-coded status (OPEN/CLOSED/CANCEL)
+- OPEN: Orange border (`#FBA919`)
+- CLOSED: Blue border (`#25AAE1`)
+- CANCEL: Red border (future)
 - Touch targets minimum 48dp, preferably 60dp
 - Bahasa Indonesia untuk semua user-facing text
 - Toast messages untuk success feedback
@@ -170,8 +177,9 @@ This document provides the complete epic and story breakdown for fstrack-tractor
 
 **Technical Constraints:**
 
-- Tabel schedules sudah ada di production (FK: location_id, unit_id, operator_id)
-- Status enum: OPEN, ASSIGNED, IN_PROGRESS, COMPLETED
+- Tabel schedules sudah ada di production (FK: location_id VARCHAR(32), unit_id VARCHAR(16), operator_id INTEGER)
+- Status values (production): OPEN, CLOSED, CANCEL
+- Additional columns discovered: start_time, end_time, report_id, notes
 - Naming conventions: snake_case (DB), camelCase (API/Flutter), kebab-case (NestJS files)
 - Online-only untuk Fase 2 (offline deferred to Fase 3+)
 - Android portrait only
@@ -190,7 +198,7 @@ This document provides the complete epic and story breakdown for fstrack-tractor
 | FR-F2-7 | Epic 3 | 3.2 | User Kasie FE dapat melihat work plan status OPEN |
 | FR-F2-8 | Epic 3 | 3.2, 3.3 | User Kasie FE dapat ASSIGN work plan ke operator |
 | FR-F2-9 | Epic 3 | 3.1, 3.2 | User Kasie FE dapat memilih operator dari dropdown |
-| FR-F2-10 | Epic 1, 3 | 1.5, 3.3 | System update status: OPEN → ASSIGNED |
+| FR-F2-10 | Epic 1, 3 | 1.5, 3.3 | System update status: OPEN → CLOSED (production behavior) |
 | FR-F2-11 | Epic 4 | 4.1 | User Operator dapat melihat work plan assigned |
 | FR-F2-12 | Epic 4 | 4.3 | User Operator dapat melihat detail work plan |
 | FR-F2-13 | Epic 4 | 4.1, 4.4 | User semua role dapat melihat work plan list |
@@ -257,7 +265,7 @@ Kasie FE dapat menugaskan operator ke work plan yang berstatus OPEN.
 **Implementation Notes:**
 - AssignBottomSheet widget dengan operator dropdown
 - GetOperatorsUseCase untuk fetch operator list
-- Status transition OPEN → ASSIGNED
+- Status transition OPEN → CLOSED (when operator assigned)
 - Role-based visibility (ASSIGN section hanya untuk Kasie FE)
 
 **Standalone Value:** ✅ Kasie FE dapat ASSIGN operators, building on Epic 2's CREATE capability
@@ -309,18 +317,21 @@ So that **entities and DTOs match the actual production structure**.
 **Given** access to production PostgreSQL database
 **When** schema inspection is performed
 **Then** the following tables are documented:
-  - `schedules` - columns, types, constraints, FKs
-  - `operators` - columns, types, constraints
-  - `units` - columns, types, constraints
-  - `locations` - columns, types, constraints
-  - `users` - existing structure (from Fase 1)
-**And** status enum values are confirmed: OPEN, ASSIGNED, IN_PROGRESS, COMPLETED
-**And** FK relationships are mapped: schedules → operators, locations, units
-**And** findings are documented in a schema reference file
+  - `schedules` - columns, types, constraints, FKs (operator_id INTEGER, location_id VARCHAR(32), unit_id VARCHAR(16))
+  - `operators` - columns, types, constraints (id INTEGER auto-increment)
+  - `units` - columns, types, constraints (id VARCHAR(16) manual)
+  - `locations` - columns, types, constraints (id VARCHAR(32) manual)
+  - `users` - existing structure (from Fase 1, id INTEGER)
+**And** status values are confirmed: OPEN, CLOSED, CANCEL (production values)
+**And** FK relationships are mapped: schedules → operators(INTEGER), locations(VARCHAR), units(VARCHAR)
+**And** findings are documented in `/home/v/work/fstrack-tractor/docs/schema-reference.md`
 
 **Given** schema inspection is complete
 **When** TypeORM entities are created
-**Then** entities exactly match production column names (snake_case)
+**Then** entities exactly match production column names and types
+**And** operator_id uses INTEGER type (not UUID)
+**And** location_id uses VARCHAR(32) type (not UUID)
+**And** unit_id uses VARCHAR(16) type (not UUID)
 **And** no migrations alter existing production tables
 **And** only READ operations are performed during discovery (no writes)
 
@@ -429,22 +440,21 @@ So that **invalid status transitions are prevented**.
 **Acceptance Criteria:**
 
 **Given** a schedule with status "OPEN"
-**When** PATCH is called to update status to "ASSIGNED" with operator_id
+**When** PATCH is called to update status to "CLOSED" with operator_id
 **Then** the transition is allowed and status updates
 
 **Given** a schedule with status "OPEN"
-**When** PATCH is called to update status to "COMPLETED" (skipping ASSIGNED)
-**Then** the transition is denied with 400 Bad Request
-**And** message "Transisi status tidak valid"
+**When** PATCH is called to update status to "CANCEL"
+**Then** the transition is allowed (cancellation always allowed from OPEN)
 
-**Given** a schedule with status "ASSIGNED"
+**Given** a schedule with status "CLOSED"
 **When** PATCH is called to update status back to "OPEN"
-**Then** the transition is denied (no backward transitions allowed)
+**Then** the transition is denied (CLOSED is terminal state)
 
 **Technical Tasks:**
 - Implement state machine in `schedules.service.ts`
-- Define valid transitions: OPEN→ASSIGNED, ASSIGNED→IN_PROGRESS, IN_PROGRESS→COMPLETED
-- Add CHECK constraint in database for status values
+- Define valid transitions: OPEN→CLOSED, OPEN→CANCEL (CLOSED and CANCEL are terminal)
+- Add CHECK constraint in database for status values (OPEN, CLOSED, CANCEL)
 - Write unit tests for valid and invalid transitions
 
 ---
@@ -655,17 +665,17 @@ So that **the operator knows their assignment**.
 
 As a **Kasie FE**,
 I want **to submit operator assignment**,
-So that **the work plan status changes to ASSIGNED**.
+So that **the work plan status changes to CLOSED**.
 
 **Acceptance Criteria:**
 
 **Given** an operator is selected from dropdown
 **When** "Tugaskan Operator" is tapped
 **Then** loading state shows on button
-**And** PATCH request is sent to `/api/v1/schedules/:id` with operator_id
+**And** PATCH request is sent to `/api/v1/schedules/:id` with operator_id (INTEGER)
 **And** on success, toast appears: "Operator berhasil ditugaskan!"
 **And** bottom sheet closes
-**And** work plan card status badge changes from OPEN (orange) to ASSIGNED (blue)
+**And** work plan card status badge changes from OPEN (orange) to CLOSED (blue)
 
 **Given** assignment fails (e.g., operator already assigned elsewhere)
 **When** API returns error
@@ -726,19 +736,19 @@ So that **I can quickly understand work plan status**.
 **Then** StatusBadge shows orange background (#FBA919) with white text "OPEN"
 **And** card has 4dp orange left border
 
-**Given** a work plan with status "ASSIGNED"
+**Given** a work plan with status "CLOSED"
 **When** displayed in card
-**Then** StatusBadge shows blue background (#25AAE1) with white text "ASSIGNED"
+**Then** StatusBadge shows blue background (#25AAE1) with white text "CLOSED"
 **And** card has 4dp blue left border
 
-**Given** a work plan with status "COMPLETED"
+**Given** a work plan with status "CANCEL"
 **When** displayed in card
-**Then** StatusBadge shows green background (#008945) with white text "COMPLETED"
-**And** card has 4dp green left border
+**Then** StatusBadge shows red background with white text "CANCEL"
+**And** card has 4dp red left border
 
 **Technical Tasks:**
 - Create `status_badge.dart` widget in presentation/widgets
-- Implement color mapping: OPEN→orange, ASSIGNED→blue, COMPLETED→green
+- Implement color mapping: OPEN→orange, CLOSED→blue, CANCEL→red
 - Apply colored left border to WorkPlanCard
 - Write golden tests for all status states
 

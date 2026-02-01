@@ -43,7 +43,7 @@ development_status:
   # Epic 1: Backend Foundation & RBAC System
   epic-1: in-progress
   1-1-production-schema-discovery-validation: done
-  1-2-schedule-entity-crud-endpoints: backlog
+  1-2-schedule-entity-crud-endpoints: in-progress
   1-3-operators-module-list-endpoint: backlog
   1-4-rbac-roles-guard-implementation: backlog
   1-5-state-machine-validation: backlog

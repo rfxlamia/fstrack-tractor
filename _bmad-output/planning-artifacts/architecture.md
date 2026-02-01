@@ -14,6 +14,11 @@ date: '2026-01-30'
 
 # Architecture Decision Document - Fase 2
 
+**PRODUCTION SCHEMA UPDATE (2026-01-31):**
+This document has been updated to reflect actual production database schema discovered in Story 1.1.
+Key changes: `operator_id` is INTEGER, `location_id` is VARCHAR(32), `unit_id` is VARCHAR(16), status values are OPEN/CLOSED/CANCEL.
+See `/home/v/work/fstrack-tractor/docs/schema-reference.md` for complete production schema.
+
 _Dokumen ini dibangun secara kolaboratif melalui step-by-step discovery. Bagian-bagian ditambahkan saat kita bekerja melalui setiap keputusan arsitektur bersama._
 
 ---
@@ -97,8 +102,9 @@ PRD Fase 2 mendefinisikan **30 Functional Requirements** yang diorganisasi dalam
 
 **Database Schema Constraints:**
 - Tabel `schedules` sudah ada di production
-- Foreign keys: `location_id`, `unit_id`, `operator_id`
-- Status enum: OPEN, ASSIGNED, IN_PROGRESS, COMPLETED
+- Foreign keys: `location_id` (VARCHAR(32)), `unit_id` (VARCHAR(16)), `operator_id` (INTEGER)
+- Status values (production): OPEN, CLOSED, CANCEL
+- Additional columns: start_time, end_time, report_id
 - Tidak boleh mengubah schema existing
 
 **Brownfield Constraints:**
@@ -115,7 +121,7 @@ PRD Fase 2 mendefinisikan **30 Functional Requirements** yang diorganisasi dalam
 - **WorkPlanCard** - Extended dari TaskCard dengan status indicators
 - **CreateBottomSheet** - Form dengan 4 field (tanggal, pola, shift, lokasi)
 - **AssignBottomSheet** - Dropdown operator selection
-- **StatusBadge** - Color-coded (Orange=OPEN, Blue=ASSIGNED, Green=COMPLETED)
+- **StatusBadge** - Color-coded (Orange=OPEN, Blue=CLOSED, Red=CANCEL)
 
 **Animation/Transition Requirements:**
 - Bottom sheet slide-up (250ms)
@@ -144,7 +150,7 @@ PRD Fase 2 mendefinisikan **30 Functional Requirements** yang diorganisasi dalam
 
 **2. State Management**
 - **Auth State:** JWT token, user profile, role
-- **Work Plan State:** OPEN → ASSIGNED → IN_PROGRESS → COMPLETED
+- **Work Plan State:** OPEN → CLOSED → CANCEL (production values)
 - **UI State:** Role-based visibility, bottom sheet state
 - State transitions harus validated dan atomic
 
@@ -347,9 +353,9 @@ src/
 // schedules.service.ts
 async updateStatus(id: string, newStatus: string) {
   const validTransitions = {
-    'OPEN': ['ASSIGNED'],
-    'ASSIGNED': ['IN_PROGRESS'],
-    'IN_PROGRESS': ['COMPLETED']
+    'OPEN': ['CLOSED', 'CANCEL'],
+    'CLOSED': [],  // Terminal state
+    'CANCEL': []   // Terminal state
   };
 
   const current = await this.findById(id);
@@ -364,14 +370,13 @@ async updateStatus(id: string, newStatus: string) {
 -- Database Layer (PostgreSQL)
 -- CHECK constraint sebagai safety net
 ALTER TABLE schedules ADD CONSTRAINT valid_status
-  CHECK (status IN ('OPEN', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED'));
+  CHECK (status IN ('OPEN', 'CLOSED', 'CANCEL'));
 ```
 
-**Status Values:**
+**Status Values (Production):**
 - `OPEN` - Work plan baru dibuat (default)
-- `ASSIGNED` - Operator sudah ditugaskan
-- `IN_PROGRESS` - Operator sedang bekerja (Fase 3)
-- `COMPLETED` - Work plan selesai (Fase 3)
+- `CLOSED` - Work plan ditutup (completed or assigned)
+- `CANCEL` - Work plan dibatalkan
 
 **Party Mode Validation:**
 - ✅ Winston: Pragmatic, flexible untuk future rules
@@ -460,8 +465,8 @@ if (user.role == UserRole.kasieFe && workPlan.status == 'OPEN') {
   "work_date": "2026-01-30",
   "pattern": "Rotasi",
   "shift": "Pagi",
-  "location_id": "uuid",
-  "unit_id": "uuid"
+  "location_id": "LOC001",  // VARCHAR(32)
+  "unit_id": "UNIT01"       // VARCHAR(16)
 }
 
 // Response 201
@@ -480,7 +485,7 @@ if (user.role == UserRole.kasieFe && workPlan.status == 'OPEN') {
 // PATCH /api/v1/schedules/:id (ASSIGN)
 // Request
 {
-  "operator_id": "uuid"
+  "operator_id": 123  // INTEGER not UUID
 }
 
 // Response 200
@@ -489,8 +494,8 @@ if (user.role == UserRole.kasieFe && workPlan.status == 'OPEN') {
   "message": "Operator berhasil ditugaskan!",
   "data": {
     "id": "uuid",
-    "status": "ASSIGNED",
-    "operator_id": "uuid",
+    "status": "CLOSED",
+    "operator_id": 123,
     ...
   }
 }

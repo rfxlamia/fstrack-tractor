@@ -19,6 +19,11 @@ documentCounts:
 
 # Product Requirements Document - FSTrack-Tractor Fase 2
 
+**PRODUCTION SCHEMA UPDATE (2026-01-31):**
+This document has been updated to reflect actual production database schema discovered in Story 1.1.
+Key changes: `operator_id` is INTEGER, `location_id` is VARCHAR(32), `unit_id` is VARCHAR(16), status values are OPEN/CLOSED/CANCEL (not ASSIGNED/IN_PROGRESS/COMPLETED).
+See `/home/v/work/fstrack-tractor/docs/schema-reference.md` for complete production schema.
+
 **Author:** V
 **Date:** 2026-01-29
 **Scope:** Fase 2 - Work Plan Management
@@ -87,11 +92,14 @@ Fase 2 adalah jembatan antara Fase 1 (foundation) dan Fase 3+ (tracking, activit
 - `work_date` (date) - Tanggal kerja
 - `pattern` (varchar) - Pola kerja
 - `shift` (varchar) - Shift kerja
-- `status` (varchar) - Status: OPEN/ASSIGNED/IN_PROGRESS/COMPLETED
-- `location_id` (FK) - Lokasi kerja
-- `unit_id` (FK) - Unit traktor
-- `operator_id` (FK) - Operator yang ditugaskan
-- `report_id` (FK) - Report terkait (nullable di Fase 2)
+- `status` (varchar) - Status: OPEN/CLOSED/CANCEL (production values)
+- `location_id` (VARCHAR(32) FK) - Lokasi kerja → locations.id
+- `unit_id` (VARCHAR(16) FK) - Unit traktor → units.id
+- `operator_id` (INTEGER FK) - Operator yang ditugaskan → operators.id
+- `report_id` (UUID FK) - Report terkait (nullable di Fase 2)
+- `start_time` (timestamptz) - Waktu mulai (nullable)
+- `end_time` (timestamptz) - Waktu selesai (nullable)
+- `notes` (text) - Catatan (nullable)
 
 ### Permission Matrix (Fase 2 Scope)
 
@@ -105,10 +113,10 @@ Fase 2 adalah jembatan antara Fase 1 (foundation) dan Fase 3+ (tracking, activit
 
 | Risk | Mitigation |
 |------|------------|
-| Schema mismatch | Gunakan schema production yang sudah ada (schedules/operators/units) |
+| Schema mismatch | Gunakan schema production yang sudah ada (schedules/operators/units) - VALIDATED in Story 1.1 |\
 | User testing gap | Buat minimal 1 akun per role untuk real live testing |
 | Role permission error | Validasi permission matrix dengan enum roles dari Fase 1 |
-| State transition bug | Implement state machine: OPEN → ASSIGNED → IN_PROGRESS → COMPLETED |
+| State transition bug | Implement state machine: OPEN → CLOSED (status values match production) |
 
 ---
 
@@ -126,7 +134,7 @@ Fase 2 adalah jembatan antara Fase 1 (foundation) dan Fase 3+ (tracking, activit
 
 **User Success Scenarios:**
 - **Kasie PG:** Buka app → tap "Buat Rencana Kerja" → isi form → submit → work plan CREATED with status OPEN
-- **Kasie FE:** Buka app → tap "Lihat Rencana Kerja" → pilih work plan OPEN → pilih operator & unit → submit → work plan ASSIGNED
+- **Kasie FE:** Buka app → tap "Lihat Rencana Kerja" → pilih work plan OPEN → pilih operator & unit → submit → work plan status updated to CLOSED
 - **Operator:** Buka app → tap "Lihat Rencana Kerja" → lihat work plan yang di-assign → ready untuk Fase 3
 
 ### Business Success
@@ -258,7 +266,7 @@ Detail work plan muncul:
 Pak Siswanto pilih operator "Pak Budi" dan tap "Simpan".
 
 **Climax - Aha Moment:**
-Loading indicator muncul sebentar... Toast muncul: "Operator berhasil ditugaskan!" Status work plan berubah dari "OPEN" ke "ASSIGNED".
+Loading indicator muncul sebentar... Toast muncul: "Operator berhasil ditugaskan!" Status work plan berubah dari "OPEN" ke "CLOSED".
 
 **Resolution:**
 Pak Budi sekarang bisa melihat work plan ini di app-nya. Pak Siswanto selesai menugaskan dan siap untuk work plan berikutnya.
@@ -271,7 +279,7 @@ Pak Budi sekarang bisa melihat work plan ini di app-nya. Pak Siswanto selesai me
 - VIEW work plan detail
 - ASSIGN section hanya visible untuk Kasie FE
 - Operator dropdown dari list operator yang available
-- Status transition: OPEN → ASSIGNED
+- Status transition: OPEN → CLOSED (when operator assigned)
 - Success feedback: toast message
 
 ---
@@ -301,7 +309,7 @@ Detail work plan muncul dengan semua informasi yang jelas:
 - Lokasi: Sungai Lilin A
 - Unit: Unit 1
 - Operator: Pak Budi (dirinya)
-- Status: ASSIGNED
+- Status: CLOSED (or OPEN if not yet completed)
 
 Pak Budi tahu persis apa yang harus dilakukan hari ini.
 
@@ -340,7 +348,7 @@ Test 1: Login sebagai "suswanto.kasie_pg" (role: kasie_pg)
 Test 2: Login sebagai "siswanto.kasie_fe" (role: kasie_fe)
 - Tap "Lihat Rencana Kerja" → Work plan OPEN muncul ✅
 - Tap work plan → Assign section visible ✅
-- Pilih operator → Simpan → Status berubah ke ASSIGNED ✅
+- Pilih operator → Simpan → Status berubah ke CLOSED ✅
 
 Test 3: Login sebagai "budi.operator" (role: operator)
 - Tap "Lihat Rencana Kerja" → Hanya work plan yang di-assign muncul ✅
@@ -388,7 +396,7 @@ Pak Soswanti update status testing: "Fase 2 Ready for Internal Release". Checkli
 | FR-F2-7 | User Kasie FE dapat melihat work plan dengan status OPEN |
 | FR-F2-8 | User Kasie FE dapat ASSIGN work plan OPEN ke operator |
 | FR-F2-9 | User Kasie FE dapat memilih operator dari dropdown |
-| FR-F2-10 | System update status: OPEN → ASSIGNED saat ASSIGN |
+| FR-F2-10 | System update status: OPEN → CLOSED saat ASSIGN (production behavior) |
 | FR-F2-11 | User Operator dapat melihat work plan yang di-assign ke dirinya |
 | FR-F2-12 | User Operator dapat melihat detail work plan yang di-assign |
 | FR-F2-13 | User semua role dapat melihat work plan list |
@@ -545,6 +553,8 @@ Pak Soswanti update status testing: "Fase 2 Ready for Internal Release". Checkli
 
 ### Database Schema
 
+**Note:** Production schema uses different data types than originally planned. See `/home/v/work/fstrack-tractor/docs/schema-reference.md` for complete details.
+
 **Tabel schedules:**
 ```sql
 CREATE TABLE schedules (
@@ -553,22 +563,25 @@ CREATE TABLE schedules (
   pattern VARCHAR(50) NOT NULL,
   shift VARCHAR(20) NOT NULL,
   status VARCHAR(20) NOT NULL DEFAULT 'OPEN',
-  location_id UUID NOT NULL,
-  unit_id UUID NOT NULL,
-  operator_id UUID,
+  location_id VARCHAR(32),  -- FK to locations(id) - VARCHAR not UUID
+  unit_id VARCHAR(16),      -- FK to units(id) - VARCHAR not UUID
+  operator_id INTEGER,      -- FK to operators(id) - INTEGER not UUID
   report_id UUID,
-  created_by UUID NOT NULL,
+  start_time TIMESTAMPTZ,
+  end_time TIMESTAMPTZ,
+  notes TEXT,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW(),
   FOREIGN KEY (location_id) REFERENCES locations(id),
   FOREIGN KEY (unit_id) REFERENCES units(id),
   FOREIGN KEY (operator_id) REFERENCES operators(id),
-  FOREIGN KEY (report_id) REFERENCES reports(id),
-  FOREIGN KEY (created_by) REFERENCES users(id)
+  FOREIGN KEY (report_id) REFERENCES reports(id)
 );
 ```
 
-**Status Enum:** OPEN, ASSIGNED, IN_PROGRESS, COMPLETED
+**Status Values (Production):** OPEN, CLOSED, CANCEL
+
+**Note:** Production status values differ from initial planning. The system uses OPEN/CLOSED/CANCEL instead of OPEN/ASSIGNED/IN_PROGRESS/COMPLETED.
 
 ### Error Messages (Bahasa Indonesia)
 
@@ -641,8 +654,8 @@ FSTrack-Tractor Fase 2 adalah kombinasi project type:
   "work_date": "2026-01-29",
   "pattern": "Rotasi",
   "shift": "Pagi",
-  "location_id": "uuid",
-  "unit_id": "uuid"
+  "location_id": "LOC001",  // VARCHAR(32)
+  "unit_id": "UNIT01"       // VARCHAR(16)
 }
 ```
 
@@ -654,10 +667,9 @@ FSTrack-Tractor Fase 2 adalah kombinasi project type:
   "pattern": "Rotasi",
   "shift": "Pagi",
   "status": "OPEN",
-  "location_id": "uuid",
-  "unit_id": "uuid",
+  "location_id": "LOC001",
+  "unit_id": "UNIT01",
   "operator_id": null,
-  "created_by": "uuid",
   "created_at": "2026-01-29T05:30:00Z"
 }
 ```
@@ -665,7 +677,7 @@ FSTrack-Tractor Fase 2 adalah kombinasi project type:
 **Request: PATCH /api/v1/schedules/:id**
 ```json
 {
-  "operator_id": "uuid"
+  "operator_id": 123  // INTEGER
 }
 ```
 
@@ -798,7 +810,7 @@ FSTrack-Tractor Fase 2 adalah kombinasi project type:
 | Boundary | Decision | Rationale |
 |----------|----------|-----------|
 | **Features** | CREATE, ASSIGN, VIEW only | MVP untuk workflow dasar |
-| **Status Transitions** | OPEN → ASSIGNED only | Fase 2 scope, IN_PROGRESS/COMPLETED di Fase 3 |
+| **Status Transitions** | OPEN → CLOSED only | Fase 2 scope, matches production DB (CLOSED/CANCEL in Fase 3) |
 | **Offline Support** | Online-only untuk MVP | Simplify Fase 2 |
 | **Real-time Updates** | Pull-to-refresh | Simplify Fase 2 |
 | **User Testing** | 1 user per role | Minimum coverage |
