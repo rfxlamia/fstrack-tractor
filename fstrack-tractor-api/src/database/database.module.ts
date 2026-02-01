@@ -16,7 +16,7 @@ import { User } from '../users/entities/user.entity';
         password: configService.get('database.password'),
         database: configService.get('database.name'),
         autoLoadEntities: true,
-        synchronize: configService.get('nodeEnv') === 'staging', // Auto-sync for staging, manual migrations for production
+        synchronize: false, // CRITICAL: Never auto-sync - use manual migrations only to prevent production data loss
       }),
       inject: [ConfigService],
     }),
