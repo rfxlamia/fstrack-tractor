@@ -44,7 +44,7 @@ development_status:
   epic-1: in-progress
   1-1-production-schema-discovery-validation: done
   1-2-schedule-entity-crud-endpoints: review
-  1-3-operators-module-list-endpoint: backlog
+  1-3-operators-module-list-endpoint: done
   1-4-rbac-roles-guard-implementation: backlog
   1-5-state-machine-validation: backlog
   1-6-user-dummy-seeding: backlog
