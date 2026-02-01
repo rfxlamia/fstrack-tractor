@@ -9,6 +9,7 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LoginThrottlerGuard } from './guards/login-throttler.guard';
+import { RolesGuard } from './guards/roles.guard';
 import { jwtConfig } from '../config/jwt.config';
 
 @Module({
@@ -28,8 +29,14 @@ import { jwtConfig } from '../config/jwt.config';
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard, LoginThrottlerGuard],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    JwtAuthGuard,
+    LoginThrottlerGuard,
+    RolesGuard,
+  ],
   controllers: [AuthController],
-  exports: [JwtAuthGuard, LoginThrottlerGuard],
+  exports: [JwtAuthGuard, LoginThrottlerGuard, RolesGuard],
 })
 export class AuthModule {}

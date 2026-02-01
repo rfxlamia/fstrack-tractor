@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Body,
   Param,
   Query,
@@ -13,6 +14,7 @@ import {
   UsePipes,
   ValidationPipe,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -20,14 +22,17 @@ import {
   ApiResponse,
   ApiQuery,
   ApiParam,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 import { SchedulesService } from './schedules.service';
-import { CreateScheduleDto } from './dto/create-schedule.dto';
+import { CreateScheduleDto, AssignOperatorDto } from './dto';
 import {
   ScheduleResponseDto,
   PaginatedSchedulesResponseDto,
 } from './dto/schedule-response.dto';
+import { JwtAuthGuard, RolesGuard } from '../auth/guards';
+import { Roles } from '../auth/decorators';
 
 /**
  * Schedules Controller
@@ -36,11 +41,14 @@ import {
  * Base path: /api/v1/schedules
  *
  * RBAC Rules:
- * - CREATE: kasie_pg only (enforced via @Roles decorator when auth enabled)
- * - VIEW: All roles (filtered by role in service layer)
+ * - CREATE: kasie_pg only (enforced via @Roles decorator)
+ * - ASSIGN: kasie_fe only (enforced via @Roles decorator)
+ * - VIEW: All authenticated roles (no @Roles decorator on GET endpoints)
  */
 @ApiTags('Schedules')
+@ApiBearerAuth()
 @Controller('api/v1/schedules')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class SchedulesController {
   constructor(private readonly schedulesService: SchedulesService) {}
 
@@ -48,14 +56,12 @@ export class SchedulesController {
    * Create a new schedule
    * POST /api/v1/schedules
    *
-   * RBAC: @Roles('kasie_pg') - Uncomment when auth guard is enabled
-   * Currently open for testing, must add role guard before production
+   * RBAC: Only kasie_pg can create schedules
    */
   @Post()
+  @Roles('kasie_pg')
   @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ValidationPipe({ transform: true }))
-  // TODO: Add @Roles('kasie_pg') decorator when RolesGuard is configured
-  // TODO: Add @UseGuards(JwtAuthGuard, RolesGuard) for RBAC enforcement
   @ApiOperation({ summary: 'Buat rencana kerja baru (kasie_pg only)' })
   @ApiResponse({
     status: 201,
@@ -174,6 +180,59 @@ export class SchedulesController {
     return {
       statusCode: 200,
       message: 'Detail rencana kerja berhasil diambil',
+      data: plainToInstance(ScheduleResponseDto, schedule, {
+        excludeExtraneousValues: true,
+      }),
+    };
+  }
+
+  /**
+   * Assign an operator to a schedule
+   * PATCH /api/v1/schedules/:id
+   *
+   * RBAC: Only kasie_fe can assign operators
+   * Changes schedule status from OPEN to CLOSED (production schema)
+   */
+  @Patch(':id')
+  @Roles('kasie_fe')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @ApiOperation({
+    summary: 'Tugaskan operator ke rencana kerja (kasie_fe only)',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID schedule (UUID format)',
+    example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Operator berhasil ditugaskan',
+    type: ScheduleResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Validasi gagal atau schedule tidak dalam status OPEN',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Hanya kasie_fe yang bisa menugaskan operator',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Rencana kerja tidak ditemukan',
+  })
+  async assignOperator(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() assignOperatorDto: AssignOperatorDto,
+  ) {
+    const schedule = await this.schedulesService.assignOperator(
+      id,
+      assignOperatorDto,
+    );
+
+    return {
+      statusCode: 200,
+      message: 'Operator berhasil ditugaskan!',
       data: plainToInstance(ScheduleResponseDto, schedule, {
         excludeExtraneousValues: true,
       }),

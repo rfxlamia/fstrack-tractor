@@ -4,15 +4,24 @@ import { Repository } from 'typeorm';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { SchedulesService, VALID_STATUSES } from './schedules.service';
 import { Schedule } from './entities/schedule.entity';
+import { Operator } from '../operators/entities/operator.entity';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
+import { AssignOperatorDto } from './dto/assign-operator.dto';
 
 /**
- * Mock repository factory
+ * Mock repository factory for Schedule
  */
-const createMockRepository = () => ({
+const createMockScheduleRepository = () => ({
   create: jest.fn(),
   save: jest.fn(),
   findAndCount: jest.fn(),
+  findOne: jest.fn(),
+});
+
+/**
+ * Mock repository factory for Operator
+ */
+const createMockOperatorRepository = () => ({
   findOne: jest.fn(),
 });
 
@@ -20,7 +29,8 @@ type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
 describe('SchedulesService', () => {
   let service: SchedulesService;
-  let repository: MockRepository<Schedule>;
+  let scheduleRepository: MockRepository<Schedule>;
+  let operatorRepository: MockRepository<Operator>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -28,14 +38,21 @@ describe('SchedulesService', () => {
         SchedulesService,
         {
           provide: getRepositoryToken(Schedule),
-          useValue: createMockRepository(),
+          useValue: createMockScheduleRepository(),
+        },
+        {
+          provide: getRepositoryToken(Operator),
+          useValue: createMockOperatorRepository(),
         },
       ],
     }).compile();
 
     service = module.get<SchedulesService>(SchedulesService);
-    repository = module.get<MockRepository<Schedule>>(
+    scheduleRepository = module.get<MockRepository<Schedule>>(
       getRepositoryToken(Schedule),
+    );
+    operatorRepository = module.get<MockRepository<Operator>>(
+      getRepositoryToken(Operator),
     );
   });
 
@@ -69,15 +86,15 @@ describe('SchedulesService', () => {
         updatedAt: new Date(),
       } as Schedule;
 
-      repository.create?.mockReturnValue(mockSchedule);
-      repository.save?.mockResolvedValue(mockSchedule);
+      scheduleRepository.create?.mockReturnValue(mockSchedule);
+      scheduleRepository.save?.mockResolvedValue(mockSchedule);
 
       const result = await service.create(validCreateDto);
 
       expect(result.status).toBe('OPEN');
 
-      expect(repository.create).toHaveBeenCalled();
-      expect(repository.save).toHaveBeenCalledWith(mockSchedule);
+      expect(scheduleRepository.create).toHaveBeenCalled();
+      expect(scheduleRepository.save).toHaveBeenCalledWith(mockSchedule);
     });
 
     it('should accept INTEGER operatorId', async () => {
@@ -93,8 +110,8 @@ describe('SchedulesService', () => {
         status: 'OPEN',
       } as Schedule;
 
-      repository.create?.mockReturnValue(mockSchedule);
-      repository.save?.mockResolvedValue(mockSchedule);
+      scheduleRepository.create?.mockReturnValue(mockSchedule);
+      scheduleRepository.save?.mockResolvedValue(mockSchedule);
 
       const result = await service.create(dtoWithIntOperator);
 
@@ -114,8 +131,8 @@ describe('SchedulesService', () => {
         status: 'OPEN',
       } as Schedule;
 
-      repository.create?.mockReturnValue(mockSchedule);
-      repository.save?.mockResolvedValue(mockSchedule);
+      scheduleRepository.create?.mockReturnValue(mockSchedule);
+      scheduleRepository.save?.mockResolvedValue(mockSchedule);
 
       const result = await service.create(dtoWithoutOperator);
 
@@ -150,8 +167,8 @@ describe('SchedulesService', () => {
         status: 'OPEN',
       } as Schedule;
 
-      repository.create?.mockReturnValue(mockSchedule);
-      repository.save?.mockResolvedValue(mockSchedule);
+      scheduleRepository.create?.mockReturnValue(mockSchedule);
+      scheduleRepository.save?.mockResolvedValue(mockSchedule);
 
       const result = await service.create(dtoWithVarcharLocation);
 
@@ -174,8 +191,8 @@ describe('SchedulesService', () => {
         status: 'OPEN',
       } as Schedule;
 
-      repository.create?.mockReturnValue(mockSchedule);
-      repository.save?.mockResolvedValue(mockSchedule);
+      scheduleRepository.create?.mockReturnValue(mockSchedule);
+      scheduleRepository.save?.mockResolvedValue(mockSchedule);
 
       const result = await service.create(dtoWithVarcharUnit);
 
@@ -203,8 +220,8 @@ describe('SchedulesService', () => {
         status: 'OPEN',
       } as Schedule;
 
-      repository.create?.mockReturnValue(mockSchedule);
-      repository.save?.mockResolvedValue(mockSchedule);
+      scheduleRepository.create?.mockReturnValue(mockSchedule);
+      scheduleRepository.save?.mockResolvedValue(mockSchedule);
 
       const result = await service.create(minimalDto);
 
@@ -233,7 +250,7 @@ describe('SchedulesService', () => {
         } as Schedule,
       ];
 
-      repository.findAndCount?.mockResolvedValue([mockSchedules, 2]);
+      scheduleRepository.findAndCount?.mockResolvedValue([mockSchedules, 2]);
 
       const result = await service.findAll({ page: 1, limit: 10 });
 
@@ -242,7 +259,7 @@ describe('SchedulesService', () => {
       expect(result.page).toBe(1);
       expect(result.limit).toBe(10);
       expect(result.totalPages).toBe(1);
-      expect(repository.findAndCount).toHaveBeenCalledWith({
+      expect(scheduleRepository.findAndCount).toHaveBeenCalledWith({
         skip: 0,
         take: 10,
         order: {
@@ -253,13 +270,13 @@ describe('SchedulesService', () => {
     });
 
     it('should calculate pagination correctly for page 2', async () => {
-      repository.findAndCount?.mockResolvedValue([[], 25]);
+      scheduleRepository.findAndCount?.mockResolvedValue([[], 25]);
 
       const result = await service.findAll({ page: 2, limit: 10 });
 
       expect(result.page).toBe(2);
       expect(result.totalPages).toBe(3);
-      expect(repository.findAndCount).toHaveBeenCalledWith({
+      expect(scheduleRepository.findAndCount).toHaveBeenCalledWith({
         skip: 10,
         take: 10,
         order: {
@@ -279,18 +296,18 @@ describe('SchedulesService', () => {
         status: 'OPEN',
       } as Schedule;
 
-      repository.findOne?.mockResolvedValue(mockSchedule);
+      scheduleRepository.findOne?.mockResolvedValue(mockSchedule);
 
       const result = await service.findOne('test-uuid');
 
       expect(result.id).toBe('test-uuid');
-      expect(repository.findOne).toHaveBeenCalledWith({
+      expect(scheduleRepository.findOne).toHaveBeenCalledWith({
         where: { id: 'test-uuid' },
       });
     });
 
     it('should throw NotFoundException for non-existent schedule', async () => {
-      repository.findOne?.mockResolvedValue(null);
+      scheduleRepository.findOne?.mockResolvedValue(null);
 
       await expect(service.findOne('non-existent-uuid')).rejects.toThrow(
         NotFoundException,
@@ -349,6 +366,83 @@ describe('SchedulesService', () => {
       expect(() =>
         service.validateStatusTransition('CLOSED', 'CANCEL'),
       ).toThrow(BadRequestException);
+    });
+  });
+
+  describe('assignOperator', () => {
+    const mockScheduleOpen = {
+      id: 'test-uuid',
+      workDate: new Date('2026-01-30'),
+      pattern: 'Rotasi',
+      status: 'OPEN',
+      operatorId: null,
+    } as Schedule;
+
+    const mockOperator = {
+      id: 123,
+      userId: 1,
+      unitId: 'UNIT01',
+    } as Operator;
+
+    const assignDto: AssignOperatorDto = {
+      operatorId: 123,
+    };
+
+    it('should assign operator to schedule and change status to CLOSED', async () => {
+      scheduleRepository.findOne?.mockResolvedValue({ ...mockScheduleOpen });
+      operatorRepository.findOne?.mockResolvedValue(mockOperator);
+      scheduleRepository.save?.mockImplementation((schedule) =>
+        Promise.resolve(schedule as Schedule),
+      );
+
+      const result = await service.assignOperator('test-uuid', assignDto);
+
+      expect(result.operatorId).toBe(123);
+      expect(result.status).toBe('CLOSED');
+      expect(operatorRepository.findOne).toHaveBeenCalledWith({
+        where: { id: 123 },
+      });
+    });
+
+    it('should throw NotFoundException when operator does not exist', async () => {
+      scheduleRepository.findOne?.mockResolvedValue({ ...mockScheduleOpen });
+      operatorRepository.findOne?.mockResolvedValue(null);
+
+      await expect(
+        service.assignOperator('test-uuid', assignDto),
+      ).rejects.toThrow(NotFoundException);
+      await expect(
+        service.assignOperator('test-uuid', assignDto),
+      ).rejects.toThrow('Operator dengan ID 123 tidak ditemukan');
+    });
+
+    it('should throw NotFoundException when schedule does not exist', async () => {
+      scheduleRepository.findOne?.mockResolvedValue(null);
+
+      await expect(
+        service.assignOperator('non-existent-uuid', assignDto),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw BadRequestException when schedule is not in OPEN status', async () => {
+      const closedSchedule = { ...mockScheduleOpen, status: 'CLOSED' };
+      scheduleRepository.findOne?.mockResolvedValue(closedSchedule);
+
+      await expect(
+        service.assignOperator('test-uuid', assignDto),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.assignOperator('test-uuid', assignDto),
+      ).rejects.toThrow('Status schedule harus OPEN');
+    });
+
+    it('should throw BadRequestException when schedule is CANCEL status', async () => {
+      const cancelledSchedule = { ...mockScheduleOpen, status: 'CANCEL' };
+      scheduleRepository.findOne?.mockResolvedValue(cancelledSchedule);
+
+      await expect(
+        service.assignOperator('test-uuid', assignDto),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

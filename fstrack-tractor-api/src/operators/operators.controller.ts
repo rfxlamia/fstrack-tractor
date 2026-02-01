@@ -1,7 +1,20 @@
-import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { OperatorsService } from './operators.service';
 import { OperatorResponseDto } from './dto/operator-response.dto';
+import { JwtAuthGuard, RolesGuard } from '../auth/guards';
+import { Roles } from '../auth/decorators';
 
 /**
  * Operators Controller
@@ -14,7 +27,9 @@ import { OperatorResponseDto } from './dto/operator-response.dto';
  * - Other roles may be added later for viewing
  */
 @ApiTags('Operators')
+@ApiBearerAuth()
 @Controller('api/v1/operators')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class OperatorsController {
   constructor(private readonly operatorsService: OperatorsService) {}
 
@@ -25,13 +40,11 @@ export class OperatorsController {
    * Returns list of active operators sorted alphabetically by name.
    * Each operator includes id, operatorName (from user.fullname), and unitId.
    *
-   * RBAC: @Roles('kasie_fe') - Uncomment when auth guard is enabled
-   * Currently open for testing, must add role guard before production
+   * RBAC: Only kasie_fe can access this endpoint
    */
   @Get()
+  @Roles('kasie_fe')
   @HttpCode(HttpStatus.OK)
-  // TODO: Add @Roles('kasie_fe') decorator when RolesGuard is configured
-  // TODO: Add @UseGuards(JwtAuthGuard, RolesGuard) for RBAC enforcement
   @ApiOperation({ summary: 'Dapatkan daftar operator (kasie_fe only)' })
   @ApiResponse({
     status: 200,

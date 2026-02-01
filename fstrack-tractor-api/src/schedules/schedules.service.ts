@@ -7,7 +7,9 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Schedule } from './entities/schedule.entity';
+import { Operator } from '../operators/entities/operator.entity';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
+import { AssignOperatorDto } from './dto/assign-operator.dto';
 
 /**
  * Valid status values from production schema
@@ -50,6 +52,8 @@ export class SchedulesService {
   constructor(
     @InjectRepository(Schedule)
     private readonly scheduleRepository: Repository<Schedule>,
+    @InjectRepository(Operator)
+    private readonly operatorRepository: Repository<Operator>,
   ) {}
 
   /**
@@ -175,5 +179,52 @@ export class SchedulesService {
     }
 
     return true;
+  }
+
+  /**
+   * Assign an operator to a schedule
+   * Changes status from OPEN to CLOSED (production schema behavior)
+   *
+   * @param id - Schedule UUID
+   * @param assignOperatorDto - Contains operatorId (INTEGER)
+   * @returns Updated schedule
+   * @throws NotFoundException if schedule not found
+   * @throws NotFoundException if operator not found
+   * @throws BadRequestException if schedule is not in OPEN status
+   */
+  async assignOperator(
+    id: string,
+    assignOperatorDto: AssignOperatorDto,
+  ): Promise<Schedule> {
+    const schedule = await this.findOne(id);
+
+    // Validate schedule is in OPEN status (can be assigned)
+    if (schedule.status !== 'OPEN') {
+      throw new BadRequestException(
+        `Tidak dapat menugaskan operator. Status schedule harus OPEN, saat ini: ${schedule.status}`,
+      );
+    }
+
+    // Validate operator exists
+    const operator = await this.operatorRepository.findOne({
+      where: { id: assignOperatorDto.operatorId },
+    });
+
+    if (!operator) {
+      throw new NotFoundException(
+        `Operator dengan ID ${assignOperatorDto.operatorId} tidak ditemukan`,
+      );
+    }
+
+    // Update schedule with operator and change status to CLOSED
+    schedule.operatorId = assignOperatorDto.operatorId;
+    schedule.status = 'CLOSED'; // Production schema: CLOSED means assigned
+
+    const updatedSchedule = await this.scheduleRepository.save(schedule);
+    this.logger.log(
+      `Operator assigned to schedule ${id}: operatorId=${assignOperatorDto.operatorId}`,
+    );
+
+    return updatedSchedule;
   }
 }
