@@ -1,6 +1,24 @@
 # Story 1.2: Schedule Entity & CRUD Endpoints
 
-Status: ready-for-dev
+Status: review
+
+<!-- REVIEW NOTES (Code Review - 2026-01-31):
+✅ 8 HIGH issues fixed:
+  - UUID validation added (ParseUUIDPipe)
+  - Pagination limits enforced (max 100)
+  - Fake test replaced with real float validation test
+  - Module barrel file created
+  - Swagger docs enhanced
+  - Redundant null coalescing removed
+  - Logging improved
+
+⚠️ Technical Debt (MUST address before production):
+  - RBAC: @Roles('kasie_pg') decorator commented out - awaiting RolesGuard setup
+  - Dead code: validateStatus() methods exist but unused (awaiting UPDATE endpoint)
+  - Integration tests: Only unit tests exist, no full request-response tests
+
+✅ Status Decision: Keep as 'review' - code quality good but RBAC enforcement missing
+-->
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -35,29 +53,29 @@ So that **work plans can be created, read, updated via REST API**.
 - Registered in `src/app.module.ts`
 
 **NEW Work for Story 1.2:**
-- [ ] Task 1: Create SchedulesService (AC: #1, #2, #3)
-  - [ ] Create `src/schedules/schedules.service.ts`
-  - [ ] Implement `create()` with status='OPEN', INTEGER operatorId validation
-  - [ ] Implement `findAll()` with pagination
-  - [ ] Implement `findOne()` by UUID id
-- [ ] Task 2: Create SchedulesController (AC: #1, #2, #3)
-  - [ ] Create `src/schedules/schedules.controller.ts`
-  - [ ] POST /api/v1/schedules (201 response)
-  - [ ] GET /api/v1/schedules/:id (200 response)
-  - [ ] GET /api/v1/schedules (list with pagination)
-- [ ] Task 3: Create DTOs with validation (AC: #1)
-  - [ ] Create `src/schedules/dto/create-schedule.dto.ts`
-  - [ ] CreateScheduleDto: workDate, pattern, shift, locationId (VARCHAR), unitId (VARCHAR), notes
-  - [ ] Create `src/schedules/dto/schedule-response.dto.ts`
-  - [ ] ScheduleResponseDto: all fields with correct types (INTEGER operatorId, VARCHAR locationId/unitId)
-  - [ ] Create `src/schedules/dto/index.ts` barrel file
-- [ ] Task 4: Write unit tests (AC: all)
-  - [ ] Create `src/schedules/schedules.service.spec.ts`
-  - [ ] Service tests: create, findAll, findOne
-  - [ ] Type validation tests: INTEGER operatorId, VARCHAR locationId/unitId
-  - [ ] Status validation: only OPEN, CLOSED, CANCEL accepted
-  - [ ] Create `src/schedules/schedules.controller.spec.ts`
-  - [ ] Controller tests: status codes, response format
+- [x] Task 1: Create SchedulesService (AC: #1, #2, #3)
+  - [x] Create `src/schedules/schedules.service.ts`
+  - [x] Implement `create()` with status='OPEN', INTEGER operatorId validation
+  - [x] Implement `findAll()` with pagination
+  - [x] Implement `findOne()` by UUID id
+- [x] Task 2: Create SchedulesController (AC: #1, #2, #3)
+  - [x] Create `src/schedules/schedules.controller.ts`
+  - [x] POST /api/v1/schedules (201 response)
+  - [x] GET /api/v1/schedules/:id (200 response)
+  - [x] GET /api/v1/schedules (list with pagination)
+- [x] Task 3: Create DTOs with validation (AC: #1)
+  - [x] Create `src/schedules/dto/create-schedule.dto.ts`
+  - [x] CreateScheduleDto: workDate, pattern, shift, locationId (VARCHAR), unitId (VARCHAR), notes
+  - [x] Create `src/schedules/dto/schedule-response.dto.ts`
+  - [x] ScheduleResponseDto: all fields with correct types (INTEGER operatorId, VARCHAR locationId/unitId)
+  - [x] Create `src/schedules/dto/index.ts` barrel file
+- [x] Task 4: Write unit tests (AC: all)
+  - [x] Create `src/schedules/schedules.service.spec.ts`
+  - [x] Service tests: create, findAll, findOne
+  - [x] Type validation tests: INTEGER operatorId, VARCHAR locationId/unitId
+  - [x] Status validation: only OPEN, CLOSED, CANCEL accepted
+  - [x] Create `src/schedules/schedules.controller.spec.ts`
+  - [x] Controller tests: status codes, response format
 
 ## Dev Notes
 
@@ -299,11 +317,32 @@ describe('SchedulesService', () => {
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude (kimi-for-coding)
 
 ### Debug Log References
 
 ### Completion Notes List
+
+1. **Task 1 - SchedulesService**: Created dengan method `create()`, `findAll()`, `findOne()`. Validasi INTEGER operatorId dan status state machine (OPEN → CLOSED/CANCEL) diimplementasikan.
+2. **Task 2 - SchedulesController**: REST endpoints POST, GET list, GET by ID. Response format dengan statusCode, message, data sesuai project-context.md. **UUID validation** added via ParseUUIDPipe. **Pagination limits** enforced (max 100).
+3. **Task 3 - DTOs**: CreateScheduleDto dengan class-validator, ScheduleResponseDto dengan @Expose() untuk serialization, barrel file index.ts. **Enhanced Swagger docs** dengan detailed descriptions.
+4. **Task 4 - Unit Tests**: **33 tests total** (21 service + 12 controller). Semua AC tercover: type validation, status validation, pagination, error handling. **New tests added**: pagination boundary validation, float operatorId rejection.
+
+**Code Review Fixes Applied (2026-01-31):**
+- ✅ Added ParseUUIDPipe for UUID validation on findOne endpoint
+- ✅ Added pagination limits (max 100) to prevent DoS
+- ✅ Fixed fake test: replaced string operatorId test with float validation test
+- ✅ Added 3 new controller tests for pagination boundaries
+- ✅ Improved Swagger documentation with detailed @ApiProperty descriptions
+- ✅ Created module barrel file (src/schedules/index.ts)
+- ✅ Removed redundant null coalescing (?? null) - TypeORM handles undefined → null
+- ✅ Improved logging: debug → log for production, removed PII from logs
+- ✅ Added RBAC TODO comments for @Roles decorator (pending auth guard setup)
+
+**Known Technical Debt:**
+- TODO: Add @Roles('kasie_pg') decorator when RolesGuard is configured
+- TODO: validateStatus() and validateStatusTransition() methods exist but not used (awaiting UPDATE endpoint in future story)
+- NOTE: Integration tests pending (unit tests only for now)
 
 ### File List
 
@@ -312,14 +351,15 @@ describe('SchedulesService', () => {
 2. `src/schedules/entities/schedule.entity.ts` - TypeORM entity (REUSE)
 3. `src/schedules/entities/index.ts` - Barrel file
 
-**NEW Files to Create:**
-1. `src/schedules/schedules.controller.ts` - REST endpoints
-2. `src/schedules/schedules.service.ts` - Business logic
-3. `src/schedules/dto/create-schedule.dto.ts` - POST validation
-4. `src/schedules/dto/schedule-response.dto.ts` - Response serialization
-5. `src/schedules/dto/index.ts` - Barrel export
-6. `src/schedules/schedules.service.spec.ts` - Service tests
-7. `src/schedules/schedules.controller.spec.ts` - Controller tests
+**✅ NEW Files Created:**
+1. `src/schedules/schedules.controller.ts` - REST endpoints dengan 3 routes (POST, GET /, GET /:id), UUID validation, pagination limits
+2. `src/schedules/schedules.service.ts` - Business logic dengan repository pattern
+3. `src/schedules/dto/create-schedule.dto.ts` - Validasi input dengan class-validator, enhanced Swagger docs
+4. `src/schedules/dto/schedule-response.dto.ts` - Response serialization dengan class-transformer
+5. `src/schedules/dto/index.ts` - Barrel export untuk DTOs
+6. `src/schedules/index.ts` - Module barrel file (NEW - code review fix)
+7. `src/schedules/schedules.service.spec.ts` - 21 unit tests untuk service
+8. `src/schedules/schedules.controller.spec.ts` - 12 unit tests untuk controller (3 new tests added)
 
-**Files to Modify:**
-- ✅ `src/app.module.ts` - Already registered in Story 1.1
+**✅ Files Modified:**
+1. `src/schedules/schedules.module.ts` - Registered controller dan provider
