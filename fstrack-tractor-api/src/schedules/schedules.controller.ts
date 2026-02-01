@@ -238,4 +238,51 @@ export class SchedulesController {
       }),
     };
   }
+
+  /**
+   * Cancel a schedule
+   * PATCH /api/v1/schedules/:id/cancel
+   *
+   * RBAC: Both kasie_pg and kasie_fe can cancel schedules
+   * Only schedules in OPEN status can be cancelled
+   */
+  @Patch(':id/cancel')
+  @Roles('kasie_pg', 'kasie_fe')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @ApiOperation({ summary: 'Batalkan rencana kerja' })
+  @ApiParam({
+    name: 'id',
+    description: 'ID schedule (UUID format)',
+    example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Rencana kerja berhasil dibatalkan',
+    type: ScheduleResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description:
+      'Transisi status tidak valid (schedule tidak dalam status OPEN)',
+  })
+  @ApiResponse({
+    status: 403,
+    description:
+      'Forbidden - Hanya kasie_pg atau kasie_fe yang bisa membatalkan',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Rencana kerja tidak ditemukan',
+  })
+  async cancel(@Param('id', ParseUUIDPipe) id: string) {
+    const schedule = await this.schedulesService.cancel(id);
+
+    return {
+      statusCode: 200,
+      message: 'Rencana kerja berhasil dibatalkan!',
+      data: plainToInstance(ScheduleResponseDto, schedule, {
+        excludeExtraneousValues: true,
+      }),
+    };
+  }
 }

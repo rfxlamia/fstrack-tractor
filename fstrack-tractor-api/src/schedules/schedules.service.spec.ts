@@ -445,4 +445,46 @@ describe('SchedulesService', () => {
       ).rejects.toThrow(BadRequestException);
     });
   });
+
+  describe('cancel', () => {
+    it('should transition OPEN → CANCEL', async () => {
+      const mockSchedule = { id: 'uuid', status: 'OPEN' } as Schedule;
+      scheduleRepository.findOne?.mockResolvedValue(mockSchedule);
+      scheduleRepository.save?.mockResolvedValue({
+        ...mockSchedule,
+        status: 'CANCEL',
+      });
+
+      const result = await service.cancel('uuid');
+      expect(result.status).toBe('CANCEL');
+    });
+
+    it('should throw BadRequestException when CLOSED', async () => {
+      const mockSchedule = { id: 'uuid', status: 'CLOSED' } as Schedule;
+      scheduleRepository.findOne?.mockResolvedValue(mockSchedule);
+
+      await expect(service.cancel('uuid')).rejects.toThrow(BadRequestException);
+      await expect(service.cancel('uuid')).rejects.toThrow(
+        'Transisi status tidak valid',
+      );
+    });
+
+    it('should throw BadRequestException when CANCEL', async () => {
+      const mockSchedule = { id: 'uuid', status: 'CANCEL' } as Schedule;
+      scheduleRepository.findOne?.mockResolvedValue(mockSchedule);
+
+      await expect(service.cancel('uuid')).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw NotFoundException when schedule does not exist', async () => {
+      scheduleRepository.findOne?.mockResolvedValue(null);
+
+      await expect(service.cancel('non-existent-uuid')).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.cancel('non-existent-uuid')).rejects.toThrow(
+        'tidak ditemukan',
+      );
+    });
+  });
 });

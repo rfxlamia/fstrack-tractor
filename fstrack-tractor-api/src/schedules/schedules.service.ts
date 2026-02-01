@@ -227,4 +227,31 @@ export class SchedulesService {
 
     return updatedSchedule;
   }
+
+  /**
+   * Cancel a schedule
+   * Changes status from OPEN to CANCEL (cancellation always allowed from OPEN)
+   *
+   * @param id - Schedule UUID
+   * @returns Cancelled schedule
+   * @throws NotFoundException if schedule not found
+   * @throws BadRequestException if schedule is not in OPEN status
+   */
+  async cancel(id: string): Promise<Schedule> {
+    const schedule = await this.findOne(id);
+
+    // Validate status transition using state machine
+    // Note: validateStatusTransition throws BadRequestException if invalid
+    this.validateStatusTransition(
+      schedule.status as ScheduleStatus,
+      'CANCEL',
+    );
+
+    schedule.status = 'CANCEL';
+
+    const cancelledSchedule = await this.scheduleRepository.save(schedule);
+    this.logger.log(`Schedule cancelled: ${id}`);
+
+    return cancelledSchedule;
+  }
 }

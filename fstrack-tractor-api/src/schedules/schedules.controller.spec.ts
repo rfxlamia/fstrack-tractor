@@ -11,16 +11,22 @@ describe('SchedulesController', () => {
     create: jest.Mock;
     findAll: jest.Mock;
     findOne: jest.Mock;
+    assignOperator: jest.Mock;
+    cancel: jest.Mock;
   };
 
   const mockSchedulesService: {
     create: jest.Mock;
     findAll: jest.Mock;
     findOne: jest.Mock;
+    assignOperator: jest.Mock;
+    cancel: jest.Mock;
   } = {
     create: jest.fn(),
     findAll: jest.fn(),
     findOne: jest.fn(),
+    assignOperator: jest.fn(),
+    cancel: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -299,6 +305,51 @@ describe('SchedulesController', () => {
       expect(result.data.locationId).toBe('LOC001');
       expect(result.data.unitId).toBe('UNIT01');
       expect(result.data.operatorId).toBe(123);
+    });
+  });
+
+  describe('PATCH /api/v1/schedules/:id/cancel', () => {
+    it('should return 200 when cancelling OPEN schedule', async () => {
+      const mockSchedule = {
+        id: 'test-uuid',
+        workDate: new Date('2026-01-30'),
+        pattern: 'Rotasi',
+        status: 'CANCEL',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as Schedule;
+
+      service.cancel.mockResolvedValue(mockSchedule);
+
+      const result = await controller.cancel('test-uuid');
+
+      expect(result.statusCode).toBe(200);
+      expect(result.message).toBe('Rencana kerja berhasil dibatalkan!');
+      expect(result.data.status).toBe('CANCEL');
+      expect(service.cancel).toHaveBeenCalledWith('test-uuid');
+    });
+
+    it('should propagate BadRequestException when CLOSED schedule', async () => {
+      service.cancel.mockRejectedValue(
+        new BadRequestException('Transisi status tidak valid'),
+      );
+
+      await expect(controller.cancel('test-uuid')).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(controller.cancel('test-uuid')).rejects.toThrow(
+        'Transisi status tidak valid',
+      );
+    });
+
+    it('should propagate BadRequestException when CANCEL schedule', async () => {
+      service.cancel.mockRejectedValue(
+        new BadRequestException('Transisi status tidak valid'),
+      );
+
+      await expect(controller.cancel('test-uuid')).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 });
