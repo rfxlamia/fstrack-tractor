@@ -56,10 +56,11 @@ jobs:
           retention-days: 7
 
   build-apk:
-    name: Build Android APK (Release Candidate)
+    name: Build Android APK (Auto)
     runs-on: ubuntu-latest
     needs: flutter
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.run_mode == 'release-candidate'
+    # Build APK on every push to main
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     defaults:
       run:
         working-directory: fstrack_tractor_app
@@ -84,15 +85,15 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build APK (Debug)
-        run: flutter build apk --debug --dart-define=API_BASE_URL=${{ github.event.inputs.api_base_url || 'https://nestjs-api-production-9cad.up.railway.app' }}
+      - name: Build APK (Release)
+        run: flutter build apk --release --dart-define=API_BASE_URL=https://photochemical-arletta-slicingly.ngrok-free.dev
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: fstrack-tractor-debug-apk
-          path: fstrack_tractor_app/build/app/outputs/flutter-apk/app-debug.apk
-          retention-days: 14
+          name: fstrack-tractor-release-apk
+          path: fstrack_tractor_app/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
 
   nestjs:
     name: NestJS Checks
@@ -132,11 +133,11 @@ jobs:
           retention-days: 7
 
   deploy-backend:
-    name: Deploy Backend to Railway
+    name: Deploy Backend to Railway (DEPRECATED)
     runs-on: ubuntu-latest
     needs: nestjs
-    # Only deploy on push to main (not on PRs or manual triggers)
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # DISABLED - Railway problematic, migrated to Supabase
+    if: false
     defaults:
       run:
         working-directory: fstrack-tractor-api
