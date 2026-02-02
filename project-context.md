@@ -69,14 +69,38 @@ version: '2.0'
 
 ### State Machine
 
+**Production Schema Values:** `OPEN, CLOSED, CANCEL`
+
 ```
-OPEN → ASSIGNED → IN_PROGRESS → COMPLETED
+OPEN → CLOSED (when operator assigned)
+  ↓
+CANCEL (cancellation - optional)
 ```
 
-- **OPEN** → Work plan baru (default)
-- **ASSIGNED** → Operator ditugaskan
-- **IN_PROGRESS** → Operator sedang bekerja (Fase 3)
-- **COMPLETED** → Work plan selesai (Fase 3)
+**Status Definitions:**
+| Backend Value | Meaning | UI Display (Bahasa Indonesia) |
+|---------------|---------|-------------------------------|
+| **OPEN** | Work plan baru, belum ada operator | "Terbuka" / "Belum Ditugaskan" |
+| **CLOSED** | Sudah ditugaskan ke operator | **"Ditugaskan"** (NOT "Ditutup") |
+| **CANCEL** | Dibatalkan | "Dibatalkan" |
+
+**⚠️ CRITICAL - Semantic Clarity:**
+- `CLOSED` di database artinya "sudah ada operator yang ditugaskan"
+- BUKAN berarti "pekerjaan sudah selesai"
+- Di Flutter UI, SELALU tampilkan "Ditugaskan" untuk `CLOSED` status
+- `IN_PROGRESS` dan `COMPLETED` adalah Fase 3 features (NOT in production yet)
+
+**UI Mapping Function:**
+```dart
+String getStatusDisplayText(String backendStatus) {
+  return switch (backendStatus) {
+    'OPEN' => 'Terbuka',
+    'CLOSED' => 'Ditugaskan',  // Clear semantic - NOT "Ditutup"!
+    'CANCEL' => 'Dibatalkan',
+    _ => backendStatus,
+  };
+}
+```
 
 **Validation Strategy:** Hybrid (Service Layer + DB Constraints)
 
@@ -407,15 +431,17 @@ if (user.role == UserRole.kasieFe && workPlan.status == 'OPEN') {
 
 ### 10. State Machine Validation
 
+**Production Schema:** `OPEN, CLOSED, CANCEL`
+
 **Hybrid Approach (Service + DB):**
 
 ```typescript
 // Service Layer
 async updateStatus(id: string, newStatus: string) {
   const validTransitions = {
-    'OPEN': ['ASSIGNED'],
-    'ASSIGNED': ['IN_PROGRESS'],
-    'IN_PROGRESS': ['COMPLETED']
+    'OPEN': ['CLOSED', 'CANCEL'],  // Can assign operator or cancel
+    'CLOSED': [],                   // Terminal state (assigned)
+    'CANCEL': []                    // Terminal state (cancelled)
   };
 
   const current = await this.findById(id);
@@ -427,9 +453,9 @@ async updateStatus(id: string, newStatus: string) {
 ```
 
 ```sql
--- Database Layer (safety net)
+-- Database Layer (safety net) - Production Schema
 ALTER TABLE schedules ADD CONSTRAINT valid_status
-  CHECK (status IN ('OPEN', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED'));
+  CHECK (status IN ('OPEN', 'CLOSED', 'CANCEL'));
 ```
 
 ### 11. Testing Requirements

@@ -53,8 +53,8 @@ development_status:
   epic-1-retrospective: done  # Completed 2026-02-02
 
   # Epic 2: Work Plan Creation (Kasie PG)
-  epic-2: backlog
-  2-1-work-plan-feature-module-setup: backlog
+  epic-2: in-progress
+  2-1-work-plan-feature-module-setup: in-progress
   2-2-create-work-plan-form-ui: backlog
   2-3-create-work-plan-bloc-integration: backlog
   2-4-work-plan-list-display-basic: backlog
