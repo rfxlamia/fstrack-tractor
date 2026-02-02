@@ -1,0 +1,502 @@
+# Claude Code Session Log - User Entity Alignment (Epic 2-4 Blocker Fix)
+
+## Session Overview
+**Task:** Align User Entity with Production Schema (Minimal Fix for Epic 2-4 Unblock)
+**Baseline Commit:** 0e0360d (feat: state-machine-validation)
+**Status:** Implementation Complete, Deployment Issues Resolved
+
+---
+
+## Initial Setup
+
+User invoked `/bmad:bmm:workflows:quick-dev` and provided tech-spec path:
+`/home/v/work/fstrack-tractor/_bmad-output/implementation-artifacts/tech-spec-align-user-entity-minimal-epic-unblock.md`
+
+Key insight: Migration refactoring pattern requires fresh database state when changing fundamental schema (UUID->INTEGER, enum->FK).
+
+---
+
+## Implementation Tasks Completed
+
+### Task 1: Create Role Entity
+- Created `src/roles/index.ts` - module exports
+- Created `src/roles/entities/role.entity.ts` - Role entity with 15 seeded roles
+- Created `src/roles/roles.module.ts`
+
+### Task 2: Create PlantationGroup Entity
+- Created `src/plantation-groups/entities/plantation-group.entity.ts`
+- Created `src/plantation-groups/plantation-groups.module.ts`
+- Created `src/plantation-groups/entities/index.ts`
+- Created `src/plantation-groups/index.ts`
+
+### Task 3: Database Migrations
+Created 3 migrations:
+1. `1738571000000-create-roles-table.ts` - 15 production roles
+2. `1738571500000-create-plantation-groups-table.ts`
+3. `1738572000000-create-users-table.ts` - Rewritten with INTEGER id, new column names
+
+Migration order: roles -> plantation_groups -> users (dependency chain)
+
+### Task 4: Update User Entity
+**Schema Changes:**
+| Before | After |
+|--------|-------|
+| id: UUID (manual) | id: INTEGER SERIAL |
+| passwordHash | password (column: password_hash -> password) |
+| fullName | fullname (column: full_name -> fullname) |
+| role: UserRole enum | roleId: string \| null (FK to roles.id) |
+| estateId: UUID | plantationGroupId: string \| null |
+
+Deleted: `src/users/enums/user-role.enum.ts`
+
+### Task 5: Auth System Updates
+Updated files:
+- `src/auth/strategies/jwt.strategy.ts` - JWT payload: role->roleId, estateId->plantationGroupId
+- `src/auth/auth.service.ts` - passwordHash->password, field name updates
+- `src/auth/dto/auth-response.dto.ts` - Updated response fields
+- `src/auth/decorators/current-user.decorator.ts` - id: number, roleId/plantationGroupId
+- `src/auth/guards/roles.guard.ts` - Check user?.roleId instead of user?.role
+
+### Task 6: Controllers @Roles Update
+Updated role strings to UPPERCASE:
+- `@Roles('kasie_pg')` -> `@Roles('KASIE_PG')`
+- `@Roles('kasie_fe')` -> `@Roles('KASIE_FE')`
+
+Files modified:
+- `src/schedules/schedules.controller.ts`
+- `src/operators/operators.controller.ts`
+- `src/auth/decorators/roles.decorator.ts` (documentation examples)
+
+### Task 7: UsersModule Verification
+No changes needed - already clean of UserRole enum import.
+
+### Task 8: Seed Service Update
+- Updated `src/database/seed.service.ts`
+- Old: 1 dev user (dev_kasie)
+- New: 3 dev users (dev_kasie_pg, dev_kasie_fe, dev_operator)
+- Handles migration from old dev_kasie user (deletes and recreates)
+
+### Task 9: AppModule Update
+Added imports:
+- `RolesModule`
+- `PlantationGroupsModule`
+
+### Task 10-11: Test Updates
+Updated test files:
+- `src/auth/auth.service.spec.ts` - mockUser field updates
+- `src/auth/guards/roles.guard.spec.ts` - UPPERCASE role IDs
+- `src/users/users.service.spec.ts` - Schema field updates
+- `src/database/seed.service.spec.ts` - 3 dev users expectations
+- `src/operators/operators.service.spec.ts` - fullname (not fullName)
+- `src/operators/operators.service.ts` - Fixed fullname reference
+- `test/auth.e2e-spec.ts` - Raw SQL column names, ID auto-generation
+- `test/e2e/users.e2e-spec.ts` - Same updates
+
+### Task 12: Verification
+**Results:**
+- Lint: Passed with auto-fix
+- Build: Success after fixing roleId type (string | null)
+- Tests: 191/191 passed (100%)
+
+---
+
+## Critical Issue: TypeORM Synchronize
+
+**Problem:** Production deployment failed with schema sync errors.
+
+Root cause: `synchronize: true` in `database.module.ts` for staging environment, but Railway NODE_ENV=staging. TypeORM tried to sync schema with production database causing conflicts.
+
+**Resolution:**
+```typescript
+// src/database/database.module.ts
+synchronize: false, // CRITICAL: Never auto-sync - use manual migrations only
+```
+
+Commit: `5c5b55a` HOTFIX: disable TypeORM synchronize to prevent production data loss
+
+---
+
+## Schema Discovery
+
+Railway database investigation revealed:
+- Database: Railway-managed (postgres.railway.internal), NOT Bulldozer production
+- Schema mismatch: Existing tables had `password_hash`, `full_name` (old schema)
+- Tech-spec assumed `password`, `fullname` (new schema)
+- Database was in half-migrated state from previous deployments
+
+---
+
+## Files Changed Summary
+
+**Created (10):**
+- src/roles/entities/role.entity.ts
+- src/roles/roles.module.ts
+- src/roles/index.ts
+- src/plantation-groups/entities/plantation-group.entity.ts
+- src/plantation-groups/plantation-groups.module.ts
+- src/plantation-groups/entities/index.ts
+- src/plantation-groups/index.ts
+- src/database/migrations/1738571000000-create-roles-table.ts
+- src/database/migrations/1738571500000-create-plantation-groups-table.ts
+- src/database/migrations/1738572000000-create-users-table.ts
+
+**Modified (18):**
+- src/users/entities/user.entity.ts
+- src/auth/strategies/jwt.strategy.ts
+- src/auth/auth.service.ts
+- src/auth/dto/auth-response.dto.ts
+- src/auth/decorators/current-user.decorator.ts
+- src/auth/guards/roles.guard.ts
+- src/auth/decorators/roles.decorator.ts
+- src/schedules/schedules.controller.ts
+- src/operators/operators.controller.ts
+- src/database/seed.service.ts
+- src/app.module.ts
+- src/database/database.module.ts
+- src/auth/auth.service.spec.ts
+- src/auth/guards/roles.guard.spec.ts
+- src/users/users.service.spec.ts
+- src/database/seed.service.spec.ts
+- src/operators/operators.service.spec.ts
+- src/operators/operators.service.ts
+- test/auth.e2e-spec.ts
+- test/e2e/users.e2e-spec.ts
+
+**Deleted (1):**
+- src/users/enums/user-role.enum.ts
+
+---
+
+## Key Technical Decisions
+
+1. **ID Type Migration:** UUID -> INTEGER SERIAL for auto-increment
+2. **Role Pattern:** Enum -> Foreign Key to roles table
+3. **JWT Payload:** role/estateId -> roleId/plantationGroupId
+4. **Column Names:** Aligned with production schema (password_hash, full_name)
+5. **Synchronize:** Disabled to prevent production data loss
+6. **Seed Data:** 3 distinct dev users for RBAC testing
+
+---
+
+## Next Steps
+
+1. Reset Railway database to fresh state
+2. Run migrations: `npm run migration:run`
+3. Verify SeedService creates 3 dev users
+4. Test RBAC endpoints with dev_kasie_pg, dev_kasie_fe, dev_operator
+5. Epic 2-4 now unblocked for implementation
+
+---
+
+## Commands Reference
+
+```bash
+# Run migrations
+npm run migration:run
+
+# Test login
+curl -X POST https://nestjs-api-production-9cad.up.railway.app/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"dev_kasie_pg","password":"DevPassword123"}'
+
+# Check health
+curl https://nestjs-api-production-9cad.up.railway.app/api/v1/health
+```
+
+---
+
+## Session 2026-02-02: Railway CLI & Docker Compose Migration Attempt
+
+**Status:** INCOMPLETE - Session terminated due to complexity issues
+
+### Summary
+
+User attempted to continue deployment after previous session but encountered multiple issues with Railway CLI commands and syntax inconsistencies.
+
+### What We Tried
+
+1. **Railway CLI approach** - FAILED
+   - Tried `railway connect`, `railway run`, `railway ssh` - semua gagal atau timeout
+   - Railway CLI syntax berubah-ubah, skill documentation tidak match dengan behavior actual
+   - Database internal Railway (`postgres.railway.internal`) tidak bisa diakses dari lokal
+   - Deployment terus crash karena schema mismatch
+
+2. **Switched to Docker Compose** - PARTIAL SUCCESS
+   - PostgreSQL container berhasil start di port 5433
+   - Fresh database created
+   - All 3 migrations ran successfully (roles, plantation_groups, users)
+   - 15 roles seeded correctly
+   - User entity fix applied (`passwordHash` -> `password`, `fullName` -> `fullname`)
+
+3. **Application Startup** - SUCCESS (LOCAL)
+   - NestJS started successfully on localhost:3000
+   - SeedService created 3 dev users (dev_kasie_pg, dev_kasie_fe, dev_operator)
+   - Login test PASSED:
+     ```bash
+     curl -X POST http://localhost:3000/api/v1/auth/login \
+       -d '{"username":"dev_kasie_pg","password":"DevPassword123"}'
+     # Returns: accessToken + user object with roleId: "KASIE_PG"
+     ```
+
+### Problems Encountered
+
+1. **Migration chaos:**
+   - Found orphaned migration `1769942419371-add-schedule-status-check-constraint.ts`
+   - Migration ini mencoba ALTER TABLE schedules tapi tabel schedules BELUM DIBUAT
+   - Saya (AI) salah hapus migration ini seharusnya CREATE TABLE dulu
+   - Sekarang tabel schedules missing, schedules endpoint error 500
+
+2. **Railway CLI frustrasi:**
+   - Syntax `railway logs --follow` deprecated
+   - `railway connect` tidak bisa karena non-TTY
+   - `railway run` tidak bisa konek ke internal database
+   - Tiap command beda behavior dengan dokumentasi
+
+### Files Modified in This Session
+
+1. `src/users/entities/user.entity.ts` - Fixed property names (password, fullname)
+2. `src/database/seed.service.ts` - Added development environment for seeding
+3. `docker-compose.yml` - Changed port 5432 -> 5433 (avoid conflict)
+4. `.env.local` - Created for local development config
+5. `migrate.ts` - Created (tidak terpakai)
+
+### Current State
+
+| Component | Status |
+|-----------|--------|
+| Local PostgreSQL (Docker) | ✅ Running on port 5433 |
+| Migrations (3 files) | ✅ Applied successfully |
+| NestJS App | ✅ Running locally |
+| Seed Data | ✅ 3 dev users created |
+| Login API | ✅ Working |
+| Schedules API | ❌ Broken (table missing) |
+| Railway Deployment | ❌ Still crashed |
+
+## Session 2026-02-02: Railway CLI & Docker Compose Migration Attempt
+
+**Status:** INCOMPLETE - Session terminated due to complexity issues
+
+### Summary
+
+User attempted to continue deployment after previous session but encountered multiple issues with Railway CLI commands and syntax inconsistencies.
+
+### What We Tried
+
+1. **Railway CLI approach** - FAILED
+   - Tried `railway connect`, `railway run`, `railway ssh` - semua gagal atau timeout
+   - Railway CLI syntax berubah-ubah, skill documentation tidak match dengan behavior actual
+   - Database internal Railway (`postgres.railway.internal`) tidak bisa diakses dari lokal
+   - Deployment terus crash karena schema mismatch
+
+2. **Switched to Docker Compose** - PARTIAL SUCCESS
+   - PostgreSQL container berhasil start di port 5433
+   - Fresh database created
+   - All 3 migrations ran successfully (roles, plantation_groups, users)
+   - 15 roles seeded correctly
+   - User entity fix applied (`passwordHash` → `password`, `fullName` → `fullname`)
+
+3. **Application Startup** - SUCCESS (LOCAL)
+   - NestJS started successfully on localhost:3000
+   - SeedService created 3 dev users (dev_kasie_pg, dev_kasie_fe, dev_operator)
+   - Login test PASSED:
+     ```bash
+     curl -X POST http://localhost:3000/api/v1/auth/login \
+       -d '{"username":"dev_kasie_pg","password":"DevPassword123"}'
+     # Returns: accessToken + user object with roleId: "KASIE_PG"
+     ```
+
+### Problems Encountered
+
+1. **Migration chaos:**
+   - Found orphaned migration `1769942419371-add-schedule-status-check-constraint.ts`
+   - Migration ini mencoba ALTER TABLE schedules tapi tabel schedules BELUM DIBUAT
+   - Saya (AI) salah hapus migration ini seharusnya CREATE TABLE dulu
+   - Sekarang tabel schedules missing, schedules endpoint error 500
+
+2. **Railway CLI frustrasi:**
+   - Syntax `railway logs --follow` deprecated
+   - `railway connect` tidak bisa karena non-TTY
+   - `railway run` tidak bisa konek ke internal database
+   - Tiap command beda behavior dengan dokumentasi
+
+### Files Modified in This Session
+
+1. `src/users/entities/user.entity.ts` - Fixed property names (password, fullname)
+2. `src/database/seed.service.ts` - Added development environment for seeding
+3. `docker-compose.yml` - Changed port 5432 → 5433 (avoid conflict)
+4. `.env.local` - Created for local development config
+5. `migrate.ts` - Created (tidak terpakai)
+
+### Current State
+
+| Component | Status |
+|-----------|--------|
+| Local PostgreSQL (Docker) | ✅ Running on port 5433 |
+| Migrations (3 files) | ✅ Applied successfully |
+| NestJS App | ✅ Running locally |
+| Seed Data | ✅ 3 dev users created |
+| Login API | ✅ Working |
+| Schedules API | ❌ Broken (table missing) |
+| Railway Deployment | ❌ Still crashed |
+
+### Next Steps (TODO)
+
+1. **Buat migration CREATE TABLE schedules** yang benar
+2. **Buat entity schedules** jika belum ada
+3. **Re-run migrations** di lokal
+4. **Test schedules API** dengan RBAC (KASIE_PG vs OPERATOR)
+5. **Decide deployment strategy:**
+   - Option A: Fix Railway (buat migration endpoint?)
+   - Option B: Pindah ke Supabase/AWS RDS
+   - Option C: Docker deployment (Render/Fly.io)
+
+### Key Insight
+
+Railway CLI adalah source of frustration. Dokumentasi/skill tidak match dengan actual CLI behavior. Setiap command unpredictable. Docker Compose jauh lebih stabil untuk development.
+
+**Lesson:** Untuk project dengan migration complexity, local Docker >>> Railway CLI.
+
+---
+
+## Session 2026-02-02 Afternoon: Supabase Migration & Ngrok Deployment
+
+**Status:** BACKEND WORKS, MOBILE APP STUCK (Root cause under investigation)
+
+### Migration to Supabase (SUCCESS)
+
+**Why migrate:**
+- Railway deployment chaos (migration state conflicts)
+- Render requires credit card even for free tier
+- Supabase: free permanent, easy DB reset, migration UI
+
+**Setup completed:**
+1. ✅ Created Supabase project: `fstrack-staging` (Singapore region)
+2. ✅ Fixed ConfigModule: Load `.env.staging` automatically (app.module.ts line 20)
+3. ✅ Fixed typeorm.config.ts: Parse DATABASE_URL
+4. ✅ Fixed configuration.ts: Support DATABASE_URL parsing
+5. ✅ Reset Supabase DB to fresh state
+6. ✅ Run all 4 migrations: roles, plantation_groups, users, schedules
+7. ✅ Backend connected successfully (localhost + Supabase)
+8. ✅ Seed 3 dev users: dev_kasie_pg, dev_kasie_fe, dev_operator
+
+**Connection string (session pooler):**
+```
+postgresql://postgres.okpqcmfiyiuncxerakvw:KEEPSMILE2312@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres
+```
+
+### Ngrok Deployment (PARTIAL SUCCESS)
+
+**Setup:**
+1. ✅ Installed ngrok via apt
+2. ✅ Configured authtoken
+3. ✅ Start ngrok: `ngrok http 3000`
+4. ✅ Public URL: `https://photochemical-arletta-slicingly.ngrok-free.dev`
+5. ✅ Test via curl: Login API works
+
+**Test results from terminal:**
+```bash
+curl -X POST https://photochemical-arletta-slicingly.ngrok-free.dev/api/v1/auth/login \
+  -d '{"username":"dev_kasie_pg","password":"DevPassword123"}'
+# SUCCESS: Returns JWT token + user object
+```
+
+### GitHub Actions CI/CD (SUCCESS)
+
+**Updated workflow:**
+1. ✅ Auto-build release APK on every push to main
+2. ✅ Hardcoded ngrok URL in build command
+3. ✅ Disabled Railway deployment (deprecated)
+4. ✅ APK artifact uploaded (retention 30 days)
+5. ✅ Build time: ~6 minutes
+
+**First build:** Successful ✅
+**APK downloaded:** Yes ✅
+**Installed to device:** Yes ✅
+
+### CRITICAL ISSUE: Mobile App Stuck Loading
+
+**Symptoms:**
+- Login screen stuck at loading spinner
+- No error message shown
+- Backend receiving no requests (checked logs)
+- Browser can bypass warning, app cannot
+
+**Attempted fixes:**
+1. ❌ Manual "Visit Site" in browser (app still stuck)
+2. ❌ Added `ngrok-skip-browser-warning: true` header to Dio client
+3. ❌ Added custom User-Agent header
+4. ❌ Rebuilt APK with headers, still stuck
+
+**Root cause investigation needed:**
+- [ ] Check actual HTTP error from Flutter (need USB debugging)
+- [ ] Test with local IP instead of ngrok (bypass cloud entirely)
+- [ ] Check CORS headers from ngrok
+- [ ] Verify API_BASE_URL was correctly compiled into APK
+- [ ] Check network permissions in AndroidManifest
+- [ ] Test with simple GET request (not POST)
+
+**Known facts:**
+- ✅ Backend works (curl test success)
+- ✅ Ngrok works (accessible from browser)
+- ✅ APK builds successfully
+- ✅ Network permission in manifest exists
+- ❌ App cannot reach backend (stuck loading)
+
+**Hypothesis to test:**
+1. **Ngrok CORS issue:** Even with skip header, CORS might block Flutter
+2. **SSL certificate issue:** Ngrok cert not trusted by Android
+3. **API path mismatch:** APK hitting wrong endpoint
+4. **Dio interceptor issue:** Retry logic causing infinite loop
+5. **Network policy:** Android blocking cleartext or specific domains
+
+### Files Changed This Session
+
+**Backend:**
+- `.env.staging` - Created with Supabase connection
+- `app.module.ts` - Load environment-specific .env files
+- `typeorm.config.ts` - Support DATABASE_URL parsing
+- `configuration.ts` - Parse Supabase connection string
+
+**CI/CD:**
+- `.github/workflows/ci.yml` - Auto-build APK, disable Railway
+
+**Flutter:**
+- `lib/core/network/api_client.dart` - Added ngrok bypass headers
+
+### Current State (End of Session)
+
+| Component | Status |
+|-----------|--------|
+| Supabase DB | ✅ Running, 4 migrations applied |
+| Backend (local + Supabase) | ✅ Working on localhost:3000 |
+| Ngrok tunnel | ✅ Exposing backend to internet |
+| API test (curl) | ✅ Login works via ngrok |
+| GitHub Actions | ✅ Auto-build APK enabled |
+| APK build | ✅ Latest build successful |
+| **Mobile app login** | ❌ **STUCK LOADING** (root cause unknown) |
+
+### Priority Next Steps
+
+**STOP jumping to new platforms. Fix the actual problem:**
+
+1. **Root cause investigation (MANDATORY):**
+   - Enable USB debugging on device
+   - Run `adb logcat | grep flutter` during login attempt
+   - Check exact error message from Dio/HTTP client
+   - Test with local IP (http://192.168.x.x:3000) to isolate ngrok
+
+2. **If ngrok is confirmed blocker:**
+   - Only THEN consider alternatives (Fly.io, Cloudflare Tunnel)
+   - Document why ngrok failed specifically
+   - Choose alternative based on root cause
+
+3. **If Flutter/network issue:**
+   - Fix Dio config
+   - Fix Android network security config
+   - Fix CORS on backend if needed
+
+**DO NOT suggest new deployment platform until root cause is identified.**
+
+---
+
+*Session ongoing. Root cause investigation required before proposing solutions.*

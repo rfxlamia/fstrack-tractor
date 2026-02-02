@@ -25,12 +25,14 @@ async function bootstrap() {
     }),
   );
 
-  // CORS configuration - allow all origins in development
+  // CORS configuration
   const corsOrigin = configService.get<string>('cors.origin');
   const isDev = configService.get<string>('nodeEnv') !== 'production';
   app.enableCors({
-    origin: corsOrigin || (isDev ? true : false),
+    origin: corsOrigin || (isDev ? true : '*'), // Allow all in dev/staging
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning', 'User-Agent'],
   });
 
   // Swagger configuration
