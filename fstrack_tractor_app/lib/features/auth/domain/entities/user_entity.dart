@@ -12,8 +12,10 @@ enum UserRole {
   }
 
   static UserRole fromApiString(String value) {
+    // Handle role variants like KASIE_PG, KASIE_FE -> kasie
+    final normalized = value.toUpperCase().split('_').first;
     return values.firstWhere(
-      (e) => e.name.toUpperCase() == value.toUpperCase(),
+      (e) => e.name.toUpperCase() == normalized,
       orElse: () => kasie,
     );
   }
@@ -38,10 +40,10 @@ class UserEntity extends Equatable {
   /// Create UserEntity from JSON (API response)
   factory UserEntity.fromJson(Map<String, dynamic> json) {
     return UserEntity(
-      id: json['id'] as String,
-      fullName: json['fullName'] as String,
-      role: UserRole.fromApiString(json['role'] as String),
-      estateId: json['estateId'] as String,
+      id: json['id'].toString(),
+      fullName: json['fullname'] as String,
+      role: UserRole.fromApiString(json['roleId'] as String),
+      estateId: json['plantationGroupId']?.toString(),
       isFirstTime: json['isFirstTime'] as bool,
     );
   }

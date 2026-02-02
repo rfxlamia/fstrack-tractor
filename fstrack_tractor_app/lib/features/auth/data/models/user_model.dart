@@ -13,10 +13,10 @@ class UserModel extends UserEntity {
   /// Create UserModel from JSON (API response)
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'] as String,
-      fullName: json['fullName'] as String,
-      role: UserRole.fromApiString(json['role'] as String),
-      estateId: json['estateId'] as String?,
+      id: json['id'].toString(),
+      fullName: json['fullname'] as String,
+      role: UserRole.fromApiString(json['roleId'] as String),
+      estateId: json['plantationGroupId']?.toString(),
       isFirstTime: json['isFirstTime'] as bool,
     );
   }

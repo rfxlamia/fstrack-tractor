@@ -1,0 +1,202 @@
+# Session Log: FsTrack Tractor - Backend Migration & Mobile Testing Fix
+
+## Overview
+Session date: 2026-02-02
+Context: Fixing deployment issues after completing 12 tasks from tech-spec-align-user-entity-minimal-epic-unblock.md
+
+---
+
+## Problem Summary
+
+**Initial Issues:**
+1. Railway deployment crashed due to migration chaos (orphaned migration 1769942419371-add-schedule-status-check-constraint.ts - ALTER TABLE schedules but table did not exist)
+2. Schedules table missing (CREATE TABLE migration was untracked/uncommitted)
+3. Mobile app could not connect to local backend for testing
+
+**Root Cause:** Migration state conflict + CORS misconfiguration in staging environment
+
+---
+
+## Solution: Railway → Supabase Migration
+
+### 1. Database Migration (Supabase Setup)
+
+**Created Supabase Project:**
+- Project: `fstrack-staging`
+- Region: Singapore
+- Connection: Session pooler (IPv4 compatible)
+
+**Connection string format:**
+```
+postgresql://postgres.[project-ref]:[password]@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres
+```
+
+**Files Modified:**
+
+1. **fstrack-tractor-api/.env.staging** - Created with Supabase connection
+2. **fstrack-tractor-api/src/app.module.ts** - Load environment-specific .env files:
+```typescript
+envFilePath: [
+  `.env.${process.env.NODE_ENV || 'development'}`,
+  '.env.development',
+  '.env',
+],
+```
+3. **fstrack-tractor-api/typeorm.config.ts** - Support DATABASE_URL parsing
+4. **fstrack-tractor-api/src/config/configuration.ts** - Parse Supabase connection string
+
+### 2. Database Reset & Migration
+
+**Reset Supabase DB:**
+```sql
+DROP SCHEMA public CASCADE;
+CREATE SCHEMA public;
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO public;
+```
+
+**Run migrations:**
+```bash
+NODE_ENV=staging npm run migration:run
+```
+
+**Migrations applied (4):**
+- CreateRolesTable
+- CreatePlantationGroupsTable
+- CreateUsersTable
+- CreateSchedulesTable (the missing one)
+
+**Start backend:**
+```bash
+NODE_ENV=staging npm run start:dev
+```
+
+### 3. Expose Backend with Ngrok
+
+**Install ngrok:**
+```bash
+curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
+echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
+sudo apt update && sudo apt install ngrok
+ngrok config add-authtoken <TOKEN>
+```
+
+**Start tunnel:**
+```bash
+ngrok http 3000
+```
+
+**Public URL:** `https://photochemical-arletta-slicingly.ngrok-free.dev`
+
+---
+
+## CRITICAL FIX: CORS Configuration
+
+### Problem
+Mobile app stuck on loading screen. Root cause: NODE_ENV=staging treated as production-like, causing CORS origin to be `false` (blocking all Flutter requests).
+
+### Solution
+
+**1. Update .env.staging:**
+```bash
+CORS_ORIGIN=*
+```
+
+**2. Update fstrack-tractor-api/src/main.ts:**
+```typescript
+app.enableCors({
+  origin: corsOrigin || (isDev ? true : '*'), // Allow all in dev/staging
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning', 'User-Agent'],
+});
+```
+
+**3. Update Flutter API client (fstrack_tractor_app/lib/core/network/api_client.dart):**
+```dart
+headers: {
+  'ngrok-skip-browser-warning': 'true',
+  'User-Agent': 'FsTrack-Mobile-App/1.0',
+},
+```
+
+---
+
+## CI/CD Updates
+
+### GitHub Actions Workflow (.github/workflows/ci.yml)
+
+**Changes:**
+1. Auto-build release APK on every push to main
+2. Disabled Railway deployment (deprecated)
+3. Hardcoded ngrok URL in build (note: changes on ngrok restart)
+
+**Build command:**
+```yaml
+flutter build apk --release --dart-define=API_BASE_URL=https://photochemical-arletta-slicingly.ngrok-free.dev
+```
+
+**Commits:**
+- `040f368` - ci: auto-build APK on push + disable Railway deploy
+- `4618dde` - fix: bypass ngrok warning page with skip header
+- `2106bf9` - fix: CORS blocking mobile app in staging
+
+---
+
+## Current Architecture
+
+| Component | Status | Details |
+|-----------|--------|---------|
+| Local Dev | Docker PostgreSQL (port 5433) + NestJS localhost:3000 |
+| Staging | Supabase DB + local NestJS with ngrok tunnel |
+| Production | TBD (Supabase production project or AWS RDS) |
+
+**Dev Test Accounts:**
+- `dev_kasie_pg` / `DevPassword123` (CREATE permission)
+- `dev_kasie_fe` / `DevPassword123` (ASSIGN permission)
+- `dev_operator` / `DevPassword123` (VIEW only)
+
+---
+
+## Key Configuration Files
+
+| File | Purpose |
+|------|---------|
+| `.env.development` | Local Docker DB |
+| `.env.staging` | Supabase staging DB (DATABASE_URL) |
+| `.env.production` | Production DB (future) |
+
+**ConfigModule loads:** `.env.${NODE_ENV}` → `.env.development` → `.env`
+
+---
+
+## Migration Workflow (Going Forward)
+
+1. Create: `npm run migration:generate -- -n MigrationName`
+2. Test local: `npm run migration:run` (Docker DB)
+3. Test staging: `NODE_ENV=staging npm run migration:run` (Supabase)
+4. Commit: `git add src/database/migrations/*.ts`
+5. Deploy prod: `NODE_ENV=production npm run migration:run`
+
+**NEVER:**
+- Rewrite existing migrations (UUID→INTEGER caused chaos)
+- Use `synchronize: true` (disabled permanently)
+- Manual SQL on production
+
+---
+
+## Lessons Learned
+
+1. **Railway issues:** Migration state conflicts, hard to reset DB
+2. **Supabase benefits:** Easy DB reset via dashboard, migration visibility, free permanent tier
+3. **Render limitation:** Requires credit card even for free tier
+4. **Ngrok limitation:** Free tier has warning page (bypass with header), URL changes on restart
+5. **Root cause analysis:** Mobile stuck loading was CORS, not ngrok/deployment platform
+
+---
+
+## Next Steps
+
+1. Test APK with CORS fix
+2. Consider Fly.io for permanent free deployment (no CC required)
+3. Create Supabase production project when ready
