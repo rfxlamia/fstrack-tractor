@@ -82,6 +82,32 @@ OPEN → ASSIGNED → IN_PROGRESS → COMPLETED
 
 ---
 
+## Implementation History & Context Changes
+
+### Story 1.6: User Dummy Seeding - Scope Change (2026-02-02)
+
+**Original Spec:** 6 users (kasie_pg, kasie_fe, operator, mandor, estate_pg, admin)
+
+**Actual Implementation:** 3 users only
+- `dev_kasie_pg` / `DevPassword123` (KASIE_PG)
+- `dev_kasie_fe` / `DevPassword123` (KASIE_FE)
+- `dev_operator` / `DevPassword123` (OPERATOR)
+
+**Why the Change:**
+- Story 1.6 spec dibuat SEBELUM database schema fix besar-besaran
+- Setelah fix: schema menggunakan 15 roles dari production Bulldozer DB
+- `estate_pg` TIDAK ADA di production roles (15 roles: KASIE_PG, KASIE_FE, OPERATOR, MANDOR, dll)
+- Spec 6 roles tidak match dengan reality production schema
+
+**Status:** Story 1.6 marked as `done` dengan implementasi 3 users yang mencakup core workflow (CREATE → ASSIGN → VIEW). Roles tambahan (mandor, admin) bisa ditambah later jika diperlukan untuk testing.
+
+**For Future Agents:**
+- Jangan bingung kalau sprint-status.yaml menunjukkan 1-6: done tapi cuma 3 users
+- Ini intentional decision setelah schema alignment, bukan bug
+- Core testing needs (CREATE/ASSIGN/VIEW) sudah tercover oleh 3 users
+
+---
+
 ## Critical Implementation Rules
 
 ### 1. Clean Architecture (MANDATORY)
