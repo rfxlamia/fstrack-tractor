@@ -16,8 +16,9 @@ export class SeedService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    // Only auto-seed in staging environment
-    if (this.configService.get('nodeEnv') !== 'staging') {
+    // Only auto-seed in staging/development environment
+    const env = this.configService.get('nodeEnv');
+    if (env !== 'staging' && env !== 'development') {
       return;
     }
 

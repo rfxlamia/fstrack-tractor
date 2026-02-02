@@ -17,7 +17,11 @@ import { PlantationGroupsModule } from './plantation-groups/plantation-groups.mo
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
-      envFilePath: ['.env.development', '.env'],
+      envFilePath: [
+        `.env.${process.env.NODE_ENV || 'development'}`,
+        '.env.development',
+        '.env',
+      ],
     }),
     HealthModule,
     DatabaseModule,
