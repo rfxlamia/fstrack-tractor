@@ -1,22 +1,42 @@
 # Epic 1 Failure Analysis: Role Schema Misalignment
 
 **Generated:** 2026-02-01
-**Status:** UNDER INVESTIGATION
-**Severity:** CRITICAL - Blocks Epic 2-4 Implementation
+**Status:** ✅ RESOLVED
+**Resolved Date:** 2026-02-02
+**Severity:** ~~CRITICAL - Blocks Epic 2-4 Implementation~~ → RESOLVED
 **Reporter:** Validation Agent (Story 1.6 Quality Review)
 
 ---
 
-## Executive Summary
+## Resolution Summary (2026-02-02)
+
+**All issues in this document have been RESOLVED.** The tech-spec `tech-spec-align-user-entity-minimal-epic-unblock.md` was implemented successfully.
+
+### Verified Changes:
+- ✅ Role Entity created (`src/roles/entities/role.entity.ts`) with 15 production roles
+- ✅ User Entity updated to use `roleId: string | null` (FK pattern, not enum)
+- ✅ UserRole enum deleted (`src/users/enums/user-role.enum.ts` removed)
+- ✅ Column names fixed: `password`, `fullname`, `plantation_group_id`
+- ✅ Auth system updated: JWT payload uses `roleId`, RolesGuard checks `user.roleId`
+- ✅ Controllers use UPPERCASE roles: `@Roles('KASIE_PG')`, `@Roles('KASIE_FE')`
+- ✅ Seed service creates 3 dev users: `dev_kasie_pg`, `dev_kasie_fe`, `dev_operator`
+- ✅ All migrations applied successfully
+- ✅ Backend compiles without errors
+
+**Epic 2-4 are now UNBLOCKED.**
+
+---
+
+## Original Issue (Historical Reference)
 
 During Story 1.6 (User Dummy Seeding) validation, a critical schema misalignment was discovered between:
 1. **Production Schema** (documented in Story 1.1)
 2. **Architecture Design** (epics.md + architecture.md)
 3. **Current Implementation** (Epic 1 Stories 1.1-1.5)
 
-**Impact:** Epic 2-4 features explicitly depend on role-based access control with distinct `kasie_pg` and `kasie_fe` roles, but current implementation only supports 4 generic roles.
+**Original Impact:** Epic 2-4 features explicitly depend on role-based access control with distinct `kasie_pg` and `kasie_fe` roles, but current implementation only supported 4 generic roles.
 
-**Confidence Level:** MEDIUM - Evidence is strong, but requires manual verification to confirm root cause.
+**Resolution:** Implemented via `tech-spec-align-user-entity-minimal-epic-unblock.md`
 
 ---
 
