@@ -7,7 +7,6 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/banner_wrapper.dart';
 import '../../../../injection_container.dart';
-import '../../../auth/domain/entities/user_entity.dart';
 import '../../../auth/domain/services/session_expiry_checker.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
@@ -59,12 +58,12 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  /// Build FAB for Kasie role only
+  /// Build FAB for Kasie PG role only (CREATE permission)
   Widget? _buildFab(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         if (state is! AuthSuccess) return const SizedBox.shrink();
-        if (state.user.role != UserRole.kasie) return const SizedBox.shrink();
+        if (!state.user.role.canCreateWorkPlan) return const SizedBox.shrink();
 
         return FloatingActionButton(
           backgroundColor: AppColors.primary,

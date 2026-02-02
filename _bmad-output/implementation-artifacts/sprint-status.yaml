@@ -54,17 +54,11 @@ development_status:
 
   # Epic 2: Work Plan Creation (Kasie PG)
   epic-2: in-progress
-  2-1-work-plan-feature-module-setup: done  # Completed 2026-02-02, code review passed with 11 fixes
-  2-2-create-work-plan-form-ui: backlog  # BLOCKED: Fix Flutter UserRole enum first!
+  2-1-work-plan-feature-module-setup: done 
+  2-2-create-work-plan-form-ui: backlog # see _bmad-output/implementation-artifacts/tech-spec-flutter-user-role-enum-expansion.md before creating the story
   2-3-create-work-plan-bloc-integration: backlog
   2-4-work-plan-list-display-basic: backlog
   epic-2-retrospective: optional
-
-  # ⚠️ FLUTTER ROLE FIX REQUIRED before Story 2.2
-  # Issue: UserRole enum normalizes KASIE_PG/KASIE_FE → kasie
-  # Backend: ✅ Ready with distinct roles
-  # Flutter: ❌ Must expand enum to 6 roles (kasiePg, kasieFe, operator, mandor, estatePg, admin)
-  # Impact: Story 2.2 UI will show button but get 403 without this fix
 
   # Epic 3: Work Plan Assignment (Kasie FE)
   epic-3: backlog

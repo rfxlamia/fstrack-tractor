@@ -12,7 +12,7 @@ class AuthFixtures {
         user: UserModel(
           id: 'user-123',
           fullName: 'Pak Suswanto',
-          role: UserRole.kasie,
+          role: UserRole.kasiePg,
           estateId: 'estate-001',
           isFirstTime: false,
         ),
@@ -26,7 +26,7 @@ class AuthFixtures {
         'user': {
           'id': 'user-123',
           'fullName': 'Pak Suswanto',
-          'role': 'KASIE',
+          'role': 'KASIE_PG',
           'estateId': 'estate-001',
           'isFirstTime': false,
         },

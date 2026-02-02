@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/ui_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
-import '../../../auth/domain/entities/user_entity.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import 'coming_soon_bottom_sheet.dart';
@@ -33,9 +32,9 @@ class RoleBasedMenuCards extends StatelessWidget {
         }
 
         final user = state.user;
-        final isKasie = user.role == UserRole.kasie;
+        final isKasie = user.role.isKasieType;
 
-        // AC3: Kasie layout (2 cards in Row)
+        // AC3: Kasie layout (2 cards in Row) - both PG and FE variants
         if (isKasie) {
           return _buildKasieLayout(context);
         }

@@ -35,7 +35,7 @@ void main() {
     const testUser = UserEntity(
       id: '1',
       fullName: 'Pak Suswanto',
-      role: UserRole.kasie,
+      role: UserRole.kasiePg,
       estateId: 'estate1',
       isFirstTime: false,
     );

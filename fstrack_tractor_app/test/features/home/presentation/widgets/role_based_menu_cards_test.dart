@@ -33,21 +33,43 @@ void main() {
   }
 
   group('RoleBasedMenuCards', () {
-    testWidgets('Kasie shows 2 cards', (tester) async {
-      const kasieUser = UserEntity(
+    testWidgets('Kasie PG shows 2 cards', (tester) async {
+      const kasiePgUser = UserEntity(
         id: '1',
-        fullName: 'Kasie User',
-        role: UserRole.kasie,
+        fullName: 'Kasie PG User',
+        role: UserRole.kasiePg,
         estateId: 'estate1',
         isFirstTime: false,
       );
 
       await tester.pumpWidget(
-        createTestWidget(const AuthSuccess(user: kasieUser)),
+        createTestWidget(const AuthSuccess(user: kasiePgUser)),
       );
       await tester.pumpAndSettle();
 
       // Verify 2 MenuCards are shown
+      expect(find.byType(MenuCard), findsNWidgets(2));
+
+      // Verify both card titles
+      expect(find.text('Buat Rencana'), findsOneWidget);
+      expect(find.text('Lihat Rencana'), findsOneWidget);
+    });
+
+    testWidgets('Kasie FE shows 2 cards', (tester) async {
+      const kasieFeUser = UserEntity(
+        id: '2',
+        fullName: 'Kasie FE User',
+        role: UserRole.kasieFe,
+        estateId: 'estate1',
+        isFirstTime: false,
+      );
+
+      await tester.pumpWidget(
+        createTestWidget(const AuthSuccess(user: kasieFeUser)),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify 2 MenuCards are shown (both kasie variants get same layout)
       expect(find.byType(MenuCard), findsNWidgets(2));
 
       // Verify both card titles

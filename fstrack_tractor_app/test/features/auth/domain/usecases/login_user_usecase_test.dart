@@ -27,7 +27,7 @@ void main() {
       when(() => mockAuthRepository.loginUser(rememberMe: any(named: 'rememberMe'), 
             username: any(named: 'username'),
             password: any(named: 'password'),
-          )).thenAnswer((_) async => Right(UserFixtures.kasieUser()));
+          )).thenAnswer((_) async => Right(UserFixtures.kasiePgUser()));
 
       // Act
       final result = await useCase(rememberMe: false, 
@@ -41,7 +41,7 @@ void main() {
         (failure) => fail('Expected Right, got Left with $failure'),
         (user) {
           expect(user.fullName, 'Pak Suswanto');
-          expect(user.role.name, 'kasie');
+          expect(user.role.name, 'kasiePg');
         },
       );
       verify(() => mockAuthRepository.loginUser(rememberMe: any(named: 'rememberMe'), 
@@ -117,7 +117,7 @@ void main() {
       when(() => mockAuthRepository.loginUser(rememberMe: any(named: 'rememberMe'), 
             username: any(named: 'username'),
             password: any(named: 'password'),
-          )).thenAnswer((_) async => Right(UserFixtures.kasieUser()));
+          )).thenAnswer((_) async => Right(UserFixtures.kasiePgUser()));
 
       // Act
       await useCase(rememberMe: false, 

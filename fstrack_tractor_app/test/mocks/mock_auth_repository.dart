@@ -23,7 +23,7 @@ class MockAuthRepository implements AuthRepository {
               fullName: 'Test User',
               estateId: '1',
               isFirstTime: false,
-              role: UserRole.kasie,
+              role: UserRole.kasiePg,
             ));
   }
 

@@ -60,7 +60,7 @@ void main() {
                 rememberMe: any(named: 'rememberMe'),
                 username: any(named: 'username'),
                 password: any(named: 'password'),
-              )).thenAnswer((_) async => Right(UserFixtures.kasieUser()));
+              )).thenAnswer((_) async => Right(UserFixtures.kasiePgUser()));
           return authBloc;
         },
         act: (bloc) => bloc.add(const LoginRequested(
@@ -213,7 +213,7 @@ void main() {
             fullName: 'Test',
             estateId: '1',
             isFirstTime: false,
-            role: UserRole.kasie,
+            role: UserRole.kasiePg,
           ));
         },
         build: () {
@@ -226,7 +226,7 @@ void main() {
             fullName: 'Test User',
             estateId: '1',
             isFirstTime: false,
-            role: UserRole.kasie,
+            role: UserRole.kasiePg,
           );
 
           return authBloc;
@@ -239,7 +239,7 @@ void main() {
               fullName: 'Test User',
               estateId: '1',
               isFirstTime: false,
-              role: UserRole.kasie,
+              role: UserRole.kasiePg,
             ),
           ),
         ],

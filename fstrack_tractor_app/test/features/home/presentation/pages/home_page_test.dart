@@ -204,24 +204,44 @@ void main() {
   });
 
   group('HomePage FAB Tests (Story 3.4 - AC6)', () {
-    testWidgets('Kasie role shows FAB', (tester) async {
-      const kasieUser = UserEntity(
+    testWidgets('Kasie PG role shows FAB (CREATE permission)', (tester) async {
+      const kasiePgUser = UserEntity(
         id: '1',
-        fullName: 'Kasie User',
-        role: UserRole.kasie,
+        fullName: 'Kasie PG User',
+        role: UserRole.kasiePg,
         estateId: 'estate1',
         isFirstTime: false,
       );
       when(() => helper.mockAuthBloc.state)
-          .thenReturn(const AuthSuccess(user: kasieUser));
+          .thenReturn(const AuthSuccess(user: kasiePgUser));
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump();
       await tester.pump(weatherWidgetInitDelay);
 
-      // Kasie should see FAB with Icons.add
+      // Kasie PG should see FAB with Icons.add (canCreateWorkPlan)
       expect(find.byType(FloatingActionButton), findsOneWidget);
       expect(find.byIcon(Icons.add), findsOneWidget);
+    });
+
+    testWidgets('Kasie FE role does not show FAB (no CREATE permission)',
+        (tester) async {
+      const kasieFeUser = UserEntity(
+        id: '1',
+        fullName: 'Kasie FE User',
+        role: UserRole.kasieFe,
+        estateId: 'estate1',
+        isFirstTime: false,
+      );
+      when(() => helper.mockAuthBloc.state)
+          .thenReturn(const AuthSuccess(user: kasieFeUser));
+
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pump();
+      await tester.pump(weatherWidgetInitDelay);
+
+      // Kasie FE should NOT see FAB (only ASSIGN permission, not CREATE)
+      expect(find.byType(FloatingActionButton), findsNothing);
     });
 
     testWidgets('Operator role does not show FAB', (tester) async {

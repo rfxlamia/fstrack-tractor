@@ -12,13 +12,19 @@ class UserModel extends UserEntity {
 
   /// Create UserModel from JSON (API response)
   factory UserModel.fromJson(Map<String, dynamic> json) {
-    return UserModel(
-      id: json['id'].toString(),
-      fullName: json['fullname'] as String,
-      role: UserRole.fromApiString(json['roleId'] as String),
-      estateId: json['plantationGroupId']?.toString(),
-      isFirstTime: json['isFirstTime'] as bool,
-    );
+    try {
+      return UserModel(
+        id: json['id'].toString(),
+        fullName: json['fullname'] as String,
+        role: UserRole.fromApiString(json['roleId'] as String),
+        estateId: json['plantationGroupId']?.toString(),
+        isFirstTime: json['isFirstTime'] as bool,
+      );
+    } on ArgumentError catch (e) {
+      // Stale localStorage with old role format (e.g., "KASIE")
+      // Throw FormatException to trigger logout via global error handler
+      throw FormatException('Invalid role format: ${e.message}. Please re-login.');
+    }
   }
 
   /// Convert to UserEntity (domain model)
