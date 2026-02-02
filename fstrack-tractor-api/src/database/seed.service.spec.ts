@@ -65,13 +65,20 @@ describe('SeedService', () => {
       expect(mockSave).not.toHaveBeenCalled();
     });
 
-    it('should NOT seed when environment is development', async () => {
+    it('should seed when environment is development', async () => {
       mockConfigGet.mockReturnValue('development');
+      mockFindOne.mockResolvedValue(null);
+      mockCreate.mockReturnValue(mockUser as User);
+      mockSave.mockResolvedValue(mockUser as User);
 
       await service.onModuleInit();
 
-      expect(mockFindOne).not.toHaveBeenCalled();
-      expect(mockSave).not.toHaveBeenCalled();
+      // Should check for old dev_kasie user and seed new users
+      expect(mockFindOne).toHaveBeenCalledWith({
+        where: { username: 'dev_kasie' },
+      });
+      expect(mockCreate).toHaveBeenCalledTimes(3);
+      expect(mockSave).toHaveBeenCalledTimes(3);
     });
 
     it('should seed dev user when environment is staging', async () => {

@@ -2,7 +2,9 @@
 export default () => {
   // Support DATABASE_URL (Supabase/Railway/Render) or individual vars
   const parseDatabaseUrl = (url: string) => {
-    const match = url.match(/postgres(?:ql)?:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
+    const match = url.match(
+      /postgres(?:ql)?:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/,
+    );
     if (!match) return null;
     return {
       username: match[1],
@@ -59,7 +61,9 @@ export default () => {
       apiKey: (() => {
         const key = process.env.OPENWEATHERMAP_API_KEY;
         if (!key && process.env.NODE_ENV === 'production') {
-          console.warn('OPENWEATHERMAP_API_KEY not set - weather API will fail');
+          console.warn(
+            'OPENWEATHERMAP_API_KEY not set - weather API will fail',
+          );
         }
         return key || '';
       })(),

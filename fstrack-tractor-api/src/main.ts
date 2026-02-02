@@ -32,7 +32,12 @@ async function bootstrap() {
     origin: corsOrigin || (isDev ? true : '*'), // Allow all in dev/staging
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning', 'User-Agent'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'ngrok-skip-browser-warning',
+      'User-Agent',
+    ],
   });
 
   // Swagger configuration
