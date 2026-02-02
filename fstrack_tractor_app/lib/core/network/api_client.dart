@@ -19,6 +19,12 @@ class ApiClient {
         receiveTimeout: const Duration(seconds: 30),
         contentType: 'application/json',
         responseType: ResponseType.json,
+        headers: {
+          // Bypass ngrok free tier warning page
+          'ngrok-skip-browser-warning': 'true',
+          // Custom user-agent as backup
+          'User-Agent': 'FsTrack-Mobile-App/1.0',
+        },
       ),
     );
 
