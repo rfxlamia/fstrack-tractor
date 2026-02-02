@@ -50,14 +50,14 @@ Primary table for work plan management.
   - `operator_id` → `operators(id)`
   - `report_id` → `reports(id)`
 
-**Status Values (Discovered):**
+**Status Values (Production):**
 | Value | Description |
 |-------|-------------|
-| `OPEN` | Work plan baru dibuat (default) |
-| `CLOSED` | Work plan ditutup |
+| `OPEN` | Work plan baru dibuat, belum ada operator ditugaskan |
+| `CLOSED` | Operator sudah ditugaskan (⚠️ UI harus tampilkan "Ditugaskan" bukan "Ditutup") |
 | `CANCEL` | Work plan dibatalkan |
 
-**⚠️ NOTE:** Production status values (`OPEN`, `CLOSED`, `CANCEL`) differ from architecture expectation (`OPEN`, `ASSIGNED`, `IN_PROGRESS`, `COMPLETED`). This needs alignment discussion.
+**⚠️ SEMANTIC CLARITY:** Status `CLOSED` di production artinya "operator sudah ditugaskan", BUKAN "pekerjaan sudah selesai". Di Flutter UI, SELALU tampilkan "Ditugaskan" untuk menghindari kebingungan user.
 
 **Current Indexes:**
 - `PK_7e33fc2ea755a5765e3564e66dd` (Primary Key on id)

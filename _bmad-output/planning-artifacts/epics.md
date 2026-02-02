@@ -24,7 +24,7 @@ See `/home/v/work/fstrack-tractor/docs/schema-reference.md` for complete product
 **Summary:**
 During Story 1.6 validation, critical discrepancies discovered between:
 - **Production Schema:** 15 roles, FK pattern (`role_id → roles.id`)
-- **Architecture Design:** 6 roles (kasie_pg, kasie_fe, operator, mandor, estate_pg, admin)
+- **Architecture Design:** 5 roles (kasie_pg, kasie_fe, operator, mandor, admin)
 - **Current Implementation:** 4 roles enum (KASIE, OPERATOR, MANDOR, ADMIN)
 
 Epic 2-4 explicitly require distinct `kasie_pg` and `kasie_fe` roles for permission separation (CREATE vs ASSIGN), but current implementation cannot distinguish between them.
@@ -33,7 +33,7 @@ Epic 2-4 explicitly require distinct `kasie_pg` and `kasie_fe` roles for permiss
 
 **Action Required:**
 1. ✅ Verify production schema accuracy (documented in schema-reference.md)
-2. ⏳ Choose alignment strategy: Option A (proper FK fix) or Option B (extend enum to 6 roles)
+2. ⏳ Choose alignment strategy: Option A (proper FK fix) or Option B (extend enum to 5 roles)
 3. ⏳ Update Story 1.6 or create Story 1.7 accordingly
 
 **Status:** Under investigation - Story 1.6 validation on hold pending decision
@@ -50,7 +50,7 @@ Epic 2-4 explicitly require distinct `kasie_pg` and `kasie_fe` roles for permiss
 This document provides the complete epic and story breakdown for fstrack-tractor Fase 2 (Work Plan Management), decomposing the requirements from the PRD, UX Design, and Architecture requirements into implementable stories.
 
 **Scope:** CREATE → ASSIGN → VIEW work plan workflow
-**Target Roles:** kasie_pg, kasie_fe, operator, mandor, estate_pg, admin
+**Target Roles:** kasie_pg, kasie_fe, operator, mandor, admin
 
 ## Requirements Inventory
 
@@ -85,7 +85,7 @@ This document provides the complete epic and story breakdown for fstrack-tractor
 
 | FR# | Requirement |
 |-----|-------------|
-| FR-F2-21 | System memiliki user dummy untuk semua role (kasie_pg, kasie_fe, operator, mandor, estate_pg, admin) |
+| FR-F2-21 | System memiliki user dummy untuk semua role (kasie_pg, kasie_fe, operator, mandor, admin) |
 | FR-F2-22 | User dummy digunakan untuk real live testing |
 | FR-F2-23 | User dummy memiliki password yang valid |
 | FR-F2-24 | User dummy terdaftar di database |
@@ -157,7 +157,7 @@ This document provides the complete epic and story breakdown for fstrack-tractor
 
 | NFR# | Requirement | Target |
 |------|-------------|--------|
-| NFR-F2-21 | RBAC test coverage | 100% (6 roles × 4 endpoints) |
+| NFR-F2-21 | RBAC test coverage | 100% (5 roles × 4 endpoints) |
 | NFR-F2-22 | DB integration test coverage | 80% automation |
 
 **User Experience (NFR-F2-23 to NFR-F2-25):**
@@ -315,7 +315,7 @@ Semua role dapat melihat work plans sesuai permission masing-masing dengan filte
 - WorkPlanListPage dengan skeleton loading
 - Detail bottom sheet untuk semua roles
 
-**Standalone Value:** ✅ Complete view experience untuk semua 6 roles
+**Standalone Value:** ✅ Complete view experience untuk semua 5 roles
 
 ---
 
@@ -458,7 +458,7 @@ So that **only authorized roles can perform CREATE and ASSIGN operations**.
 - Create `src/auth/decorators/roles.decorator.ts`
 - Apply @Roles('kasie_pg') to POST /schedules
 - Apply @Roles('kasie_fe') to PATCH /schedules/:id (assign)
-- Write unit tests for all 6 roles × 3 operations (18 test cases)
+- Write unit tests for all 5 roles × 3 operations (18 test cases)
 
 ---
 
@@ -500,7 +500,7 @@ So that **real live testing can be performed for all roles**.
 
 **Given** the seed script is executed
 **When** the database is checked
-**Then** 6 users exist with roles: kasie_pg, kasie_fe, operator, mandor, estate_pg, admin
+**Then** 6 users exist with roles: kasie_pg, kasie_fe, operator, mandor, admin
 **And** each user has a valid hashed password
 **And** each user can successfully login via `/api/v1/auth/login`
 
@@ -738,7 +738,7 @@ So that **I know exactly what I need to do**.
 **When** work plan list loads
 **Then** only work plans where operator_id matches current user are shown
 
-**Given** user is logged in as mandor, estate_pg, or admin
+**Given** user is logged in as mandor, or admin
 **When** work plan list loads
 **Then** all work plans are visible (read-only)
 

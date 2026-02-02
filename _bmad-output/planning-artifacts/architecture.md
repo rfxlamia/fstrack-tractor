@@ -60,7 +60,7 @@ PRD Fase 2 mendefinisikan **30 Functional Requirements** yang diorganisasi dalam
 
 **Key Functional Requirements:**
 - **FR-F2-1 to FR-F2-6:** CREATE work plan (Kasie PG only) - Form validation, auto-fill tanggal, status default OPEN
-- **FR-F2-7 to FR-F2-10:** ASSIGN work plan (Kasie FE only) - Operator selection, status transition OPEN→ASSIGNED
+- **FR-F2-7 to FR-F2-10:** ASSIGN work plan (Kasie FE only) - Operator selection, status transition OPEN→CLOSED
 - **FR-F2-11 to FR-F2-20:** VIEW work plans (All roles) - Role-based filtering, detail view
 - **FR-F2-21 to FR-F2-25:** User dummy setup - 6 users (1 per role) untuk real live testing
 
@@ -145,7 +145,7 @@ PRD Fase 2 mendefinisikan **30 Functional Requirements** yang diorganisasi dalam
 **1. Authentication & Authorization (RBAC)**
 - JWT token management dengan 14 hari expiry + 24 jam grace period
 - Role extraction dari JWT payload
-- 6 roles: kasie_pg, kasie_fe, operator, mandor, estate_pg, admin
+- 5 roles: kasie_pg, kasie_fe, operator, mandor, admin
 - Permission matrix enforcement di semua layers
 
 **2. State Management**
@@ -167,7 +167,7 @@ PRD Fase 2 mendefinisikan **30 Functional Requirements** yang diorganisasi dalam
 - Audit logging untuk status changes
 
 **5. Testing Strategy**
-- 100% RBAC test coverage (6 roles × 4 endpoints)
+- 100% RBAC test coverage (5 roles × 4 endpoints)
 - Golden tests untuk custom widgets
 - Integration tests untuk DB operations
 - User dummy untuk real live testing
@@ -431,7 +431,7 @@ if (user.role == UserRole.kasieFe && workPlan.status == 'OPEN') {
 
 **Party Mode Validation:**
 - ✅ Winston: Reusable base guard recommended
-- ✅ Murat: 18 test cases (6 roles × 3 ops), manageable
+- ✅ Murat: 18 test cases (5 roles × 3 ops), manageable
 - ✅ Amelia: Consistent dengan existing auth patterns
 - ✅ John: Supports all user journeys
 

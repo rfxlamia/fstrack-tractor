@@ -21,7 +21,13 @@ documentCounts:
 
 **PRODUCTION SCHEMA UPDATE (2026-01-31):**
 This document has been updated to reflect actual production database schema discovered in Story 1.1.
-Key changes: `operator_id` is INTEGER, `location_id` is VARCHAR(32), `unit_id` is VARCHAR(16), status values are OPEN/CLOSED/CANCEL (not ASSIGNED/IN_PROGRESS/COMPLETED).
+Key changes:
+- `operator_id` is **INTEGER** (not UUID!) - matches operators.id (auto-increment)
+- `location_id` is **VARCHAR(32)** (not UUID!) - manual ID codes like "LOC001"
+- `unit_id` is **VARCHAR(16)** (not UUID!) - manual ID codes like "UNIT01"
+- Status values: OPEN/CLOSED/CANCEL (production), NOT ASSIGNED/IN_PROGRESS/COMPLETED
+- API JSON uses **camelCase** (workDate, operatorId), database uses **snake_case** (work_date, operator_id)
+
 See `/home/v/work/fstrack-tractor/docs/schema-reference.md` for complete production schema.
 
 **Author:** V
@@ -65,7 +71,7 @@ Fase 2 adalah jembatan antara Fase 1 (foundation) dan Fase 3+ (tracking, activit
 - **Backend:** NestJS dengan modular architecture
 - **Database:** PostgreSQL dengan schema schedules/operators/units
 - **Auth:** JWT + bcrypt (existing from Fase 1)
-- **Roles:** kasie_pg, kasie_fe, operator, mandor, estate_pg, admin
+- **Roles:** kasie_pg, kasie_fe, operator, mandor, admin
 
 ---
 
@@ -412,7 +418,7 @@ Pak Soswanti update status testing: "Fase 2 Ready for Internal Release". Checkli
 
 | FR# | Requirement |
 |-----|-------------|
-| FR-F2-21 | System memiliki user dummy untuk semua role (kasie_pg, kasie_fe, operator, mandor, estate_pg, admin) |
+| FR-F2-21 | System memiliki user dummy untuk semua role (kasie_pg, kasie_fe, operator, mandor, admin) |
 | FR-F2-22 | User dummy digunakan untuk real live testing |
 | FR-F2-23 | User dummy memiliki password yang valid |
 | FR-F2-24 | User dummy terdaftar di database |
@@ -495,7 +501,7 @@ Pak Soswanti update status testing: "Fase 2 Ready for Internal Release". Checkli
 
 | NFR# | Requirement | Target | Validation |
 |------|-------------|--------|------------|
-| NFR-F2-21 | RBAC test coverage | 100% (6 roles × 4 endpoints) | Unit/Integration test |
+| NFR-F2-21 | RBAC test coverage | 100% (5 roles × 4 endpoints) | Unit/Integration test |
 | NFR-F2-22 | DB integration test coverage | 80% automation | Test coverage report |
 
 ### User Experience (Error Handling)
@@ -644,18 +650,18 @@ FSTrack-Tractor Fase 2 adalah kombinasi project type:
 - kasie_pg: CREATE + VIEW work plans
 - kasie_fe: ASSIGN + VIEW work plans
 - operator: VIEW assigned work plans only
-- mandor, estate_pg, admin: VIEW all work plans
+- mandor, admin: VIEW all work plans
 
 ### Data Schemas
 
 **Request: POST /api/v1/schedules**
 ```json
 {
-  "work_date": "2026-01-29",
+  "workDate": "2026-01-29",
   "pattern": "Rotasi",
   "shift": "Pagi",
-  "location_id": "LOC001",  // VARCHAR(32)
-  "unit_id": "UNIT01"       // VARCHAR(16)
+  "locationId": "LOC001",  // VARCHAR(32)
+  "unitId": "UNIT01"       // VARCHAR(16)
 }
 ```
 
@@ -663,21 +669,21 @@ FSTrack-Tractor Fase 2 adalah kombinasi project type:
 ```json
 {
   "id": "uuid",
-  "work_date": "2026-01-29",
+  "workDate": "2026-01-29",
   "pattern": "Rotasi",
   "shift": "Pagi",
   "status": "OPEN",
-  "location_id": "LOC001",
-  "unit_id": "UNIT01",
-  "operator_id": null,
-  "created_at": "2026-01-29T05:30:00Z"
+  "locationId": "LOC001",
+  "unitId": "UNIT01",
+  "operatorId": null,
+  "createdAt": "2026-01-29T05:30:00Z"
 }
 ```
 
 **Request: PATCH /api/v1/schedules/:id**
 ```json
 {
-  "operator_id": 123  // INTEGER
+  "operatorId": 123  // INTEGER
 }
 ```
 
@@ -761,7 +767,7 @@ FSTrack-Tractor Fase 2 adalah kombinasi project type:
 | Work Plan CREATE (Kasie PG) | P0 | ✅ In Scope |
 | Work Plan ASSIGN (Kasie FE) | P0 | ✅ In Scope |
 | Work Plan VIEW (All roles) | P0 | ✅ In Scope |
-| RBAC enforcement (6 roles) | P0 | ✅ In Scope |
+| RBAC enforcement (5 roles) | P0 | ✅ In Scope |
 | User dummy setup (6 users) | P0 | ✅ In Scope |
 | Production schema integration | P0 | ✅ In Scope |
 

@@ -57,7 +57,7 @@ Fase 2 fokus pada **Work Plan Management** dengan 3 operasi utama:
 |---------------|---------|----------|
 | WorkPlanCard | Extended dari TaskCard dengan status ASSIGNED | TaskCard pattern |
 | AssignBottomSheet | Form untuk assign operator | CreateBottomSheet pattern |
-| StatusBadge | OPEN → ASSIGNED → IN_PROGRESS | Existing status badges |
+| StatusBadge | OPEN → CLOSED → CANCEL (production status) | Existing status badges |
 
 ---
 
@@ -98,7 +98,7 @@ Fase 2 fokus pada **Work Plan Management** dengan 3 operasi utama:
 | Challenge | Description | Impact |
 |-----------|-------------|--------|
 | **1. Role-Based Permission Clarity** | 6 roles dengan permission berbeda, user harus langsung paham apa yang bisa mereka lakukan | Tinggi - confusion = workflow failure |
-| **2. Status Transition Visibility** | OPEN → ASSIGNED transition harus jelas terlihat oleh semua pihak untuk koordinasi | Tinggi - koordinasi antar-role |
+| **2. Status Transition Visibility** | OPEN → CLOSED transition harus jelas terlihat oleh semua pihak untuk koordinasi | Tinggi - koordinasi antar-role |
 | **3. Context Switching (Kasie FE)** | Kasie FE perlu lihat list → pilih work plan → assign operator, 3-step flow yang harus efisien | Medium - efficiency critical |
 | **4. Field Environment Constraints** | Area perkebunan dengan sinyal 4G lemah, app harus tetap usable dengan feedback yang jelas | Tinggi - reliability |
 
@@ -106,7 +106,7 @@ Fase 2 fokus pada **Work Plan Management** dengan 3 operasi utama:
 
 | Opportunity | Description | Value |
 |-------------|-------------|-------|
-| **1. Visual Status Indicators** | Color-coded status badges (Orange=OPEN, Blue=ASSIGNED, Green=COMPLETED) dengan border-left indicators | Instant recognition untuk semua role |
+| **1. Visual Status Indicators** | Color-coded status badges (Orange=OPEN, Blue=CLOSED/Ditugaskan, Red=CANCEL) dengan border-left indicators | Instant recognition untuk semua role |
 | **2. Smart Filtering** | Auto-filter list berdasarkan role (Operator hanya lihat assigned-to-me, Kasie FE lihat OPEN untuk assign) | Reduce cognitive load |
 | **3. Bottom Sheet Pattern** | Consistent CREATE/ASSIGN/VIEW dalam bottom sheet, tidak full page navigation | Maintain context, predictable interactions |
 | **4. Success Feedback** | Toast messages dalam Bahasa Indonesia saat CREATE/ASSIGN berhasil | Clear confirmation, build confidence |
@@ -493,7 +493,7 @@ class AppSpacing {
 | **Taps to CREATE** | Jumlah tap dari main page ke success | 4 taps |
 | **Taps to ASSIGN** | Jumlah tap dari main page ke success | 3 taps |
 | **Role recognition** | Correct cards displayed | 100% accuracy |
-| **Status transition** | OPEN → ASSIGNED visible | Immediate feedback |
+| **Status transition** | OPEN → CLOSED visible | Immediate feedback |
 
 **Success Indicators:**
 - ✅ User sees greeting dengan nama dalam < 2 detik
@@ -559,7 +559,7 @@ Tap card OPEN → Bottom Sheet detail
 **3. Feedback:**
 - Loading: Button spinner
 - Success: Toast "Operator berhasil ditugaskan!"
-- Visual: Status badge berubah OPEN (orange) → ASSIGNED (blue)
+- Visual: Status badge berubah OPEN (orange) → CLOSED/Ditugaskan (blue)
 
 **4. Completion:**
 - Bottom sheet dismiss
@@ -607,10 +607,10 @@ Tap card → List filtered (hanya assigned-to-me)
 | Card | `greyCard` | `#F0F0F0` | Card backgrounds |
 | On Surface | `textPrimary` | `#333333` | Text on light bg |
 | Status: OPEN | `buttonOrange` | `#FBA919` | Border-left indicator |
-| Status: ASSIGNED | `buttonBlue` | `#25AAE1` | Border-left indicator |
+| Status: CLOSED | `buttonBlue` | `#25AAE1` | Border-left indicator |
 | Status: COMPLETED | `primary` | `#008945` | Border-left indicator |
 
-**Fase 2 Extension:** Status colors untuk OPEN/ASSIGNED/COMPLETED menggunakan existing tokens.
+**Fase 2 Extension:** Status colors untuk OPEN/CLOSED/CANCEL menggunakan existing tokens.
 
 ### Typography System
 
@@ -684,7 +684,7 @@ Tap card → List filtered (hanya assigned-to-me)
 3. **Kasie FE ASSIGN** - Assign operator ke work plan OPEN
 4. **Operator VIEW** - No FAB, filtered list
 5. **Detail View** - Read-only untuk semua roles
-6. **Status Workflow** - OPEN → ASSIGNED → COMPLETED
+6. **Status Workflow** - OPEN → CLOSED → COMPLETED
 
 ### Design Rationale
 
@@ -718,7 +718,7 @@ lib/
 - `WorkPlanCard` - Extended dari TaskCard dengan status indicators
 - `CreateBottomSheet` - Form untuk CREATE work plan
 - `AssignBottomSheet` - Form untuk ASSIGN operator
-- `StatusBadge` - Color-coded status (OPEN/ASSIGNED/COMPLETED)
+- `StatusBadge` - Color-coded status (OPEN/CLOSED/CANCEL)
 
 ## Component Strategy
 
