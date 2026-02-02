@@ -32,3 +32,9 @@ class SessionExpiredFailure extends Failure {
   @override
   String get message => UIStrings.sessionExpired;
 }
+
+class ValidationFailure extends Failure {
+  @override
+  final String message;
+  ValidationFailure(this.message);
+}

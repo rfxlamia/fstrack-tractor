@@ -46,6 +46,24 @@ import 'features/weather/domain/repositories/weather_repository.dart' as _i256;
 import 'features/weather/domain/usecases/get_current_weather_usecase.dart'
     as _i515;
 import 'features/weather/presentation/bloc/weather_bloc.dart' as _i989;
+import 'features/work_plan/data/datasources/work_plan_local_datasource.dart'
+    as _i435;
+import 'features/work_plan/data/datasources/work_plan_remote_datasource.dart'
+    as _i222;
+import 'features/work_plan/data/repositories/work_plan_repository_impl.dart'
+    as _i295;
+import 'features/work_plan/domain/repositories/work_plan_repository.dart'
+    as _i846;
+import 'features/work_plan/domain/usecases/assign_operator_usecase.dart'
+    as _i1049;
+import 'features/work_plan/domain/usecases/create_work_plan_usecase.dart'
+    as _i251;
+import 'features/work_plan/domain/usecases/get_operators_usecase.dart' as _i6;
+import 'features/work_plan/domain/usecases/get_work_plan_by_id_usecase.dart'
+    as _i148;
+import 'features/work_plan/domain/usecases/get_work_plans_usecase.dart'
+    as _i190;
+import 'features/work_plan/presentation/bloc/work_plan_bloc.dart' as _i398;
 
 extension GetItInjectableX on _i174.GetIt {
 // initializes the registration of main-scope dependencies inside of GetIt
@@ -65,6 +83,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i644.FirstTimeLocalDataSource>(
         () => _i644.FirstTimeLocalDataSource());
     gh.factory<_i712.LocationProvider>(() => _i157.HardcodedLocationProvider());
+    gh.lazySingleton<_i435.WorkPlanLocalDataSource>(
+        () => _i435.WorkPlanLocalDataSourceImpl());
     gh.factory<_i141.WeatherLocalDataSource>(
         () => _i141.WeatherLocalDataSource(gh<_i946.HiveService>()));
     gh.singleton<_i887.ConnectivityChecker>(
@@ -79,6 +99,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i871.ApiClient(retryInterceptor: gh<_i189.RetryInterceptor>()));
     gh.lazySingleton<_i588.AuthRemoteDataSource>(
         () => _i588.AuthRemoteDataSource(apiClient: gh<_i871.ApiClient>()));
+    gh.lazySingleton<_i222.WorkPlanRemoteDataSource>(
+        () => _i222.WorkPlanRemoteDataSourceImpl(gh<_i871.ApiClient>()));
     gh.lazySingleton<_i127.FirstTimeHintsBloc>(() => _i127.FirstTimeHintsBloc(
           dataSource: gh<_i644.FirstTimeLocalDataSource>(),
           apiClient: gh<_i871.ApiClient>(),
@@ -88,15 +110,37 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i1043.AuthLocalDataSource>(),
               gh<_i1012.SessionWarningStorage>(),
             ));
+    gh.lazySingleton<_i846.WorkPlanRepository>(
+        () => _i295.WorkPlanRepositoryImpl(
+              gh<_i222.WorkPlanRemoteDataSource>(),
+              gh<_i435.WorkPlanLocalDataSource>(),
+            ));
     gh.lazySingleton<_i1015.AuthRepository>(() => _i111.AuthRepositoryImpl(
           remoteDataSource: gh<_i588.AuthRemoteDataSource>(),
           localDataSource: gh<_i1043.AuthLocalDataSource>(),
         ));
     gh.factory<_i739.WeatherRemoteDataSource>(
         () => _i739.WeatherRemoteDataSource(gh<_i871.ApiClient>()));
+    gh.lazySingleton<_i1049.AssignOperatorUseCase>(
+        () => _i1049.AssignOperatorUseCase(gh<_i846.WorkPlanRepository>()));
+    gh.lazySingleton<_i251.CreateWorkPlanUseCase>(
+        () => _i251.CreateWorkPlanUseCase(gh<_i846.WorkPlanRepository>()));
+    gh.lazySingleton<_i6.GetOperatorsUseCase>(
+        () => _i6.GetOperatorsUseCase(gh<_i846.WorkPlanRepository>()));
+    gh.lazySingleton<_i148.GetWorkPlanByIdUseCase>(
+        () => _i148.GetWorkPlanByIdUseCase(gh<_i846.WorkPlanRepository>()));
+    gh.lazySingleton<_i190.GetWorkPlansUseCase>(
+        () => _i190.GetWorkPlansUseCase(gh<_i846.WorkPlanRepository>()));
     gh.lazySingleton<_i256.WeatherRepository>(() => _i876.WeatherRepositoryImpl(
           remoteDataSource: gh<_i739.WeatherRemoteDataSource>(),
           localDataSource: gh<_i141.WeatherLocalDataSource>(),
+        ));
+    gh.factory<_i398.WorkPlanBloc>(() => _i398.WorkPlanBloc(
+          gh<_i190.GetWorkPlansUseCase>(),
+          gh<_i148.GetWorkPlanByIdUseCase>(),
+          gh<_i251.CreateWorkPlanUseCase>(),
+          gh<_i1049.AssignOperatorUseCase>(),
+          gh<_i6.GetOperatorsUseCase>(),
         ));
     gh.factory<_i183.ValidateTokenUseCase>(() => _i183.ValidateTokenUseCase(
           gh<_i1015.AuthRepository>(),
