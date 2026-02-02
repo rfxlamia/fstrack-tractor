@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/constants/ui_strings.dart';
 import '../../../../core/network/connectivity_checker.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -13,8 +12,9 @@ import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../weather/presentation/bloc/weather_bloc.dart';
 import '../../../weather/presentation/widgets/weather_widget.dart';
+import '../../../work_plan/presentation/bloc/work_plan_bloc.dart';
 import '../widgets/clock_widget.dart';
-import '../widgets/coming_soon_bottom_sheet.dart';
+import '../../../work_plan/presentation/widgets/create_bottom_sheet.dart';
 import '../widgets/first_time_hints_wrapper.dart';
 import '../widgets/greeting_header.dart';
 import '../widgets/role_based_menu_cards.dart';
@@ -42,8 +42,15 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-      body: BlocProvider<WeatherBloc>(
-        create: (context) => getIt<WeatherBloc>(),
+      body: MultiBlocProvider(
+        providers: [
+          BlocProvider<WeatherBloc>(
+            create: (context) => getIt<WeatherBloc>(),
+          ),
+          BlocProvider<WorkPlanBloc>(
+            create: (context) => getIt<WorkPlanBloc>(),
+          ),
+        ],
         child: BannerWrapper(
           connectivityChecker: getIt<ConnectivityChecker>(),
           sessionExpiryChecker: getIt<SessionExpiryChecker>(),
@@ -67,10 +74,7 @@ class HomePage extends StatelessWidget {
 
         return FloatingActionButton(
           backgroundColor: AppColors.primary,
-          onPressed: () => ComingSoonBottomSheet.show(
-            context,
-            UIStrings.menuCardCreateTitle,
-          ),
+          onPressed: () => CreateBottomSheet.show(context),
           child: const Icon(Icons.add),
         );
       },

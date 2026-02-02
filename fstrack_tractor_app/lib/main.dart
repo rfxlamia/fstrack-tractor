@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'core/constants/ui_strings.dart';
@@ -41,6 +42,15 @@ class FsTrackApp extends StatelessWidget {
         title: 'FSTrack Tractor',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('id', 'ID'), // Indonesia
+          Locale('en', 'US'), // English (fallback)
+        ],
         routerConfig: getIt<AppRouter>().router,
         builder: (context, child) {
           return BlocListener<AuthBloc, AuthState>(

@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   # State Management
   flutter_bloc: ^8.1.6
@@ -39,6 +41,9 @@ dependencies:
 
   # Functional Programming
   dartz: ^0.10.1
+
+  # Internationalization & Date Formatting
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:

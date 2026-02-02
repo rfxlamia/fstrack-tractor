@@ -54,8 +54,8 @@ development_status:
 
   # Epic 2: Work Plan Creation (Kasie PG)
   epic-2: in-progress
-  2-1-work-plan-feature-module-setup: done 
-  2-2-create-work-plan-form-ui: backlog # see _bmad-output/implementation-artifacts/tech-spec-flutter-user-role-enum-expansion.md before creating the story
+  2-1-work-plan-feature-module-setup: done
+  2-2-create-work-plan-form-ui: done
   2-3-create-work-plan-bloc-integration: backlog
   2-4-work-plan-list-display-basic: backlog
   epic-2-retrospective: optional
