@@ -323,5 +323,28 @@ void main() {
 
       await screenMatchesGolden(tester, 'create_bottom_sheet_validation_error');
     });
+
+    testWidgets('golden: loading state renders correctly', (tester) async {
+      when(() => mockWorkPlanBloc.state).thenReturn(const WorkPlanLoading());
+      whenListen(
+        mockWorkPlanBloc,
+        Stream.value(const WorkPlanLoading()),
+        initialState: const WorkPlanLoading(),
+      );
+
+      await tester.pumpWidget(
+        createTestWidget(
+          bloc: mockWorkPlanBloc,
+          child: const CreateBottomSheet(),
+        ),
+      );
+
+      // Use pump instead of pumpAndSettle to avoid animation timeout
+      await tester.pump();
+      await expectLater(
+        find.byType(CreateBottomSheet),
+        matchesGoldenFile('goldens/create_bottom_sheet_loading.png'),
+      );
+    });
   });
 }

@@ -42,35 +42,35 @@ story_location: "{project-root}/_bmad-output/implementation-artifacts"
 development_status:
   # Epic 1: Backend Foundation & RBAC System
   epic-1: done
-  1-1-production-schema-discovery-validation: done
-  1-2-schedule-entity-crud-endpoints: done
-  1-3-operators-module-list-endpoint: done
-  1-4-rbac-roles-guard-implementation: done
-  1-5-state-machine-validation: done
-  1-6-user-dummy-seeding: done
+  1-1-production-schema-discovery-validation: done  # (backend)
+  1-2-schedule-entity-crud-endpoints: done  # (backend)
+  1-3-operators-module-list-endpoint: done  # (backend)
+  1-4-rbac-roles-guard-implementation: done  # (backend)
+  1-5-state-machine-validation: done  # (backend)
+  1-6-user-dummy-seeding: done  # (backend)
   # NOTE: Story 1.6 spec (6 users) outdated after DB schema fix
   # Implementation: 3 role-specific users instead (see project-context.md)
   epic-1-retrospective: done  # Completed 2026-02-02
 
   # Epic 2: Work Plan Creation (Kasie PG)
   epic-2: in-progress
-  2-1-work-plan-feature-module-setup: done
-  2-2-create-work-plan-form-ui: done
-  2-3-create-work-plan-bloc-integration: backlog
-  2-4-work-plan-list-display-basic: backlog
+  2-1-work-plan-feature-module-setup: done  # (backend)
+  2-2-create-work-plan-form-ui: done  # (frontend)
+  2-3-create-work-plan-bloc-integration: done  # (frontend) - Code review passed 2026-02-03
+  2-4-work-plan-list-display-basic: backlog  # (frontend)
   epic-2-retrospective: optional
 
   # Epic 3: Work Plan Assignment (Kasie FE)
   epic-3: backlog
-  3-1-operator-list-fetch-cache: backlog
-  3-2-assign-operator-bottom-sheet: backlog
-  3-3-assign-operator-submission: backlog
+  3-1-operator-list-fetch-cache: backlog  # (frontend)
+  3-2-assign-operator-bottom-sheet: backlog  # (frontend)
+  3-3-assign-operator-submission: backlog  # (frontend)
   epic-3-retrospective: optional
 
   # Epic 4: Work Plan Viewing (All Roles)
   epic-4: backlog
-  4-1-role-based-work-plan-filtering: backlog
-  4-2-status-badge-component: backlog
-  4-3-work-plan-detail-view: backlog
-  4-4-work-plan-list-page-integration: backlog
+  4-1-role-based-work-plan-filtering: backlog  # (frontend)
+  4-2-status-badge-component: backlog  # (frontend)
+  4-3-work-plan-detail-view: backlog  # (frontend)
+  4-4-work-plan-list-page-integration: backlog  # (frontend)
   epic-4-retrospective: optional

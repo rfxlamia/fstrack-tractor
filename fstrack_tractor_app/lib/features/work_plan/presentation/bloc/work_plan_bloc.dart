@@ -83,7 +83,10 @@ class WorkPlanBloc extends Bloc<WorkPlanEvent, WorkPlanState> {
     );
     result.fold(
       (failure) => emit(WorkPlanError(failure.message)),
-      (workPlan) => emit(WorkPlanCreated(workPlan)),
+      (workPlan) {
+        emit(WorkPlanCreated(workPlan));
+        add(const LoadWorkPlansRequested());
+      },
     );
   }
 
