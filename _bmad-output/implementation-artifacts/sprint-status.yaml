@@ -57,7 +57,7 @@ development_status:
   2-1-work-plan-feature-module-setup: done  # (backend)
   2-2-create-work-plan-form-ui: done  # (frontend)
   2-3-create-work-plan-bloc-integration: done  # (frontend) - Code review passed 2026-02-03
-  2-4-work-plan-list-display-basic: backlog  # (frontend)
+  2-4-work-plan-list-display-basic: done  # (frontend) - Code review passed 2026-02-03
   epic-2-retrospective: optional
 
   # Epic 3: Work Plan Assignment (Kasie FE)

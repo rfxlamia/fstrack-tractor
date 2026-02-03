@@ -6,6 +6,9 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
+import '../../../work_plan/presentation/bloc/work_plan_bloc.dart';
+import '../../../work_plan/presentation/bloc/work_plan_event.dart';
+import '../../../work_plan/presentation/pages/work_plan_list_page.dart';
 import 'coming_soon_bottom_sheet.dart';
 import 'menu_card.dart';
 import 'menu_card_skeleton.dart';
@@ -84,10 +87,7 @@ class RoleBasedMenuCards extends StatelessWidget {
             iconBackgroundColor: AppColors.buttonBlue,
             title: UIStrings.menuCardViewTitle,
             subtitle: UIStrings.menuCardViewSubtitle,
-            onTap: () => ComingSoonBottomSheet.show(
-              context,
-              UIStrings.menuCardViewTitle,
-            ),
+            onTap: () => _navigateToWorkPlanList(context),
           ),
         ),
       ],
@@ -103,9 +103,22 @@ class RoleBasedMenuCards extends StatelessWidget {
       iconBackgroundColor: AppColors.buttonBlue,
       title: UIStrings.menuCardViewTitle,
       subtitle: UIStrings.menuCardViewSubtitle,
-      onTap: () => ComingSoonBottomSheet.show(
-        context,
-        UIStrings.menuCardViewTitle,
+      onTap: () => _navigateToWorkPlanList(context),
+    );
+  }
+
+  /// Navigate to WorkPlanListPage with BLoC provided
+  void _navigateToWorkPlanList(BuildContext context) {
+    // Trigger loading work plans
+    context.read<WorkPlanBloc>().add(const LoadWorkPlansRequested());
+
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => BlocProvider.value(
+          value: context.read<WorkPlanBloc>(),
+          child: const WorkPlanListPage(),
+        ),
       ),
     );
   }

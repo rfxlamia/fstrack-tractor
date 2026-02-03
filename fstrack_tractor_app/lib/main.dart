@@ -7,6 +7,7 @@ import 'core/constants/ui_strings.dart';
 import 'core/router/app_router.dart';
 import 'core/storage/hive_service.dart';
 import 'core/theme/app_theme.dart';
+import 'core/utils/date_formatter.dart';
 import 'core/utils/snackbar_helper.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/auth_event.dart';
@@ -21,6 +22,9 @@ Future<void> main() async {
 
   // Initialize first-time hints box
   await Hive.openBox(FirstTimeLocalDataSource.boxName);
+
+  // Initialize date formatting for Indonesia locale
+  await initializeDateFormattingId();
 
   await configureDependencies();
 
