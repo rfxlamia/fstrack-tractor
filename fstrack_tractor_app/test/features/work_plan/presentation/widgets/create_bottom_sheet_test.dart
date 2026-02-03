@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fstrack_tractor/core/theme/app_theme.dart';
+import 'package:golden_toolkit/golden_toolkit.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -34,6 +36,7 @@ void main() {
     required Widget child,
   }) {
     return MaterialApp(
+      theme: AppTheme.light,
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
@@ -290,29 +293,24 @@ void main() {
       expect(find.byType(CreateBottomSheet), findsNothing);
     });
 
-    testWidgets('golden: initial state renders correctly', (tester) async {
+    testGoldens('golden: initial state renders correctly', (tester) async {
       when(() => mockWorkPlanBloc.state).thenReturn(const WorkPlanInitial());
 
-      await tester.pumpWidget(
+      await tester.pumpWidgetBuilder(
         createTestWidget(
           bloc: mockWorkPlanBloc,
           child: const CreateBottomSheet(),
         ),
       );
 
-      await tester.pumpAndSettle();
-
-      await expectLater(
-        find.byType(CreateBottomSheet),
-        matchesGoldenFile('goldens/create_bottom_sheet_initial.png'),
-      );
+      await screenMatchesGolden(tester, 'create_bottom_sheet_initial');
     });
 
-    testWidgets('golden: validation error state renders correctly',
+    testGoldens('golden: validation error state renders correctly',
         (tester) async {
       when(() => mockWorkPlanBloc.state).thenReturn(const WorkPlanInitial());
 
-      await tester.pumpWidget(
+      await tester.pumpWidgetBuilder(
         createTestWidget(
           bloc: mockWorkPlanBloc,
           child: const CreateBottomSheet(),
@@ -323,10 +321,7 @@ void main() {
       await tester.tap(find.text('Simpan'));
       await tester.pumpAndSettle();
 
-      await expectLater(
-        find.byType(CreateBottomSheet),
-        matchesGoldenFile('goldens/create_bottom_sheet_validation_error.png'),
-      );
+      await screenMatchesGolden(tester, 'create_bottom_sheet_validation_error');
     });
   });
 }
