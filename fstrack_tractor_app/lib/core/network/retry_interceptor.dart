@@ -56,7 +56,9 @@ class RetryInterceptor extends Interceptor {
   }
 
   Future<Response> _retryRequest(RequestOptions options) async {
-    // Create new Dio with same baseUrl to preserve configuration
+    // CRITICAL FIX: Create new Dio with same baseUrl to preserve configuration
+    // Headers (including Authorization) are explicitly passed via Options
+    // This ensures retried requests maintain auth headers from AuthInterceptor
     final dio = Dio(
       BaseOptions(
         baseUrl: options.baseUrl,
@@ -68,7 +70,7 @@ class RetryInterceptor extends Interceptor {
       options.path,
       options: Options(
         method: options.method,
-        headers: options.headers,
+        headers: options.headers, // Preserves Authorization header
         contentType: options.contentType,
         responseType: options.responseType,
       ),

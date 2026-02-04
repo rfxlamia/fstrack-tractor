@@ -1,9 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 
+import 'auth_interceptor.dart';
 import 'retry_interceptor.dart';
 
-/// Dio API client singleton with retry interceptor
+/// Dio API client singleton with auth and retry interceptors
 /// Base URL configured via --dart-define=API_BASE_URL
 @lazySingleton
 class ApiClient {
@@ -11,7 +12,10 @@ class ApiClient {
 
   Dio get dio => _dio;
 
-  ApiClient({required RetryInterceptor retryInterceptor}) {
+  ApiClient({
+    required AuthInterceptor authInterceptor,
+    required RetryInterceptor retryInterceptor,
+  }) {
     _dio = Dio(
       BaseOptions(
         baseUrl: _getBaseUrl(),
@@ -28,7 +32,9 @@ class ApiClient {
       ),
     );
 
-    // Add retry interceptor
+    // Add interceptors in order: auth first, then retry
+    // Auth must run before retry to ensure retried requests have token
+    _dio.interceptors.add(authInterceptor);
     _dio.interceptors.add(retryInterceptor);
   }
 
