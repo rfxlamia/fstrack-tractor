@@ -2,7 +2,7 @@
 title: 'Fix Double API Prefix in Schedules Controller'
 slug: 'fix-double-api-prefix-schedules'
 created: '2026-02-04'
-status: 'implementation-complete'
+status: 'solved'
 stepsCompleted: [1, 2, 3, 4]
 tech_stack:
   - NestJS
