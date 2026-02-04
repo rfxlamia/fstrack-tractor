@@ -51,7 +51,10 @@ class _WorkPlanListPageState extends State<WorkPlanListPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const CreateBottomSheet(),
+      builder: (modalContext) => BlocProvider.value(
+        value: context.read<WorkPlanBloc>(),
+        child: const CreateBottomSheet(),
+      ),
     );
   }
 

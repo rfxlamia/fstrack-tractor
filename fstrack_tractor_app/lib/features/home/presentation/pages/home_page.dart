@@ -27,41 +27,43 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('FSTrack Tractor'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.onPrimary,
-        actions: [
-          // Temporary logout button - will be moved to settings in post-MVP
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Logout',
-            onPressed: () =>
-                context.read<AuthBloc>().add(const LogoutRequested()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<WeatherBloc>(
+          create: (context) => getIt<WeatherBloc>(),
+        ),
+        BlocProvider<WorkPlanBloc>(
+          create: (context) => getIt<WorkPlanBloc>(),
+        ),
+      ],
+      child: Builder(
+        builder: (context) => Scaffold(
+          appBar: AppBar(
+            title: const Text('FSTrack Tractor'),
+            backgroundColor: AppColors.primary,
+            foregroundColor: AppColors.onPrimary,
+            actions: [
+              // Temporary logout button - will be moved to settings in post-MVP
+              IconButton(
+                icon: const Icon(Icons.logout),
+                tooltip: 'Logout',
+                onPressed: () =>
+                    context.read<AuthBloc>().add(const LogoutRequested()),
+              ),
+            ],
           ),
-        ],
-      ),
-      body: MultiBlocProvider(
-        providers: [
-          BlocProvider<WeatherBloc>(
-            create: (context) => getIt<WeatherBloc>(),
+          body: BannerWrapper(
+            connectivityChecker: getIt<ConnectivityChecker>(),
+            sessionExpiryChecker: getIt<SessionExpiryChecker>(),
+            child: const SafeArea(
+              child: HomePageContent(),
+            ),
           ),
-          BlocProvider<WorkPlanBloc>(
-            create: (context) => getIt<WorkPlanBloc>(),
-          ),
-        ],
-        child: BannerWrapper(
-          connectivityChecker: getIt<ConnectivityChecker>(),
-          sessionExpiryChecker: getIt<SessionExpiryChecker>(),
-          child: const SafeArea(
-            child: HomePageContent(),
-          ),
+          // AC6: FAB with role-based visibility
+          floatingActionButton: _buildFab(context),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         ),
       ),
-      // AC6: FAB with role-based visibility
-      floatingActionButton: _buildFab(context),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 

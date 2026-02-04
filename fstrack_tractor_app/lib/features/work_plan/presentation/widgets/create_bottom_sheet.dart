@@ -27,7 +27,10 @@ class CreateBottomSheet extends StatefulWidget {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.85,
       ),
-      builder: (context) => const CreateBottomSheet(),
+      builder: (modalContext) => BlocProvider.value(
+        value: context.read<WorkPlanBloc>(),
+        child: const CreateBottomSheet(),
+      ),
     );
   }
 
