@@ -21,7 +21,7 @@ import { AUTH_ERROR_MESSAGES } from '../constants/error-messages.constant';
  *
  * @example
  * // Controller-level usage
- * @Controller('api/v1/schedules')
+ * @Controller('v1/schedules')
  * @UseGuards(JwtAuthGuard, RolesGuard)
  * export class SchedulesController { ... }
  *

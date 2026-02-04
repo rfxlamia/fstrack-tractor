@@ -2,8 +2,9 @@
 title: 'Fix Create Work Plan Bottom Sheet BLoC Context Issue'
 slug: 'fix-create-work-plan-bloc-context'
 created: '2026-02-03'
-status: 'completed'
+status: 'solved'
 stepsCompleted: [1, 2, 3, 4]
+solved_date: '2026-02-04'
 tech_stack: ['Flutter 3.x', 'flutter_bloc 8.1.3', 'get_it + injectable', 'Dart 3+']
 files_to_modify: ['fstrack_tractor_app/lib/features/home/presentation/pages/home_page.dart', 'fstrack_tractor_app/lib/features/work_plan/presentation/widgets/create_bottom_sheet.dart', 'fstrack_tractor_app/lib/features/work_plan/presentation/pages/work_plan_list_page.dart']
 code_patterns: ['BlocProvider.value', 'showModalBottomSheet', 'BlocConsumer', 'MultiBlocProvider', 'Builder', 'Clean Architecture']

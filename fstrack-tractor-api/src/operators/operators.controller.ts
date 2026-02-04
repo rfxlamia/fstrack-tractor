@@ -20,7 +20,7 @@ import { Roles } from '../auth/decorators';
  * Operators Controller
  * Handles operator-related endpoints
  *
- * Base path: /api/v1/operators
+ * Base path: /api/v1/operators (global prefix + controller path)
  *
  * RBAC Rules:
  * - LIST: KASIE_FE only (for assignment purposes)
@@ -28,7 +28,7 @@ import { Roles } from '../auth/decorators';
  */
 @ApiTags('Operators')
 @ApiBearerAuth()
-@Controller('api/v1/operators')
+@Controller('v1/operators')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class OperatorsController {
   constructor(private readonly operatorsService: OperatorsService) {}

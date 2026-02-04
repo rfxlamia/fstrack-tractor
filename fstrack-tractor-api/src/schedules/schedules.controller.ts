@@ -38,7 +38,7 @@ import { Roles } from '../auth/decorators';
  * Schedules Controller
  * Handles CRUD operations for work plans (schedules)
  *
- * Base path: /api/v1/schedules
+ * Base path: /api/v1/schedules (global prefix + controller path)
  *
  * RBAC Rules:
  * - CREATE: KASIE_PG only (enforced via @Roles decorator)
@@ -47,7 +47,7 @@ import { Roles } from '../auth/decorators';
  */
 @ApiTags('Schedules')
 @ApiBearerAuth()
-@Controller('api/v1/schedules')
+@Controller('v1/schedules')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class SchedulesController {
   constructor(private readonly schedulesService: SchedulesService) {}
